@@ -196,10 +196,7 @@ for fila in datos_tabla:
     </tr>
     '''
 html_tabla += "</table>"
- st.markdown(html_tabla, unsafe_allow_html=True)
-
-
-
+st.markdown(html_tabla, unsafe_allow_html=True)
 
 # Patrimonio Total Destacado
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
