@@ -161,7 +161,7 @@ for ticker in activos:
         "raw_anual": prob_anual
     })
 
-# RENDERIZADO DE LA TABLA COMPLETA INTEGRADA
+# RENDERIZADO DE LA TABLA COMPLETA INTEGRADA (CON PERMISO ACTIVADO)
 st.subheader("📁 Cuadrícula Integradora de Inversiones")
 html_tabla = '''
 <table class="styled-table">
