@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Configuracion de pantalla rigida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados para replicar tu diseno exacto de foto
+# 2. Estilos CSS Avanzados para tu diseno exacto de foto
 st.markdown('''
 <style>
 .block-container { padding: 0.3rem 0.2rem; }
@@ -25,7 +25,7 @@ h3 { font-size: 1.1rem !important; margin: 0.4rem 0 0.2rem 0; }
 </style>
 ''', unsafe_allow_html=True)
 
-# 3. Encabezado con titulo y Boton de Guardar en verde superior
+# 3. Encabezado con titulo y Boton de Guardar superior en verde
 st.markdown('''
 <div class="header-container">
     <h2 style="margin:0; font-size:1.35rem; color:white;">📊 Nuevo Finance Pro</h2>
@@ -47,7 +47,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff;'>📁 Mi Portafolio - Integración de Inversión</h3>", unsafe_allow_html=True)
 
-# 4. Modificacion Directa de Montos
+# 4. Modificacion Directa de Montos (Renglon compacto arriba de la cuadricula)
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1:
     st.session_state.montos_dis["SPY"] = st.number_input("SPY", value=float(st.session_state.montos_dis["SPY"]), step=500.0)
