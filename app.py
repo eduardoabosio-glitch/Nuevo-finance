@@ -22,7 +22,6 @@ h3 { font-size: 1.1rem !important; margin: 0.4rem 0 0.2rem 0; }
 .veredicto-strong { color: #00e676; font-weight: bold; font-size: 0.72rem; }
 .veredicto-hold { color: #ffeb3b; font-weight: bold; font-size: 0.72rem; }
 .veredicto-buy { color: #2196f3; font-weight: bold; font-size: 0.72rem; }
-div[data-testid="stNumberInput"] input { padding: 2px 4px !important; font-size: 0.75rem !important; height: 24px !important; background-color: #1f2633 !important; color: white !important; }
 </style>
 ''', unsafe_allow_html=True)
 
@@ -48,7 +47,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff;'>📁 Mi Portafolio - Integración de Inversión</h3>", unsafe_allow_html=True)
 
-# 4. Modificación Directa de Montos (Renglón compacto arriba de la cuadrícula)
+# 4. Modificación Directa de Montos
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1:
     st.session_state.montos_dis["SPY"] = st.number_input("SPY", value=float(st.session_state.montos_dis["SPY"]), step=500.0)
@@ -63,7 +62,7 @@ datos_foto = [
     {"Acción": "AAPL", "Precio": 210.0, "Monto": st.session_state.montos_dis["AAPL"], "Semanal": "▲ 30%", "Anual": "▲ 50%", "Fundamental": "9/10", "Veredicto": "BUY", "clase_ver": "veredicto-buy", "raw_sem": 30, "raw_anual": 50}
 ]
 
-# 5. Renderizado de la Cuadrícula Fija de 7 Columnas con títulos en renglones verticales
+# 5. Renderizado de la Cuadrícula Fija de 7 Columnas con títulos verticales
 html_tabla = '''
 <table class="styled-table">
     <tr>
@@ -105,7 +104,7 @@ st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; 
 st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>📊 Resumen y Distribución de Patrimonio</h3>", unsafe_allow_html=True)
 
-# 6. Bloque Inferior: Gráfico de Torta + Reporte de Noticias del Agente
+# 6. Bloque Inferior: Gráfico de Torta + Reporte de Noticias
 col_g1, col_g2 = st.columns(2)
 with col_g1:
     df_pie = pd.DataFrame({"Activo": ["SPY", "TSLA", "AAPL"], "Capital": [st.session_state.montos_dis["SPY"], st.session_state.montos_dis["TSLA"], st.session_state.montos_dis["AAPL"]]})
@@ -137,7 +136,7 @@ st.markdown('''
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
-# 7. Barra de Navegación Fija Inferior exacto al boceto de tu App
+# 7. Barra de Navegación Fija Inferior
 st.markdown('''
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Home</div>
