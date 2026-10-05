@@ -106,7 +106,7 @@ st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_htm
 st.markdown("<h3 style='color:#ffffff;'>📊 Resumen y Distribución de Patrimonio</h3>", unsafe_allow_html=True)
 
 # 6. Bloque Inferior: Gráfico de Torta + Reporte de Noticias del Agente
-col_g1, col_g2 = st.columns()
+col_g1, col_g2 = st.columns(2)
 with col_g1:
     df_pie = pd.DataFrame({"Activo": ["SPY", "TSLA", "AAPL"], "Capital": [st.session_state.montos_dis["SPY"], st.session_state.montos_dis["TSLA"], st.session_state.montos_dis["AAPL"]]})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=130)
