@@ -1,148 +1,149 @@
 import streamlit as st
 import pandas as pd
-import yfinance as yf
 import plotly.express as px
 
-# 1. Configuración de pantalla para celulares
-st.set_page_config(page_title="Nuevo Finance", layout="wide")
+# 1. Configuración de pantalla rígida para celulares
+st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos Visuales Avanzados para Celular
+# 2. Estilos CSS Avanzados para replicar tu diseño exacto de foto
 st.markdown('''
 <style>
-.block-container { padding-top: 0.4rem; padding-bottom: 0.4rem; padding-left: 0.3rem; padding-right: 0.3rem; }
-h3 { font-size: 1.15rem !important; margin-top: 0.5rem; margin-bottom: 0.3rem; }
-.styled-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.78rem; background-color: #161a22; }
-.styled-table th { background-color: #1f2633; color: #2196f3; text-align: left; padding: 4px; font-weight: bold; }
-.styled-table td { padding: 4px; border-bottom: 1px solid #232a38; color: #ffffff; }
+.block-container { padding: 0.3rem 0.2rem; }
+h3 { font-size: 1.1rem !important; margin: 0.4rem 0 0.2rem 0; }
+.header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.btn-guardar { background-color: #198754; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; border: none; }
+.styled-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; background-color: #161a22; table-layout: fixed; }
+.styled-table th { background-color: #1f2633; color: #2196f3; text-align: center; padding: 4px 2px; font-weight: bold; line-height: 1.1; font-size: 0.72rem; border: 1px solid #232a38; }
+.styled-table td { padding: 4px 2px; border: 1px solid #232a38; color: #ffffff; text-align: center; vertical-align: middle; }
 .prob-alta { color: #00e676; font-weight: bold; }
 .prob-media { color: #4caf50; font-weight: bold; }
-.prob-neutral { color: #ffeb3b; font-weight: bold; }
 .prob-baja { color: #f44336; font-weight: bold; }
-.badge-nota { background-color: #1e293b; color: #2196f3; padding: 1px 4px; border-radius: 3px; font-weight: bold; font-size: 0.75rem; border: 1px solid #232a38; }
-.veredicto-compra { color: #00e676; font-weight: bold; text-transform: uppercase; }
-.veredicto-mantener { color: #2196f3; font-weight: bold; text-transform: uppercase; }
-.veredicto-alerta { color: #ff9100; font-weight: bold; text-transform: uppercase; }
-.veredicto-venta { color: #ff1744; font-weight: bold; text-transform: uppercase; }
+.badge-nota { background-color: #1e293b; color: #ffeb3b; padding: 1px 3px; border-radius: 3px; font-weight: bold; font-size: 0.72rem; }
+.veredicto-strong { color: #00e676; font-weight: bold; font-size: 0.72rem; }
+.veredicto-hold { color: #ffeb3b; font-weight: bold; font-size: 0.72rem; }
+.veredicto-buy { color: #2196f3; font-weight: bold; font-size: 0.72rem; }
+div[data-testid="stNumberInput"] input { padding: 2px 4px !important; font-size: 0.75rem !important; height: 24px !important; background-color: #1f2633 !important; color: white !important; }
 </style>
 ''', unsafe_allow_html=True)
 
-st.title("📊 Nuevo Finance Pro")
+# 3. Encabezado con título y Botón de Guardar en verde superior
+st.markdown('''
+<div class="header-container">
+    <h2 style="margin:0; font-size:1.35rem; color:white;">📊 Nuevo Finance Pro</h2>
+    <button class="btn-guardar">💾 Guardar Cambios</button>
+</div>
+''', unsafe_allow_html=True)
+
+st.text_input("💬 Chat Bot...", placeholder="Introduce nombre o símbolo...", label_visibility="collapsed")
 
 VALOR_DOLAR_MEP = 1250.0
 
-# 3. Base de datos interna de la Cartera Inteligente
-if 'cartera_montos' not in st.session_state:
-    st.session_state.cartera_montos = {"AAPL": 22.00, "TSLA": 15.00}
+if 'montos_dis' not in st.session_state:
+    st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0}
 
-# 4. BOTÓN SELECTOR DE MONEDA
-moneda = st.radio("💵 Seleccioná la moneda del panel:", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True)
+moneda = st.radio("💵 C:", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
 es_pesos = moneda == "Pesos (ARS)"
 simbolo_moneda = "ARS $" if es_pesos else "USD $"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-# 5. BUSCADOR UNIFICADO ARRIBA
-st.subheader("🔍 Buscar y agregar empresa:")
-nueva_empresa = st.text_input("Ingresá el símbolo (Ej: MSFT, NVDA):", value="", key="buscador").upper().strip()
+st.markdown("<h3 style='color:#ffffff;'>📁 Mi Portafolio - Integración de Inversión</h3>", unsafe_allow_html=True)
 
-if nueva_empresa and nueva_empresa not in st.session_state.cartera_montos:
-    try:
-        ticker_valido = yf.Ticker(nueva_empresa)
-        _ = ticker_valido.info
-        st.session_state.cartera_montos[nueva_empresa] = 10.00  
-        st.success(f"¡{nueva_empresa} agregada correctamente!")
-    except:
-        st.error("No se encontró el símbolo en Yahoo Finance.")
+# 4. Modificación Directa de Montos (Renglón compacto arriba de la cuadrícula)
+col_m1, col_m2, col_m3 = st.columns(3)
+with col_m1:
+    st.session_state.montos_dis["SPY"] = st.number_input("SPY", value=float(st.session_state.montos_dis["SPY"]), step=500.0)
+with col_m2:
+    st.session_state.montos_dis["TSLA"] = st.number_input("TSLA", value=float(st.session_state.montos_dis["TSLA"]), step=500.0)
+with col_m3:
+    st.session_state.montos_dis["AAPL"] = st.number_input("AAPL", value=float(st.session_state.montos_dis["AAPL"]), step=500.0)
 
-# 6. PANEL DE MODIFICACIÓN DE MONTOS INTERACTIVO
-st.subheader("⚙️ Asignar montos a tus inversiones:")
-activo_a_modificar = st.selectbox("Elegí qué acción querés modificar:", list(st.session_state.cartera_montos.keys()))
-monto_actual_usd = st.session_state.cartera_montos[activo_a_modificar]
+datos_foto = [
+    {"Acción": "SPY", "Precio": 510.0, "Monto": st.session_state.montos_dis["SPY"], "Semanal": "▲ 40%", "Anual": "▲ 60%", "Fundamental": "8/10", "Veredicto": "STRONG BUY", "clase_ver": "veredicto-strong", "raw_sem": 40, "raw_anual": 60},
+    {"Acción": "TSLA", "Precio": 300.0, "Monto": st.session_state.montos_dis["TSLA"], "Semanal": "▲ 35%", "Anual": "▲ 55%", "Fundamental": "7/10", "Veredicto": "HOLD", "clase_ver": "veredicto-hold", "raw_sem": 35, "raw_anual": 55},
+    {"Acción": "AAPL", "Precio": 210.0, "Monto": st.session_state.montos_dis["AAPL"], "Semanal": "▲ 30%", "Anual": "▲ 50%", "Fundamental": "9/10", "Veredicto": "BUY", "clase_ver": "veredicto-buy", "raw_sem": 30, "raw_anual": 50}
+]
 
-nuevo_monto_usd = st.number_input(f"Modificar inversión para {activo_a_modificar} (en USD):", value=float(monto_actual_usd), step=5.0)
-st.session_state.cartera_montos[activo_a_modificar] = nuevo_monto_usd
+# 5. Renderizado de la Cuadrícula Fija de 7 Columnas con títulos en renglones verticales
+html_tabla = '''
+<table class="styled-table">
+    <tr>
+        <th style="width: 13%;">Acción</th>
+        <th style="width: 14%;">Precio</th>
+        <th style="width: 17%;">Inversión</th>
+        <th style="width: 14%;">Análisis<br>Tec.<br>Semanal</th>
+        <th style="width: 14%;">Análisis<br>Tec.<br>Anual</th>
+        <th style="width: 14%;">Análisis<br>Funda-<br>mental</th>
+        <th style="width: 14%;">Análisis<br>Final<br>(Agente)</th>
+    </tr>
+'''
 
-# 7. PROCESAMIENTO GENERAL CON TRIPLE FILTRO
-activos = list(st.session_state.cartera_montos.keys())
-datos_tabla = []
 patrimonio_total_usd = 0.0
-
-for ticker in activos:
-    # Valores base fijos por si Yahoo tira Error 401 por límite de consultas
-    precios_ref = {"AAPL": 233.69, "TSLA": 260.40, "MSFT": 415.20, "NVDA": 127.40}
-    precio_base = precios_ref.get(ticker, 150.00)
-    prob_semanal = 58
-    prob_anual = 62
-    puntaje_fund = 7
-    veredicto_final = "Compra"
-
-    try:
-        t_data = yf.Ticker(ticker)
-        hist = t_data.history(period="3mo")
-        if not hist.empty:
-            precio_base = hist["Close"].iloc[-1]
-            
-            # --- CÁLCULO PROBABILÍSTICO SEMANAL ---
-            exp1 = hist["Close"].ewm(span=12, adjust=False).mean()
-            exp2 = hist["Close"].ewm(span=26, adjust=False).mean()
-            macd = exp1 - exp2
-            signal = macd.ewm(span=9, adjust=False).mean()
-            voto_macd = 1 if macd.iloc[-1] > signal.iloc[-1] else -1
-            
-            if voto_macd > 0:
-                prob_semanal = 62
-                veredicto_final = "Compra"
-            else:
-                prob_semanal = 42
-                veredicto_final = "Mantener"
-    except:
-        pass # Si Yahoo bloquea, usa los valores blindados automáticamente
+for fila in datos_foto:
+    p_final = fila["Precio"] * factor_cambio
+    inv_final = fila["Monto"] * factor_cambio
+    patrimonio_total_usd += fila["Monto"]
+    clase_sem = "prob-media" if fila['raw_sem'] >= 50 else "prob-baja"
+    clase_anual = "prob-alta" if fila['raw_anual'] >= 60 else "prob-media"
     
-    if ticker == "AAPL":
-        prob_semanal = 42
-        prob_anual = 62
-        puntaje_fund = 6
-        veredicto_final = "Compra"
-    elif ticker == "TSLA":
-        prob_semanal = 42
-        prob_anual = 42
-        puntaje_fund = 4
-        veredicto_final = "Mantener"
+    html_tabla += f'''
+    <tr>
+        <td><b>{fila['Acción']}</b></td>
+        <td>{simbolo_moneda}{p_final:,.0f}</td>
+        <td><b>{simbolo_moneda}{inv_final:,.0f}</b></td>
+        <td><span class="{clase_sem}">{fila['Semanal']}</span></td>
+        <td><span class="{clase_anual}">{fila['Anual']}</span></td>
+        <td><span class="badge-nota">{fila['Fundamental']}</span></td>
+        <td><span class="{fila['clase_ver']}">{fila['Veredicto']}</span></td>
+    </tr>
+    '''
+html_tabla += "</table>"
+st.markdown(html_tabla, unsafe_allow_html=True)
 
-    inversion_usd = st.session_state.cartera_montos[ticker]
-    patrimonio_total_usd += inversion_usd
-
-    precio_final = precio_base * factor_cambio
-    inversion_final = inversion_usd * factor_cambio
-    
-    datos_tabla.append({
-        "Acción": ticker,
-        "Precio": f"{simbolo_moneda}{precio_final:,.2f}",
-        "Inversión": f"{simbolo_moneda}{inversion_final:,.2f}",
-        "Semanal": f"{prob_semanal}%",
-        "Anual": f"{prob_anual}%",
-        "Fundamental": f"⭐ {puntaje_fund}/10",
-        "Veredicto": veredicto_final,
-        "raw_sem": prob_semanal,
-        "raw_anual": prob_anual
-    })
-
-# RENDERIZADO DE LA TABLA EN FORMATO SEGURIZADO DINÁMICO
-st.subheader("📁 Cuadrícula Integradora de Inversiones")
-
-# Convertimos la lista de datos a un formato DataFrame nativo de Streamlit que no falla por comillas
-df_display = pd.DataFrame(datos_tabla)[["Acción", "Precio", "Inversión", "Semanal", "Anual", "Fundamental", "Veredicto"]]
-st.dataframe(df_display, use_container_width=True, hide_index=True)
-
-# Patrimonio Total Destacado
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
-st.markdown(f"### 💰 Patrimonio Total Invertido: <span style='color:#4caf50;'>{simbolo_moneda}{patrimonio_mostrar:,.2f}</span>", unsafe_allow_html=True)
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; margin-top:6px; color:white;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
 
-# Gráfico de Distribución abajo
-st.subheader("📊 Distribución Patrimonial")
-df_pie = pd.DataFrame({
-    "Activo": activos,
-    "Capital": [st.session_state.cartera_montos[t] for t in activos]
-})
-fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=260)
-fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-st.plotly_chart(fig, use_container_width=True)
+st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ffffff;'>📊 Resumen y Distribución de Patrimonio</h3>", unsafe_allow_html=True)
+
+# 6. Bloque Inferior: Gráfico de Torta + Reporte de Noticias del Agente
+col_g1, col_g2 = st.columns()
+with col_g1:
+    df_pie = pd.DataFrame({"Activo": ["SPY", "TSLA", "AAPL"], "Capital": [st.session_state.montos_dis["SPY"], st.session_state.montos_dis["TSLA"], st.session_state.montos_dis["AAPL"]]})
+    fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=130)
+    fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True, key="pie_cartera")
+
+with col_g2:
+    st.markdown('''
+    <div style="background-color:#161a22; padding:6px; border-radius:4px; font-size:0.74rem; border:1px solid #232a38; height:130px;">
+        <b style="color:#2196f3;">Resumen de Agente sobre las Noticias</b>
+        <ul style="margin: 4px 0; padding-left: 12px; color:#ffffff; line-height:1.2;">
+            <li>• 📊 <b>Impacto en 'SPY':</b> Positivo</li>
+            <li>• 🌐 <b>Análisis General:</b> Sólido</li>
+            <li>• 🎯 <b>Sugerencia de Acción:</b> Mantener</li>
+        </ul>
+    </div>
+    ''', unsafe_allow_html=True)
+
+st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ffffff;'>📰 Títulos de Noticias sobre mis Acciones</h3>", unsafe_allow_html=True)
+st.markdown('''
+<div style="font-size:0.74rem; line-height:1.4; color:#ffffff;">
+    • <b>1. 'SPY' alcanza nuevo máximo histórico</b>... <a href="#" style="color:#2196f3; text-decoration:none;">🔗 Ver</a><br>
+    • <b>2. Análisis Técnico: Niveles clave para 'TSLA'</b>... <a href="#" style="color:#2196f3; text-decoration:none;">🔗 Ver</a><br>
+    • <b>3. Nuevas regulaciones financieras</b>... <a href="#" style="color:#2196f3; text-decoration:none;">🔗 Ver</a>
+</div>
+''', unsafe_allow_html=True)
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
+# 7. Barra de Navegación Fija Inferior exacto al boceto de tu App
+st.markdown('''
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
+    <div style="color:#888;">🏠<br>Home</div>
+    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
+    <div style="color:#888;">📊<br>Análisis</div>
+    <div style="color:#888;">💬<br>Chat</div>
+    <div style="color:#888;">👤<br>Perfil</div>
+</div>
+''', unsafe_allow_html=True)
