@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Configuración de pantalla rígida para celulares
+# 1. Configuracion de pantalla rigida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados para replicar tu diseño exacto de foto
+# 2. Estilos CSS Avanzados para replicar tu diseno exacto de foto
 st.markdown('''
 <style>
 .block-container { padding: 0.3rem 0.2rem; }
@@ -25,7 +25,7 @@ h3 { font-size: 1.1rem !important; margin: 0.4rem 0 0.2rem 0; }
 </style>
 ''', unsafe_allow_html=True)
 
-# 3. Encabezado con título y Botón de Guardar en verde superior
+# 3. Encabezado con titulo y Boton de Guardar en verde superior
 st.markdown('''
 <div class="header-container">
     <h2 style="margin:0; font-size:1.35rem; color:white;">📊 Nuevo Finance Pro</h2>
@@ -33,21 +33,21 @@ st.markdown('''
 </div>
 ''', unsafe_allow_html=True)
 
-st.text_input("💬 Chat Bot...", placeholder="Introduce nombre o símbolo...", label_visibility="collapsed")
+st.text_input("ChatBot", placeholder="💬 Chat Bot - Preguntá algo sobre finanzas...", label_visibility="collapsed")
 
 VALOR_DOLAR_MEP = 1250.0
 
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0}
 
-moneda = st.radio("💵 C:", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
+moneda = st.radio("Moneda", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
 es_pesos = moneda == "Pesos (ARS)"
 simbolo_moneda = "ARS $" if es_pesos else "USD $"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff;'>📁 Mi Portafolio - Integración de Inversión</h3>", unsafe_allow_html=True)
 
-# 4. Modificación Directa de Montos
+# 4. Modificacion Directa de Montos
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1:
     st.session_state.montos_dis["SPY"] = st.number_input("SPY", value=float(st.session_state.montos_dis["SPY"]), step=500.0)
@@ -57,12 +57,12 @@ with col_m3:
     st.session_state.montos_dis["AAPL"] = st.number_input("AAPL", value=float(st.session_state.montos_dis["AAPL"]), step=500.0)
 
 datos_foto = [
-    {"Acción": "SPY", "Precio": 510.0, "Monto": st.session_state.montos_dis["SPY"], "Semanal": "▲ 40%", "Anual": "▲ 60%", "Fundamental": "8/10", "Veredicto": "STRONG BUY", "clase_ver": "veredicto-strong", "raw_sem": 40, "raw_anual": 60},
-    {"Acción": "TSLA", "Precio": 300.0, "Monto": st.session_state.montos_dis["TSLA"], "Semanal": "▲ 35%", "Anual": "▲ 55%", "Fundamental": "7/10", "Veredicto": "HOLD", "clase_ver": "veredicto-hold", "raw_sem": 35, "raw_anual": 55},
-    {"Acción": "AAPL", "Precio": 210.0, "Monto": st.session_state.montos_dis["AAPL"], "Semanal": "▲ 30%", "Anual": "▲ 50%", "Fundamental": "9/10", "Veredicto": "BUY", "clase_ver": "veredicto-buy", "raw_sem": 30, "raw_anual": 50}
+    {"Accion": "SPY", "Precio": 510.0, "Monto": st.session_state.montos_dis["SPY"], "Semanal": "▲ 40%", "Anual": "▲ 60%", "Fundamental": "8/10", "Veredicto": "STRONG BUY", "clase_ver": "veredicto-strong", "raw_sem": 40, "raw_anual": 60},
+    {"Accion": "TSLA", "Precio": 300.0, "Monto": st.session_state.montos_dis["TSLA"], "Semanal": "▲ 35%", "Anual": "▲ 55%", "Fundamental": "7/10", "Veredicto": "HOLD", "clase_ver": "veredicto-hold", "raw_sem": 35, "raw_anual": 55},
+    {"Accion": "AAPL", "Precio": 210.0, "Monto": st.session_state.montos_dis["AAPL"], "Semanal": "▲ 30%", "Anual": "▲ 50%", "Fundamental": "9/10", "Veredicto": "BUY", "clase_ver": "veredicto-buy", "raw_sem": 30, "raw_anual": 50}
 ]
 
-# 5. Renderizado de la Cuadrícula Fija de 7 Columnas con títulos verticales
+# 5. Renderizado de la Cuadricula Fija de 7 Columnas con titulos verticales
 html_tabla = '''
 <table class="styled-table">
     <tr>
@@ -86,7 +86,7 @@ for fila in datos_foto:
     
     html_tabla += f'''
     <tr>
-        <td><b>{fila['Acción']}</b></td>
+        <td><b>{fila['Accion']}</b></td>
         <td>{simbolo_moneda}{p_final:,.0f}</td>
         <td><b>{simbolo_moneda}{inv_final:,.0f}</b></td>
         <td><span class="{clase_sem}">{fila['Semanal']}</span></td>
@@ -104,7 +104,7 @@ st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; 
 st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>📊 Resumen y Distribución de Patrimonio</h3>", unsafe_allow_html=True)
 
-# 6. Bloque Inferior: Gráfico de Torta + Reporte de Noticias
+# 6. Bloque Inferior: Grafico de Torta + Reporte de Noticias
 col_g1, col_g2 = st.columns(2)
 with col_g1:
     df_pie = pd.DataFrame({"Activo": ["SPY", "TSLA", "AAPL"], "Capital": [st.session_state.montos_dis["SPY"], st.session_state.montos_dis["TSLA"], st.session_state.montos_dis["AAPL"]]})
@@ -136,10 +136,10 @@ st.markdown('''
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
-# 7. Barra de Navegación Fija Inferior
+# 7. Barra de Navegacion Fija Inferior
 st.markdown('''
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
-    <div style="color:#888;">🏠<br>Home</div>
+    <div style="color:#888;">🏠<br>Inicio</div>
     <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
     <div style="color:#888;">📊<br>Análisis</div>
     <div style="color:#888;">💬<br>Chat</div>
