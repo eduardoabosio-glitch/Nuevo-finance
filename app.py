@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava la simetría perfecta y oculta botones molestos
+# 2. Estilos CSS Avanzados: Clava la simetría exacta y camufla el botón de eliminar abajo a la derecha
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -17,8 +17,9 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 /* Fichas Rectangulares Rígidas */
 .tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; }
 
-/* Renglones superiores horizontales balanceados */
+/* Renglones superiores e inferiores horizontales balanceados de margen a margen */
 .cabecera-cuaderno { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; width: 100%; }
+.renglon-control-inferior { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 4px; width: 100%; }
 
 /* Títulos Subrayados Estéticos Unificados */
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
@@ -29,8 +30,8 @@ div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
 
-/* Botón de eliminación chico y compacto para el margen derecho */
-div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 4px !important; border-radius: 4px !important; cursor: pointer; height: 22px !important; width: 100% !important; line-height: 1 !important; margin: 0px !important; }
+/* Forzar que el mini botón de eliminar HTML puro sea súper chico, angosto y rojo premium */
+.btn-eliminar-mini { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 5px !important; border-radius: 4px !important; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -72,7 +73,7 @@ precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 
-# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO DE CORRIDO
+# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     monto_actual = st.session_state.montos_dis[tk]
@@ -114,15 +115,23 @@ for tk in activos_actuales:
     # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # EL GRAN CAMBIO INVENTADO POR VOS: Fila horizontal balanceada para la leyenda de moneda y el botón eliminar
-    col_texto_izq, col_boton_der = st.columns([2.5, 1.0])
+    # RENGLÓN 6 CORREGIDO: Leyenda de dinero fija a la izquierda y el botón eliminar empaquetado en HTML a la derecha
+    # Al inyectar el botón como un enlace con la clase CSS .btn-eliminar-mini, el sistema lo clava en la misma línea
+    st.markdown(f"""
+    <div class="renglon-control-inferior">
+        <div style="font-size:0.82rem; color:#888; font-weight: bold;">✍️ Modificar Capital Invertido ({simbolo_moneda.strip()}):</div>
+        <div>
+            <a href="?eliminar={tk}" target="_self" class="btn-eliminar-mini">❌ Eliminar</a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    with col_texto_izq:
-        st.markdown(f'<div style="font-size:0.78rem; color:#888; font-weight: bold; padding-top: 3px;">✍️ Modificar Capital Invertido ({simbolo_moneda.strip()}):</div>', unsafe_allow_html=True)
-    with col_boton_der:
-        if st.button("❌ Eliminar", key=f"borrar_{tk}"):
-            del st.session_state.montos_dis[tk]
-            st.rerun()
+    # Lógica inteligente para capturar el click del enlace HTML de borrado
+    parametros_url = st.query_params
+    if "eliminar" in parametros_url and parametros_url["eliminar"] == tk:
+        del st.session_state.montos_dis[tk]
+        st.query_params.clear()
+        st.rerun()
     
     # Casillero numérico verde nativo abajo del todo ocupando el ancho completo de la tarjeta
     st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
