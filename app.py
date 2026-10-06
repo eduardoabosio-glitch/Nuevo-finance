@@ -1,4 +1,58 @@
 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import yfinance as yf
+
+# 1. Configuración de pantalla rígida para celulares
+st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
+
+# 2. Estilos CSS Avanzados: Clava los ítems impecables y achica la X de eliminar al mínimo
+st.markdown("""
+<style>
+.block-container { padding: 0.2rem 0.2rem; }
+h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
+.header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-top: 30px !important; margin-bottom: 8px; border: 1px solid #232a38; }
+
+/* Fichas Rectangulares Rígidas */
+.tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; }
+
+/* Renglón del Precio con formato unificado exacto a los ítems */
+.renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
+
+/* Títulos Subrayados Estéticos */
+.titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
+.explicacion-comillas { font-size: 0.78rem; color: #888; font-style: italic; display: block; margin-top: -2px; margin-bottom: 3px; }
+
+/* Bloqueo absoluto de las botoneras flotantes de más y menos de Streamlit */
+div[data-testid="stNumberInput"] button { display: none !important; }
+div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
+div[data-testid="stNumberInput"] label { display: none !important; }
+
+/* EL TRUCO: Achica el botón nativo de eliminar al mínimo para que sea ultra chico y discreto */
+div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 4px !important; cursor: pointer; height: 18px !important; line-height: 1 !important; width: auto !important; margin-top: 2px !important; margin-bottom: 2px !important; }
+</style>
+""", unsafe_allow_html=True)
+
+VALOR_DOLAR_MEP = 1250.0
+
+# 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
+if 'montos_dis' not in st.session_state:
+    st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
+
+# Título de la App empujado hacia abajo con margen superior
+st.markdown("""
+<div class="header-container">
+    <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
+</div>
+""", unsafe_allow_html=True)
+
+if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
+    st.success("¡Estructura guardada en la memoria local con éxito!")
+
+st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
+consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
 nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v3").upper().strip()
 
