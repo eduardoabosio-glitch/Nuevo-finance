@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava los ítems impecables y achica la X de eliminar al mínimo
+# 2. Estilos CSS Avanzados: Clava la simetría perfecta y oculta botones molestos
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -17,20 +17,21 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 /* Fichas Rectangulares Rígidas */
 .tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; }
 
-/* Renglón del Precio con formato unificado exacto a los ítems */
-.renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
+/* Renglones superiores horizontales balanceados */
+.cabecera-cuaderno { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; width: 100%; }
 
-/* Títulos Subrayados Estéticos */
+/* Títulos Subrayados Estéticos Unificados */
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
+.renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 .explicacion-comillas { font-size: 0.78rem; color: #888; font-style: italic; display: block; margin-top: -2px; margin-bottom: 3px; }
 
-/* Bloqueo absoluto de las botoneras flotantes de más y menos de Streamlit */
+/* Configuración del casillero numérico con símbolo incorporado */
 div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
 
-/* EL TRUCO: Achica el botón nativo de eliminar al mínimo para que sea ultra chico y discreto */
-div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 4px !important; cursor: pointer; height: 18px !important; line-height: 1 !important; width: auto !important; margin-top: 2px !important; margin-bottom: 2px !important; }
+/* Botón de eliminación chico, discreto y al fondo a la derecha */
+div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 4px !important; border-radius: 4px !important; cursor: pointer; height: 26px !important; width: 100% !important; line-height: 1.2 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -40,11 +41,10 @@ VALOR_DOLAR_MEP = 1250.0
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
-# Título de la App empujado hacia abajo con margen superior
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas Estilizadas con Formato Unificado</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -54,7 +54,7 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v3").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v4").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -73,7 +73,7 @@ precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 
-# 4. GENERACIÓN DE LAS FICHAS CON FORMATO COMPACTO EN ESPAÑOL Y MONEDA FORMATEADA
+# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE FLOTANTE EN ESQUINA RIGHT
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     monto_actual = st.session_state.montos_dis[tk]
@@ -88,39 +88,48 @@ for tk in activos_actuales:
     else:
         sem, anual, fund, vered, cl_ver, noticias = "▲ 32%", "▲ 48%", "8/10", "COMPRAR", "#2196f3", "BUENAS"
 
-    # Renglón 1: El nombre a la izquierda y el veredicto en español puro destacado al lado
-    st.markdown(f"""
-    <div class="tarjeta-activo">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-            <span style="font-size:1.3rem; font-weight:bold; color:#2196f3;">{tk} <span style="font-size: 0.88rem; color: {cl_ver}; font-weight: bold;">({vered})</span></span>
-        </div>
-    """, unsafe_allow_html=True)
+    # Inicio de la tarjeta rígida
+    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     
-    # El Botón de eliminar mini se inyecta de forma ultra compacta justo debajo del título
-    if st.button("❌ Eliminar", key=f"borrar_{tk}"):
-        del st.session_state.montos_dis[tk]
-        st.rerun()
+    # RENGLÓN 1: El nombre a la izquierda y el veredicto en español puro destacado BIEN A LA DERECHA EXTREMA
+    st.markdown(f"""
+    <div class="cabecera-cuaderno">
+        <span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span>
+        <span style="font-size: 0.95rem; font-weight: bold; color: {cl_ver};">{vered}</span>
+    </div>
+    """, unsafe_allow_html=True)
             
-    # Renglón 2: Precio de la acción unificado con su título subrayado azul
+    # RENGLÓN 2: Precio de la acción unificado con su título subrayado azul
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
     
-    # Renglón 3: Análisis Fundamental con comillas explicativas abajo
+    # RENGLÓN 3: Análisis Fundamental con comillas explicativas abajo
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b style="color:#ffeb3b;">{fund}</b></div>', unsafe_allow_html=True)
     st.markdown('<span class="explicacion-comillas">"Puntuación 1 al 10"</span>', unsafe_allow_html=True)
     
-    # Renglón 4: Semanal y Anual simétricos organizados en dos columnas
+    # RENGLÓN 4: Semanal y Anual simétricos organizados en dos columnas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
     with col_s2:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
         
-    # Renglón 5: Últimas Noticias del Agente abajo de todo
+    # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Análisis Últ. Noticias (Agente):</span> <b style="color:#00e676;">{noticias}</b></div>', unsafe_allow_html=True)
     
-    # Casillero numérico con el símbolo de dinero inyectado adelante del número verde
-    st.markdown(f'<div style="font-size:0.78rem; color:#888; margin-bottom: 2px;">✍️ Modificar Capital Invertido ({simbolo_moneda.strip()}):</div>', unsafe_allow_html=True)
-    st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
+    # RENGLÓN 6 DE CONTROL COMPUESTO: Dinero a la izquierda y Eliminar chico a la derecha extrema abajo
+    st.markdown(f'<div style="font-size:0.78rem; color:#888; margin-bottom: 2px;">✍️ Modificar Capital Invertido:</div>', unsafe_allow_html=True)
+    
+    # Dividimos la fila inferior de forma asimétrica para que el botón flote al fondo a la derecha sin molestar
+    col_input_izq, col_btn_der = st.columns([2.5, 1.2])
+    
+    with col_input_izq:
+        # El Secreto: El formato format="$%d" le inyecta el símbolo de dinero adentro de la caja del número verde
+        st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, format="$%d", key=f"input_box_{tk}")
+        
+    with col_btn_der:
+        if st.button("❌ Eliminar", key=f"borrar_{tk}"):
+            del st.session_state.montos_dis[tk]
+            st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
 
