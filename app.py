@@ -7,16 +7,18 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Letras más grandes, títulos subrayados y botón superior chico
+# 2. Estilos CSS Avanzados: Clava el título abajo, el botón chico arriba y el precio centrado
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
-h3 { font-size: 1.1rem !important; margin: 0.4rem 0 0.1rem 0; }
-.header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-bottom: 6px; border: 1px solid #232a38; }
+h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 
-/* Molde de la Tarjeta Rectangular de Acero con más espacio y texto grande */
-.tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; }
-.fila-titulo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+/* Margen superior para tirar el título principal de la App más abajo */
+.header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-top: 25px !important; margin-bottom: 6px; border: 1px solid #232a38; }
+
+/* Fichas Rectangulares de Acero Estilizadas */
+.tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; position: relative; }
+.fila-titulo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; padding-right: 45px; }
 .fila-tarjeta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; font-size: 0.88rem; color: #ffffff; line-height: 1.3; }
 
 /* Títulos Subrayados Estéticos */
@@ -28,8 +30,9 @@ div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 30px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
 
-/* Botón de eliminación superior súper chico y compacto */
-div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.68rem !important; padding: 1px 5px !important; border-radius: 3px !important; cursor: pointer; height: 20px !important; line-height: 1 !important; }
+/* Forzar que el botón de eliminar sea súper chico, flote en la esquina derecha de la ficha */
+.posicion-boton-borrar { position: absolute; top: 10px; right: 10px; z-index: 10; }
+div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 3px !important; cursor: pointer; height: 18px !important; line-height: 1 !important; width: auto !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -39,21 +42,22 @@ VALOR_DOLAR_MEP = 1250.0
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
+# Título de la App empujado hacia abajo con margen superior
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas Ampliadas de Análisis Técnico y Fundamental</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas Analíticas Reordenadas en Español</div>
 </div>
 """, unsafe_allow_html=True)
 
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
-    st.success("¡Estructura y montos fijados en la memoria con éxito!")
+    st.success("¡Estructura y montos guardados en la memoria local!")
 
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_v_final").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -68,7 +72,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas Analíticas</h3>", unsafe_allow_html=True)
 
-# 4. RENDERIZADO DE LAS TARJETAS CON BOTÓN CHICO ARRIBA Y TEXTOS AMPLIADOS
+# 4. RENDERIZADO DE LAS TARJETAS REORDENADAS CON CAMBIOS DE TEXTO A ESPAÑOL
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
@@ -78,33 +82,37 @@ for tk in activos_actuales:
     monto_actual = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_actual
     
-    # Datos dinámicos ampliados simulados según el ticker
+    # Datos dinámicos en español puro según el ticker
     if tk == "SPY":
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY", "#00e676", "MUY BUENAS", "#00e676"
+        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 40%", "▲ 60%", "8/10", "COMPRA FUERTE", "#00e676", "MUY BUENAS", "#00e676"
     elif tk == "TSLA":
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 35%", "▲ 55%", "7/10", "HOLD", "#ffeb3b", "BUENAS", "#4caf50"
+        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 35%", "▲ 55%", "7/10", "MANTENER", "#ffeb3b", "BUENAS", "#4caf50"
     elif tk == "AAPL":
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 30%", "▲ 50%", "9/10", "BUY", "#2196f3", "MUY BUENAS", "#00e676"
+        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 30%", "▲ 50%", "9/10", "COMPRAR", "#2196f3", "MUY BUENAS", "#00e676"
     else:
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 32%", "▲ 48%", "8/10", "BUY", "#2196f3", "BUENAS", "#4caf50"
+        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 32%", "▲ 48%", "8/10", "COMPRAR", "#2196f3", "BUENAS", "#4caf50"
 
-    # Apertura de la Ficha con Título y Botón de eliminación en la misma fila superior
+    # Apertura del cuadrado de la ficha con nombre arriba a la izquierda y veredicto
     st.markdown(f"""
     <div class="tarjeta-activo">
         <div class="fila-titulo">
-            <span style="font-size:1.2rem; font-weight:bold; color:#2196f3;">{tk} <span style="font-size:0.85rem; color:{cl_ver}; font-weight:bold; margin-left:6px;">({vered})</span></span>
-            <span style="font-size:0.85rem; color:#aaa;">Precio: <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></span>
+            <span style="font-size:1.25rem; font-weight:bold; color:#2196f3;">{tk} <span style="font-size:0.85rem; color:{cl_ver}; font-weight:bold; margin-left:5px;">({vered})</span></span>
         </div>
+        <div class="posicion-boton-borrar">
     """, unsafe_allow_html=True)
     
-    # El truco: El botón chico de eliminación se dibuja pegado a la derecha arriba
+    # El truco: El botón de borrado ahora flota de forma súper compacta en la esquina derecha alta
     if st.button("❌ Eliminar", key=f"borrar_{tk}"):
         del st.session_state.montos_dis[tk]
         st.rerun()
         
-    # Bloque de datos ampliados con subtítulos subrayados y comillas explicativas
+    # El precio baja al renglón intermedio liberando el hueco vacío
     st.markdown(f"""
-        <div style="margin-top: 6px;">
+        </div>
+        <div style="margin-top: 4px; margin-bottom: 6px; font-size: 0.9rem; color: #ffffff; background-color: #1f2633; padding: 4px; border-radius: 4px; text-align: center; border: 1px solid #232a38;">
+            💰 Precio de la Acción Actual: <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b>
+        </div>
+        <div>
             <span class="titulo-subrayado">Análisis Fundamental:</span> <b style="color:#ffeb3b; font-size:0.92rem;">{fund}</b>
             <span class="explicacion-comillas">"Puntuación del 1 al 10 cruzando balances, deudas y PER"</span>
         </div>
@@ -144,7 +152,7 @@ with col_g1:
     df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=120)
     fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True, key="pie_v20")
+    st.plotly_chart(fig, use_container_width=True, key="pie_v21")
 
 with col_g2:
     st.markdown('''
