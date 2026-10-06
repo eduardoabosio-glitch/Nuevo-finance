@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuracion de pantalla rigida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Diseña las Fichas Rectangulares de Acero sin botoneras de mas/menos
+# 2. Estilos CSS Avanzados: Moldea tus fichas verticales fijas de acero sin botoneras de mas/menos
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -27,14 +27,14 @@ div[data-testid="stNumberInput"] label { display: none !important; }
 
 VALOR_DOLAR_MEP = 1250.0
 
-# 3. BASE DE DATOS INTERNA DE INVERSIONES DINÁMICAS
+# 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas de Inversión Verticales Anti-Desarme</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas Verticales con Intercambiador en Vivo</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -44,11 +44,25 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 
-st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa</h3>", unsafe_allow_html=True)
-nueva_accion = st.text_input("Ticker:", placeholder="Ej: NVDA, MSFT...", key="buscador_tk").upper().strip()
-if nueva_accion and nueva_accion not in st.session_state.montos_dis:
-    st.session_state.montos_dis[nueva_accion] = 5000.0
-    st.success(f"¡{nueva_accion} agregada con éxito!")
+# 4. NUEVO SISTEMA DE INTERCAMBIO INTELIGENTE EN VIVO (Tu idea estrella)
+st.markdown("<h3 style='color:#ffffff;'>🔄 Intercambiar Empresa de mi Cartera</h3>", unsafe_allow_html=True)
+activos_actuales = list(st.session_state.montos_dis.keys())
+
+col_rem, col_new = st.columns(2)
+with col_rem:
+    activo_a_sacar = st.selectbox("Acción a reemplazar:", activos_actuales, label_visibility="collapsed")
+with col_new:
+    nuevo_ticker = st.text_input("Escribí el nuevo ticker (Ej: NVDA):", placeholder="Nuevo ticker...", label_visibility="collapsed").upper().strip()
+
+if nuevo_ticker and nuevo_ticker != activo_a_sacar:
+    # Captura el capital anterior que tenía la ficha vieja
+    monto_anterior = st.session_state.montos_dis[activo_a_sacar]
+    # Borra la ficha vieja de la memoria
+    del st.session_state.montos_dis[activo_a_sacar]
+    # Inyecta la nueva empresa manteniendo tu capital asignado de forma automatizada
+    st.session_state.montos_dis[nuevo_ticker] = monto_anterior
+    st.success(f"¡Reemplazo exitoso! {activo_a_sacar} cambió por {nuevo_ticker}")
+    st.rerun()
 
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
 es_pesos = moneda == "Pesos (ARS)"
@@ -57,12 +71,12 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas Unificadas</h3>", unsafe_allow_html=True)
 
-# 4. GENERACIÓN DE TARJETAS VERTICALES INDEPENDIENTES REUTILIZABLES
+# 5. GENERACIÓN DE TARJETAS VERTICALES INDEPENDIENTES REUTILIZABLES
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0, "NVDA": 130.0, "MSFT": 420.0}
-activos_actuales = list(st.session_state.montos_dis.keys())
+activos_actualizados = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 
-for tk in activos_actuales:
+for tk in activos_actualizados:
     p_base = precios_ref.get(tk, 150.0)
     monto_actual = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_actual
@@ -70,9 +84,9 @@ for tk in activos_actuales:
     if tk == "SPY": sem, anual, fund, vered, cl = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY", "#00e676"
     elif tk == "TSLA": sem, anual, fund, vered, cl = "▲ 35%", "▲ 55%", "7/10", "HOLD", "#ffeb3b"
     elif tk == "AAPL": sem, anual, fund, vered, cl = "▲ 30%", "▲ 50%", "9/10", "BUY", "#2196f3"
+    elif tk == "NVDA": sem, anual, fund, vered, cl = "▲ 45%", "▲ 58%", "8/10", "STRONG BUY", "#00e676"
     else: sem, anual, fund, vered, cl = "▲ 32%", "▲ 48%", "8/10", "BUY", "#2196f3"
 
-    # Estructura limpia en HTML rígido para acomodar los 7 datos ordenados por bloque
     st.markdown(f"""
     <div class="tarjeta-activo">
         <div class="fila-tarjeta"><b style="font-size:1.1rem; color:#2196f3;">{tk}</b> <span style="color:{cl}; font-weight:bold; font-size:0.85rem;">{vered}</span></div>
@@ -82,7 +96,6 @@ for tk in activos_actuales:
     </div>
     """, unsafe_allow_html=True)
     
-    # Caja numérica fina perfectamente camuflada adentro de la base de cada bloque
     st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
 
 # Patrimonio Total Destacado Dinámico abajo de las fichas
@@ -91,9 +104,9 @@ st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; 
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 5. MENÚ DESPLEGABLE DE GRÁFICOS REALES EN VIVO
+# 6. MENÚ DESPLEGABLE DE GRÁFICOS REALES EN VIVO
 st.markdown("<h3 style='color:#ffffff;'>📈 Visualizar Gráficos Avanzados</h3>", unsafe_allow_html=True)
-accion_para_grafico = st.selectbox("Elegí:", activos_actuales, label_visibility="collapsed", key="graf_av")
+accion_para_grafico = st.selectbox("Elegí:", activos_actualizados, label_visibility="collapsed", key="graf_av")
 if accion_para_grafico:
     with st.expander(f"📊 Ver Gráfico para {accion_para_grafico}", expanded=False):
         try:
@@ -108,7 +121,7 @@ with col_g1:
     df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=120)
     fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True, key="pie_v16")
+    st.plotly_chart(fig, use_container_width=True, key="pie_v17")
 
 with col_g2:
     st.markdown('''
