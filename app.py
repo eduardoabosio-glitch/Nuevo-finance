@@ -7,57 +7,60 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava el título abajo, el botón chico arriba y el precio centrado
+# 2. Estilos CSS Avanzados: Calca milimétricamente el diseño de tu cuaderno
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
 h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
+.header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-top: 30px !important; margin-bottom: 8px; border: 1px solid #232a38; }
 
-/* Margen superior para tirar el título principal de la App más abajo */
-.header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-top: 25px !important; margin-bottom: 6px; border: 1px solid #232a38; }
-
-/* Fichas Rectangulares de Acero Estilizadas */
+/* Tarjeta Rectangular Rígida que clava el plano del cuaderno */
 .tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; position: relative; }
-.fila-titulo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; padding-right: 45px; }
-.fila-tarjeta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; font-size: 0.88rem; color: #ffffff; line-height: 1.3; }
 
-/* Títulos Subrayados Estéticos */
+/* Renglones internos alineados de forma limpia */
+.renglon-superior { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.renglon-medio { font-size: 0.9rem; color: #ffffff; background-color: #1f2633; padding: 4px 6px; border-radius: 4px; margin-bottom: 6px; border: 1px solid #232a38; }
+.renglon-datos { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
+.bloque-tecnico { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.88rem; color: #ffffff; }
+
+/* Títulos Subrayados como en el cuaderno */
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; }
-.explicacion-comillas { font-size: 0.78rem; color: #888; font-style: italic; margin-top: -2px; margin-bottom: 4px; display: block; }
+.explicacion-comillas { font-size: 0.78rem; color: #888; font-style: italic; margin-top: -1px; margin-bottom: 5px; display: block; }
 
-/* Bloqueo absoluto de las botoneras flotantes de más y menos de Streamlit */
+/* Camuflaje total del mini-formulario de borrar arriba a la derecha */
+.posicion-boton-borrar { text-align: right; }
+div.stFormSubmitButton > button { background-color: #b71c1c !important; color: white !important; border: 1px solid #d32f2f !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 6px !important; border-radius: 4px !important; cursor: pointer; height: 20px !important; line-height: 1 !important; }
+div.stFormSubmitButton { margin: 0px !important; padding: 0px !important; }
+
+/* Ocultar botones de más y menos en los casilleros de modificación de abajo */
 div[data-testid="stNumberInput"] button { display: none !important; }
-div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 30px !important; }
+div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
-
-/* Forzar que el botón de eliminar sea súper chico, flote en la esquina derecha de la ficha */
-.posicion-boton-borrar { position: absolute; top: 10px; right: 10px; z-index: 10; }
-div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 3px !important; cursor: pointer; height: 18px !important; line-height: 1 !important; width: auto !important; }
 </style>
 """, unsafe_allow_html=True)
 
 VALOR_DOLAR_MEP = 1250.0
 
-# 3. BASE DE DATOS INTERNA CON PERSISTENCIA
+# 3. BASE DE DATOS INTERNA DE MEMORIA
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
-# Título de la App empujado hacia abajo con margen superior
+# Título Principal empujado bien abajo para que Chrome no lo tape
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas Analíticas Reordenadas en Español</div>
+    <div style="font-size:0.7rem; color:#888;">Diseño Rígido Calcado de Cuaderno</div>
 </div>
 """, unsafe_allow_html=True)
 
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
-    st.success("¡Estructura y montos guardados en la memoria local!")
+    st.success("¡Estructura y montos fijados en la memoria local!")
 
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_v_final").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_cuaderno").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -70,9 +73,9 @@ es_pesos = moneda == "Pesos (ARS)"
 simbolo_moneda = "ARS $" if es_pesos else "USD $"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas Analíticas</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 
-# 4. RENDERIZADO DE LAS TARJETAS REORDENADAS CON CAMBIOS DE TEXTO A ESPAÑOL
+# 4. RENDERIZADO DE LAS TARJETAS SIGUIENDO TU PLANO EXACTO DEL DIBUJO
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
@@ -82,48 +85,52 @@ for tk in activos_actuales:
     monto_actual = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_actual
     
-    # Datos dinámicos en español puro según el ticker
-    if tk == "SPY":
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 40%", "▲ 60%", "8/10", "COMPRA FUERTE", "#00e676", "MUY BUENAS", "#00e676"
-    elif tk == "TSLA":
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 35%", "▲ 55%", "7/10", "MANTENER", "#ffeb3b", "BUENAS", "#4caf50"
-    elif tk == "AAPL":
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 30%", "▲ 50%", "9/10", "COMPRAR", "#2196f3", "MUY BUENAS", "#00e676"
-    else:
-        sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 32%", "▲ 48%", "8/10", "COMPRAR", "#2196f3", "BUENAS", "#4caf50"
+    if tk == "SPY": sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 40%", "▲ 60%", "8/10", "COMPRA FUERTE", "#00e676", "MUY BUENAS", "#00e676"
+    elif tk == "TSLA": sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 35%", "▲ 55%", "7/10", "MANTENER", "#ffeb3b", "BUENAS", "#4caf50"
+    elif tk == "AAPL": sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 30%", "▲ 50%", "9/10", "COMPRAR", "#2196f3", "MUY BUENAS", "#00e676"
+    else: sem, anual, fund, vered, cl_ver, noticias, cl_not = "▲ 32%", "▲ 48%", "8/10", "COMPRAR", "#2196f3", "BUENAS", "#4caf50"
 
-    # Apertura del cuadrado de la ficha con nombre arriba a la izquierda y veredicto
+    # RENGLÓN 1 DEL CUADERNO: Nombre, Veredicto y el casillero flotante para el botón Eliminar bien a la derecha
     st.markdown(f"""
     <div class="tarjeta-activo">
-        <div class="fila-titulo">
-            <span style="font-size:1.25rem; font-weight:bold; color:#2196f3;">{tk} <span style="font-size:0.85rem; color:{cl_ver}; font-weight:bold; margin-left:5px;">({vered})</span></span>
-        </div>
-        <div class="posicion-boton-borrar">
+        <div class="renglon-superior">
+            <span style="font-size:1.3rem; font-weight:bold; color:#2196f3;">{tk} <span style="font-size:0.85rem; color:{cl_ver}; font-weight:bold; margin-left:4px;">{vered}</span></span>
+            <div class="posicion-boton-borrar">
     """, unsafe_allow_html=True)
     
-    # El truco: El botón de borrado ahora flota de forma súper compacta en la esquina derecha alta
-    if st.button("❌ Eliminar", key=f"borrar_{tk}"):
-        del st.session_state.montos_dis[tk]
-        st.rerun()
+    # El mini-formulario inyecta el botón Eliminar en esa misma fila superior derecha sin desarmar nada
+    with st.form(key=f"del_form_{tk}"):
+        if st.form_submit_button("❌ Eliminar"):
+            del st.session_state.montos_dis[tk]
+            st.rerun()
         
-    # El precio baja al renglón intermedio liberando el hueco vacío
+    # RENGLONES 2, 3, 4 y 5 DEL CUADERNO: Precio, Fundamental, Semanal/Anual y Noticias
     st.markdown(f"""
         </div>
-        <div style="margin-top: 4px; margin-bottom: 6px; font-size: 0.9rem; color: #ffffff; background-color: #1f2633; padding: 4px; border-radius: 4px; text-align: center; border: 1px solid #232a38;">
-            💰 Precio de la Acción Actual: <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b>
+        
+        <!-- Renglón 2: Precio de la acción -->
+        <div class="renglon-medio">
+            💵 Precio Actual: <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b>
         </div>
-        <div>
-            <span class="titulo-subrayado">Análisis Fundamental:</span> <b style="color:#ffeb3b; font-size:0.92rem;">{fund}</b>
-            <span class="explicacion-comillas">"Puntuación del 1 al 10 cruzando balances, deudas y PER"</span>
+        
+        <!-- Renglón 3: Análisis Fundamental con comillas abajo -->
+        <div class="renglon-datos">
+            <span class="titulo-subrayado">Análisis Fundamental:</span> <b style="color:#ffeb3b; font-size:0.95rem;">{fund}</b>
+            <span class="explicacion-comillas">"Puntuación 1 al 10"</span>
         </div>
-        <div class="fila-tarjeta" style="margin-top:4px;">
-            <div><span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b></div>
-            <div><span class="titulo-subrayado">Análisis Tec. Anual:</span> <b style="color:#00e676;">{anual}</b></div>
+        
+        <!-- Renglón 4: Semanal y Anual juntos en la misma fila horizontal -->
+        <div class="bloque-tecnico">
+            <div><span class="titulo-subrayado">Análisis Tec Semanal:</span> <b style="color:#4caf50;">{sem}</b></div>
+            <div><span class="titulo-subrayado">Análisis Tec Anual:</span> <b style="color:#00e676;">{anual}</b></div>
         </div>
-        <div style="margin-top: 4px; margin-bottom: 5px;">
-            <span class="titulo-subrayado">Análisis Últ. Noticias (Agente):</span> <b style="color:{cl_not}; font-size:0.88rem;">{noticias}</b>
+        
+        <!-- Renglón 5: Últimas Noticias del Agente abajo de todo -->
+        <div class="renglon-datos" style="margin-top: 4px; margin-bottom: 6px;">
+            <span class="titulo-subrayado">Análisis Últ. Noticias (Agente):</span> <b style="color:{cl_not};">{noticias}</b>
         </div>
-        <div style="font-size:0.8rem; color:#888; margin-bottom: 2px;">✍️ Modificar Capital Invertido:</div>
+        
+        <div style="font-size:0.78rem; color:#888; margin-bottom: 2px;">✍️ Modificar Capital Invertido:</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -152,7 +159,7 @@ with col_g1:
     df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=120)
     fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True, key="pie_v21")
+    st.plotly_chart(fig, use_container_width=True, key="pie_v22")
 
 with col_g2:
     st.markdown('''
