@@ -6,7 +6,7 @@ import plotly.express as px
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
 # 2. Estilos CSS Avanzados para tu diseno exacto de foto
-st.markdown('''
+st.markdown("""
 <style>
 .block-container { padding: 0.3rem 0.2rem; }
 h3 { font-size: 1.1rem !important; margin: 0.4rem 0 0.2rem 0; }
@@ -23,15 +23,15 @@ h3 { font-size: 1.1rem !important; margin: 0.4rem 0 0.2rem 0; }
 .veredicto-hold { color: #ffeb3b; font-weight: bold; font-size: 0.72rem; }
 .veredicto-buy { color: #2196f3; font-weight: bold; font-size: 0.72rem; }
 </style>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # 3. Encabezado con titulo y Boton de Guardar superior en verde
-st.markdown('''
+st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.35rem; color:white;">📊 Nuevo Finance Pro</h2>
     <button class="btn-guardar">💾 Guardar Cambios</button>
 </div>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 st.text_input("ChatBot", placeholder="💬 Chat Bot - Preguntá algo sobre finanzas...", label_visibility="collapsed")
 
@@ -63,7 +63,7 @@ datos_foto = [
 ]
 
 # 5. Renderizado de la Cuadricula Fija de 7 Columnas con titulos verticales
-html_tabla = '''
+html_tabla = """
 <table class="styled-table">
     <tr>
         <th style="width: 13%;">Acción</th>
@@ -74,7 +74,7 @@ html_tabla = '''
         <th style="width: 14%;">Análisis<br>Funda-<br>mental</th>
         <th style="width: 14%;">Análisis<br>Final<br>(Agente)</th>
     </tr>
-'''
+"""
 
 patrimonio_total_usd = 0.0
 for fila in datos_foto:
@@ -84,7 +84,7 @@ for fila in datos_foto:
     clase_sem = "prob-media" if fila['raw_sem'] >= 50 else "prob-baja"
     clase_anual = "prob-alta" if fila['raw_anual'] >= 60 else "prob-media"
     
-    html_tabla += f'''
+    html_tabla += f"""
     <tr>
         <td><b>{fila['Accion']}</b></td>
         <td>{simbolo_moneda}{p_final:,.0f}</td>
@@ -94,7 +94,7 @@ for fila in datos_foto:
         <td><span class="badge-nota">{fila['Fundamental']}</span></td>
         <td><span class="{fila['clase_ver']}">{fila['Veredicto']}</span></td>
     </tr>
-    '''
+    """
 html_tabla += "</table>"
 st.markdown(html_tabla, unsafe_allow_html=True)
 
@@ -113,7 +113,7 @@ with col_g1:
     st.plotly_chart(fig, use_container_width=True, key="pie_cartera")
 
 with col_g2:
-    st.markdown('''
+    st.markdown("""
     <div style="background-color:#161a22; padding:6px; border-radius:4px; font-size:0.74rem; border:1px solid #232a38; height:130px;">
         <b style="color:#2196f3;">Resumen de Agente sobre las Noticias</b>
         <ul style="margin: 4px 0; padding-left: 12px; color:#ffffff; line-height:1.2;">
@@ -122,22 +122,22 @@ with col_g2:
             <li>• 🎯 <b>Sugerencia de Acción:</b> Mantener</li>
         </ul>
     </div>
-    ''', unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>📰 Títulos de Noticias sobre mis Acciones</h3>", unsafe_allow_html=True)
-st.markdown('''
+st.markdown("""
 <div style="font-size:0.74rem; line-height:1.4; color:#ffffff;">
     • <b>1. 'SPY' alcanza nuevo máximo histórico</b>... <a href="#" style="color:#2196f3; text-decoration:none;">🔗 Ver</a><br>
     • <b>2. Análisis Técnico: Niveles clave para 'TSLA'</b>... <a href="#" style="color:#2196f3; text-decoration:none;">🔗 Ver</a><br>
     • <b>3. Nuevas regulaciones financieras</b>... <a href="#" style="color:#2196f3; text-decoration:none;">🔗 Ver</a>
 </div>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 # 7. Barra de Navegacion Fija Inferior
-st.markdown('''
+st.markdown("""
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Inicio</div>
     <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
@@ -145,4 +145,4 @@ st.markdown('''
     <div style="color:#888;">💬<br>Chat</div>
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
