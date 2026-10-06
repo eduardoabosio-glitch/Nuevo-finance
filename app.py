@@ -90,9 +90,10 @@ for tk in activos_actuales:
         "Análisis\nFunda-\nmental": fund,
         "Análisis\nFinal\n(Agente)": vered
     })
-
+# Forzar el orden estricto de tu boceto original en la tabla nativa
 columnas_ordenadas = ["Acción", "Precio Actual", "Inversión Asignada", "Análisis\nTec.\nSemanal", "Análisis\nTec.\nAnual", "Análisis\nFunda-\nmental", "Análisis\nFinal\n(Agente)"]
-df_display = pd.DataFrame(datos_tabla)[columnas_ordenadas]
+df_display = pd.DataFrame(datos_tabla).reindex(columns=columnas_ordenadas)
+
 
 # Renderizado oficial nativo aceptado por el sistema sin posibilidad de romperse
 st.dataframe(df_display, use_container_width=True, hide_index=True)
