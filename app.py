@@ -7,73 +7,55 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Congela las tarjetas verticales y diseña los botones táctiles de los nombres
+# 2. Estilos CSS Avanzados: Diseña las tarjetas y el botón rojo de eliminación directa
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
 h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-bottom: 6px; border: 1px solid #232a38; }
 
-/* Molde de la Tarjeta Rectangular de Acero Inmóvil por Empresa */
+/* Tarjeta rectangular de acero inmóvil por empresa */
 .tarjeta-activo { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; }
 .fila-tarjeta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.82rem; color: #ffffff; }
 
-/* Bloqueo absoluto de las botoneras flotantes de mas y menos de Streamlit */
+/* Bloqueo absoluto de las botoneras flotantes de más y menos de Streamlit */
 div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.88rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
 
-/* Diseño del nombre de la accion como un boton táctil clickeable azul premium */
-div.stButton > button[key^="reemplazar_"] { background-color: transparent !important; color: #2196f3 !important; border: none !important; font-weight: bold !important; font-size: 1.1rem !important; padding: 0px !important; margin: 0px !important; text-align: left !important; text-decoration: underline !important; cursor: pointer; }
+/* Estilo Premium para el botón rojo de eliminación directo en la esquina */
+div.stButton > button[key^="borrar_"] { background-color: #f44336 !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.72rem !important; padding: 2px 6px !important; border-radius: 4px !important; cursor: pointer; }
 </style>
 """, unsafe_allow_html=True)
 
 VALOR_DOLAR_MEP = 1250.0
 
-# 3. BASE DE DATOS INTERNA CON PERSISTENCIA DE MEMORIA
+# 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
-if 'ticker_a_reemplazar' not in st.session_state:
-    st.session_state.ticker_a_reemplazar = ""
 
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas Inteligentes con Doble Cerebro Táctil</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas Premium con Eliminación Directa de Activos</div>
 </div>
 """, unsafe_allow_html=True)
 
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
-    st.success("¡Montos y estructura fijados con éxito en la memoria local!")
+    st.success("¡Estructura y montos guardados en la memoria local con éxito!")
 
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 
-# 4. CEREBRO A: UNICO BUSCADOR EXCLUSIVO PARA AGREGAR TICKERS NUEVOS DE CERO
+# 4. ÚNICO BUSCADOR EXCLUSIVO PARA AGREGAR EMPRESAS NUEVAS DE CERO
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo (Ej: NVDA, MSFT):", placeholder="Escribí el ticker y dale a Ir para sumarlo abajo...", key="buscador_puro_agregar").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo (Ej: NVDA, MSFT):", placeholder="Escribí el ticker y dale a enter para sumarlo abajo...", key="buscador_puro_agregar_v2").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
-        st.session_state.montos_dis[nueva_empresa] = 5000.0  # Monto inicial de arranque para la nueva ficha
-        st.success(f"¡{nueva_empresa} agregada con éxito de forma independiente abajo!")
+        st.session_state.montos_dis[nueva_empresa] = 5000.0  # Monto inicial de arranque
+        st.success(f"¡{nueva_empresa} agregada con éxito de forma independiente!")
         st.rerun()
-
-# 5. INTEGRACIÓN DEL FORMULARIO FLOTANTE DE SUSTITUCIÓN POR TOQUE DE NOMBRE
-if st.session_state.ticker_a_reemplazar:
-    st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
-    st.markdown(f"<p style='font-size:0.8rem; color:#2196f3; font-weight:bold; margin:0;'>🔄 Sustituyendo Ticker: {st.session_state.ticker_a_reemplazar}</p>", unsafe_allow_html=True)
-    
-    ticker_sustituto = st.text_input(f"Escribí por cuál querés cambiar a {st.session_state.ticker_a_reemplazar}:", placeholder="Ej: NVDA, MSFT...", key="input_sustituto_directo").upper().strip()
-    
-    if ticker_sustituto:
-        if ticker_sustituto != st.session_state.ticker_a_reemplazar:
-            monto_previo = st.session_state.montos_dis[st.session_state.ticker_a_reemplazar]
-            del st.session_state.montos_dis[st.session_state.ticker_a_reemplazar]
-            st.session_state.montos_dis[ticker_sustituto] = monto_previo
-            st.session_state.ticker_a_reemplazar = ""  # Limpia el gatillo
-            st.success(f"¡Cambio realizado! Reemplazado por {ticker_sustituto}")
-            st.rerun()
 
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
 es_pesos = moneda == "Pesos (ARS)"
@@ -82,7 +64,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas Unificadas</h3>", unsafe_allow_html=True)
 
-# 6. RENDERIZADO DE LAS TARJETAS RÍGIDAS CON GATILLO TÁCTIL EN EL NOMBRE
+# 5. RENDERIZADO DE LAS TARJETAS RÍGIDAS CON BOTÓN ROJO DE ELIMINACIÓN DIRECTA
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0, "NVDA": 130.0, "MSFT": 420.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
@@ -98,18 +80,19 @@ for tk in activos_actuales:
     elif tk == "NVDA": sem, anual, fund, vered, cl = "▲ 45%", "▲ 58%", "8/10", "STRONG BUY", "#00e676"
     else: sem, anual, fund, vered, cl = "▲ 32%", "▲ 48%", "8/10", "BUY", "#2196f3"
 
-    # Encabezado estético rígido con apertura del contenedor de la tarjeta
+    # Ficha rígida HTML estructurada
     st.markdown(f"""
-    <div class="tarjeta-activo">
+    <div class="tarjeta-activo" style="margin-bottom: 2px;">
         <div class="fila-tarjeta">
-            <span>✍️ Tocá el nombre azul para sustituirlo:</span>
+            <b style="font-size:1.15rem; color:#2196f3;">{tk}</b>
             <span style="color:{cl}; font-weight:bold; font-size:0.85rem;">{vered}</span>
         </div>
     """, unsafe_allow_html=True)
     
-    # El truco: Convertimos el nombre de la empresa en un botón táctil invisible que dispara la sustitución abajo de todo
-    if st.button(f"{tk}", key=f"reemplazar_{tk}"):
-        st.session_state.ticker_a_reemplazar = tk
+    # El truco: Inyectamos un botón nativo Streamlit de eliminación directa en cada tarjeta
+    if st.button("❌ Eliminar", key=f"borrar_{tk}"):
+        del st.session_state.montos_dis[tk]
+        st.success(f"¡{tk} eliminada de tu portafolio!")
         st.rerun()
         
     st.markdown(f"""
@@ -119,6 +102,7 @@ for tk in activos_actuales:
     </div>
     """, unsafe_allow_html=True)
     
+    # Caja numérica fina perfectamente camuflada adentro de la base de cada bloque
     st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
 
 # Patrimonio Total Destacado Dinámico abajo de las fichas
@@ -129,7 +113,7 @@ st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_htm
 
 # 7. MENÚ DESPLEGABLE DE GRÁFICOS REALES EN VIVO
 st.markdown("<h3 style='color:#ffffff;'>📈 Visualizar Gráficos Avanzados</h3>", unsafe_allow_html=True)
-accion_para_grafico = st.selectbox("Elegí:", activos_actuales, label_visibility="collapsed", key="graf_av")
+accion_para_grafico = st.selectbox("Elegí:", list(st.session_state.montos_dis.keys()), label_visibility="collapsed", key="graf_av")
 if accion_para_grafico:
     with st.expander(f"📊 Ver Gráfico para {accion_para_grafico}", expanded=False):
         try:
@@ -144,7 +128,7 @@ with col_g1:
     df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=120)
     fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True, key="pie_v18")
+    st.plotly_chart(fig, use_container_width=True, key="pie_v19")
 
 with col_g2:
     st.markdown('''
