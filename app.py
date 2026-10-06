@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava el diseño simétrico de tu cuaderno
+# 2. Estilos CSS Avanzados: Clava el título abajo, el botón chico arriba y unifica fuentes
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -16,21 +16,20 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 /* Margen superior para tirar el título principal de la App más abajo */
 .header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-top: 30px !important; margin-bottom: 8px; border: 1px solid #232a38; }
 
-/* Fichas Estilizadas Compactas */
-.tarjeta-activo { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; }
-.renglon-medio { font-size: 0.88rem; color: #ffffff; background-color: #1f2633; padding: 4px 6px; border-radius: 4px; margin-bottom: 4px; border: 1px solid #232a38; text-align: center; }
+/* Fichas Rectangulares de Acero Estilizadas */
+.tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; }
 
-/* Títulos Subrayados Estéticos */
+/* Títulos Subrayados Estéticos Unificados */
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
-.explicacion-comillas { font-size: 0.78rem; color: #888; font-style: italic; display: block; margin-top: -2px; margin-bottom: 3px; }
+.explicacion-comillas { font-size: 0.78rem; color: #888; font-style: italic; display: block; margin-top: -2px; margin-bottom: 4px; }
 
-/* Bloqueo de las botoneras flotantes de más y menos de Streamlit */
+/* Bloqueo absoluto de las botoneras flotantes de más y menos de Streamlit */
 div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
 
 /* Botón de eliminación superior chico y redondeado */
-div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.68rem !important; padding: 2px 6px !important; border-radius: 4px !important; cursor: pointer; height: 22px !important; width: 100% !important; line-height: 1 !important; }
+div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 6px !important; border-radius: 4px !important; cursor: pointer; height: 20px !important; width: 100% !important; line-height: 1 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -40,11 +39,10 @@ VALOR_DOLAR_MEP = 1250.0
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
-# Título de la App empujado hacia abajo con margen superior
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno Libres de Errores</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -55,7 +53,7 @@ st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_
 consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_v_final").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_unificado").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -70,11 +68,11 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 
-# 4. GENERACIÓN DE LAS FICHA VERTICALES PROCESADAS POR SEPARADO
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 
+# 4. GENERACIÓN DE LAS FICHAS CON ORDEN REASIGNADO
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     monto_actual = st.session_state.montos_dis[tk]
@@ -89,40 +87,40 @@ for tk in activos_actuales:
     else:
         sem, anual, fund, vered, cl_ver, noticias = "▲ 32%", "▲ 48%", "8/10", "COMPRAR", "#2196f3", "BUENAS"
 
-    # Inicio del contenedor rígido de la tarjeta
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     
-    # RENGLÓN 1 DEL CUADERNO: Título a la izquierda y Botón chico a la derecha usando columnas oficiales
-    col_izq, col_der = st.columns([3, 1])
-    with col_izq:
-        st.markdown(f'<span style="font-size:1.25rem; font-weight:bold; color:#2196f3;">{tk} <span style="color:{cl_ver}; font-size:0.85rem;">{vered}</span></span>', unsafe_allow_html=True)
-    with col_der:
+    # Renglón 1: Acción y botón Eliminar a la izquierda. Veredicto (Compra fuerte) a la derecha extrema.
+    col_izq_nom, col_centro_btn, col_der_ver = st.columns([1.5, 2, 2.5])
+    with col_izq_nom:
+        st.markdown(f'<span style="font-size:1.3rem; font-weight:bold; color:#2196f3; line-height:1;">{tk}</span>', unsafe_allow_html=True)
+    with col_centro_btn:
         if st.button("❌ Eliminar", key=f"borrar_{tk}"):
             del st.session_state.montos_dis[tk]
             st.rerun()
+    with col_der_ver:
+        st.markdown(f'<div style="text-align:right; font-size:0.88rem; color:{cl_ver}; font-weight:bold; padding-top:4px;">{vered}</div>', unsafe_allow_html=True)
             
-    # RENGLÓN 2 DEL CUADERNO: Precio centrado prolijo
-    st.markdown(f'<div class="renglon-medio">💵 Precio Actual: <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
+    # Renglón 2: Precio de la acción unificado (Mismo color, tamaño y subrayado que los otros ítems)
+    st.markdown(f'<div style="margin-top:6px; margin-bottom:5px;"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b style="font-size:0.92rem; color:#ffffff;">{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 3 DEL CUADERNO: Análisis Fundamental con comillas abajo
+    # Renglón 3: Análisis Fundamental con comillas abajo
     st.markdown(f'<span class="titulo-subrayado">Análisis Fundamental:</span> <b style="color:#ffeb3b; font-size:0.92rem;">{fund}</b>', unsafe_allow_html=True)
     st.markdown('<span class="explicacion-comillas">"Puntuación 1 al 10"</span>', unsafe_allow_html=True)
     
-    # RENGLÓN 4 DEL CUADERNO: Semanal y Anual simétricos organizados en dos columnas
+    # Renglón 4: Semanal y Anual simétricos organizados en dos columnas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
     with col_s2:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
         
-    # RENGLÓN 5 DEL CUADERNO: Últimas Noticias del Agente abajo de todo
+    # Renglón 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px;"><span class="titulo-subrayado">Análisis Últ. Noticias (Agente):</span> <b style="color:#00e676;">{noticias}</b></div>', unsafe_allow_html=True)
     
-    # Casillero numérico fino de entrada de capital asignado
+    # Entrada de capital
     st.markdown('<div style="font-size:0.78rem; color:#888; margin-bottom: 2px;">✍️ Modificar Capital Invertido:</div>', unsafe_allow_html=True)
     st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
     
-    # Cierre del contenedor rígido de la tarjeta
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Patrimonio Total Destacado Dinámico
@@ -148,7 +146,7 @@ with col_g1:
     df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=120)
     fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True, key="pie_v23")
+    st.plotly_chart(fig, use_container_width=True, key="pie_v24")
 
 with col_g2:
     st.markdown('''
