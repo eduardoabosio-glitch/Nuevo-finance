@@ -7,20 +7,23 @@ import yfinance as yf
 # 1. Configuracion de pantalla rigida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
+# 2. Estilos CSS Avanzados: Congela la tabla oficial (SIN DESPLAZAMIENTOS MAÑOSOS DE GUÍAS)
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
 h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-bottom: 6px; border: 1px solid #232a38; }
-.rigid-table-container { width: 100%; overflow-x: auto !important; margin: 4px 0; border: 1px solid #232a38; border-radius: 4px; }
-.rigid-table { width: 520px !important; border-collapse: collapse; font-size: 0.74rem !important; background-color: #161a22; table-layout: fixed; }
-.rigid-table th { background-color: #1f2633; color: #2196f3; text-align: center; padding: 6px 2px; font-weight: bold; line-height: 1.1; font-size: 0.72rem !important; border: 1px solid #232a38; }
-.rigid-table td { padding: 6px 2px; border: 1px solid #232a38; color: #ffffff; text-align: center; vertical-align: middle; font-size: 0.74rem !important; height: 28px !important; }
+
+/* Fuerza a la tabla oficial a quedarse fija en el molde del celular */
+div[data-testid="stDataFrame"] { width: 100% !important; }
+div[data-testid="stDataFrame"] th { white-space: normal !important; word-wrap: break-word !important; line-height: 1.1 !important; font-size: 0.72rem !important; text-align: center !important; }
+div[data-testid="stDataFrame"] td { font-size: 0.75rem !important; text-align: center !important; }
 </style>
 """, unsafe_allow_html=True)
 
 VALOR_DOLAR_MEP = 1250.0
 
+# 3. BASE DE DATOS INTERNA DE INVERSIONES
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 if 'activo_sel' not in st.session_state:
@@ -29,14 +32,15 @@ if 'activo_sel' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
+    <div style="font-size:0.7rem; color:#888;">Estructura Oficial Blindada Anti-Errores</div>
 </div>
 """, unsafe_allow_html=True)
 
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
-    st.success("¡Montos fijados con éxito!")
+    st.success("¡Montos fijados con éxito en la memoria!")
 
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo...", label_visibility="collapsed")
+consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa</h3>", unsafe_allow_html=True)
 nueva_accion = st.text_input("Ticker:", placeholder="Ej: NVDA, MSFT...", key="buscador_tk").upper().strip()
@@ -49,7 +53,7 @@ es_pesos = moneda == "Pesos (ARS)"
 simbolo_moneda = "ARS $" if es_pesos else "USD $"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-# 4. CASILLERO COMPACTO DE MODIFICACIÓN DE CAPITALES (Fijo arriba para alimentar la tabla entera)
+# 4. CASILLERO COMPACTO DE MODIFICACIÓN DE CAPITALES (Fijo arriba para alimentar la tabla)
 st.markdown("<h3 style='color:#ffffff; margin-top:2px;'>✍️ Cambiar Monto de Inversión</h3>", unsafe_allow_html=True)
 activos_actuales = list(st.session_state.montos_dis.keys())
 col_sel, col_num = st.columns(2)
@@ -65,45 +69,33 @@ with col_num:
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Integración Rígida</h3>", unsafe_allow_html=True)
 
-# 5. DIBUJO DE LA TABLA ENTERA EN UN SOLO BLOQUE LIMPIO (Sin sumas intermedias)
+# 5. CONSTRUCCIÓN DE FILAS DINÁMICAS EN LA PLANILLA OFICIAL (Cero códigos HTML rotos)
+datos_tabla = []
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 patrimonio_total_usd = sum(st.session_state.montos_dis.values())
-
-tabla_completa_html = f"""
-<div class="rigid-table-container">
-<table class="rigid-table">
-    <tr>
-        <th style="width: 12%;">Acción</th>
-        <th style="width: 15%;">Precio<br>Actual</th>
-        <th style="width: 22%;">Inversión<br>Asignada</th>
-        <th style="width: 13%;">Análisis<br>Tec.<br>Semanal</th>
-        <th style="width: 13%;">Análisis<br>Tec.<br>Anual</th>
-        <th style="width: 12%;">Análisis<br>Funda-<br>mental</th>
-        <th style="width: 13%;">Análisis<br>Final<br>(Agente)</th>
-    </tr>
-"""
 
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     monto_actual_tk = st.session_state.montos_dis[tk]
-    if tk == "SPY": sem, anual, fund, vered, cl = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY", "#00e676"
-    elif tk == "TSLA": sem, anual, fund, vered, cl = "▲ 35%", "▲ 55%", "7/10", "HOLD", "#ffeb3b"
-    else: sem, anual, fund, vered, cl = "▲ 30%", "▲ 50%", "9/10", "BUY", "#2196f3"
+    if tk == "SPY": sem, anual, fund, vered = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY"
+    elif tk == "TSLA": sem, anual, fund, vered = "▲ 35%", "▲ 55%", "7/10", "HOLD"
+    else: sem, anual, fund, vered = "▲ 30%", "▲ 50%", "9/10", "BUY"
         
-    tabla_completa_html += f"""
-    <tr>
-        <td><b>{tk}</b></td>
-        <td>{simbolo_moneda}{p_base*factor_cambio:,.0f}</td>
-        <td style="font-weight:bold; color:#00e676;">{simbolo_moneda}{monto_actual_tk*factor_cambio:,.0f}</td>
-        <td style="color:#4caf50;"><b>{sem}</b></td>
-        <td style="color:#00e676;"><b>{anual}</b></td>
-        <td style="color:#ffeb3b;"><b>{fund}</b></td>
-        <td style="color:{cl}; font-weight:bold;">{vered}</td>
-    </tr>
-    """
+    datos_tabla.append({
+        "Acción": tk,
+        "Precio Actual": f"{simbolo_moneda}{p_base*factor_cambio:,.0f}",
+        "Inversión Asignada": f"{simbolo_moneda}{monto_actual_tk*factor_cambio:,.0f}",
+        "Análisis\nTec.\nSemanal": sem,
+        "Análisis\nTec.\nAnual": anual,
+        "Análisis\nFunda-\nmental": fund,
+        "Análisis\nFinal\n(Agente)": vered
+    })
 
-tabla_completa_html += "</table></div>"
-st.markdown(tabla_completa_html, unsafe_allow_html=True)
+columnas_ordenadas = ["Acción", "Precio Actual", "Inversión Asignada", "Análisis\nTec.\nSemanal", "Análisis\nTec.\nAnual", "Análisis\nFunda-\nmental", "Análisis\nFinal\n(Agente)"]
+df_display = pd.DataFrame(datos_tabla)[columnas_ordenadas]
+
+# Renderizado oficial nativo aceptado por el sistema sin posibilidad de romperse
+st.dataframe(df_display, use_container_width=True, hide_index=True)
 
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -125,7 +117,7 @@ with col_g1:
     df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=120)
     fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True, key="pie_v11")
+    st.plotly_chart(fig, use_container_width=True, key="pie_v12")
 
 with col_g2:
     st.markdown('''
