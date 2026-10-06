@@ -91,47 +91,49 @@ precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 
+# 5. RENDERIZADO DE ENCABEZADO DE CUADRÍCULA RÍGIDA
+st.markdown("""
+<table class="rigid-table">
+    <tr>
+        <th style="width: 12%;">Acción</th>
+        <th style="width: 15%;">Precio<br>Actual</th>
+        <th style="width: 18%;">Inversión<br>Asignada</th>
+        <th style="width: 14%;">Análisis<br>Tec.<br>Semanal</th>
+        <th style="width: 14%;">Análisis<br>Tec.<br>Anual</th>
+        <th style="width: 13%;">Análisis<br>Funda-<br>mental</th>
+        <th style="width: 14%;">Análisis<br>Final<br>(Agente)</th>
+    </tr>
+</table>
+""", unsafe_allow_html=True)
+
+precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0}
+activos_actuales = list(st.session_state.montos_dis.keys())
+patrimonio_total_usd = 0.0
+
+# Iteración limpia fuera de las comillas para procesar los datos matemáticos reales
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     monto_usd = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_usd
     
-    if tk == "SPY": sem, anual, fund, vered, cl_ver = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY", "veredicto-strong"
-    elif tk == "TSLA": sem, anual, fund, vered, cl_ver = "▲ 35%", "▲ 55%", "7/10", "HOLD", "veredicto-hold"
-    else: sem, anual, fund, vered, cl_ver = "▲ 30%", "▲ 50%", "9/10", "BUY", "veredicto-buy"
-        
-    html_tabla += f"""
+    if tk == "SPY": sem, anual, fund, vered, cl = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY", "#00e676"
+    elif tk == "TSLA": sem, anual, fund, vered, cl = "▲ 35%", "▲ 55%", "7/10", "HOLD", "#ffeb3b"
+    else: sem, anual, fund, vered, cl = "▲ 30%", "▲ 50%", "9/10", "BUY", "#2196f3"
+
+    st.markdown(f"""
+    <table class="rigid-table" style="margin-top:-2px;">
     <tr>
-        <td><b>{tk}</b></td>
-        <td>{simbolo_moneda}{p_base*factor_cambio:,.0f}</td>
-        <td><b>{simbolo_moneda}{monto_usd*factor_cambio:,.0f}</b></td>
-        <td><span class="prob-media">{sem}</span></td>
-        <td><span class="prob-alta">{anual}</span></td>
-        <td><span class="badge-nota">{fund}</span></td>
-        <td><span class="{cl_ver}">{vered}</span></td>
+        <td style="width: 12%;"><b>{tk}</b></td>
+        <td style="width: 15%;">{simbolo_moneda}{p_base*factor_cambio:,.0f}</td>
+        <td style="width: 18%;"><b>{simbolo_moneda}{monto_usd*factor_cambio:,.0f}</b></td>
+        <td style="width: 14%; color:#4caf50;"><b>{sem}</b></td>
+        <td style="width: 14%; color:#00e676;"><b>{anual}</b></td>
+        <td style="width: 13%; color:#ffeb3b;"><b>{fund}</b></td>
+        <td style="width: 14%; color:{cl}; font-weight:bold;">{vered}</td>
     </tr>
-    """
+    </table>
+    """, unsafe_allow_html=True)
 
-html_tabla += "</table>"
-st.markdown(html_tabla, unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Patrimonio Total Destacado Dinámico abajo de la tabla
-patrimonio_mostrar = patrimonio_total_usd * factor_cambio
-st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
-
-# 5. CASILLERO COMPACTO DE MODIFICACIÓN DE CAPITALES (Fijo abajo para no romper las celdas)
-st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
-st.markdown("<h3 style='color:#ffffff; margin-top:2px;'>✍️ Cambiar Monto de Inversión</h3>", unsafe_allow_html=True)
-col_sel, col_num = st.columns(2)
-with col_sel:
-    activo_a_cambiar = st.selectbox("Acción:", activos_actuales, label_visibility="collapsed")
-with col_num:
-    monto_actual_fijado = st.session_state.montos_dis[activo_a_cambiar]
-    nuevo_monto_fijado = st.number_input("Monto (USD):", min_value=0.0, value=float(monto_actual_fijado), step=500.0, label_visibility="collapsed")
-    st.session_state.montos_dis[activo_a_cambiar] = nuevo_monto_fijado
-
-st.markdown("<hr style='margin:6px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
 # 6. MENÚ DESPLEGABLE DE GRÁFICOS REALES EN VIVO
 st.markdown("<h3 style='color:#ffffff;'>📈 Visualizar Gráficos de Análisis Avanzado</h3>", unsafe_allow_html=True)
