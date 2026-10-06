@@ -25,10 +25,14 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 .explicacion-comillas { font-size: 0.78rem; color: #888; font-style: italic; display: block; margin-top: -2px; margin-bottom: 3px; }
 
-/* Configuración del casillero numérico con símbolo incorporado */
+/* Configuración del casillero numérico limpio sin bordes molestos */
 div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
+
+/* Renglón inferior que unifica el dinero a la izquierda y el botón eliminar chico a la derecha */
+.fila-inferior-control { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 4px; }
+.grupo-dinero-input { display: flex; align-items: center; gap: 4px; width: 65%; }
 
 /* Botón de eliminación chico, discreto y al fondo a la derecha */
 div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 4px !important; border-radius: 4px !important; cursor: pointer; height: 26px !important; width: 100% !important; line-height: 1.2 !important; }
@@ -54,7 +58,7 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v4").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v5").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -119,12 +123,14 @@ for tk in activos_actuales:
     # RENGLÓN 6 DE CONTROL COMPUESTO: Dinero a la izquierda y Eliminar chico a la derecha extrema abajo
     st.markdown(f'<div style="font-size:0.78rem; color:#888; margin-bottom: 2px;">✍️ Modificar Capital Invertido:</div>', unsafe_allow_html=True)
     
-    # Dividimos la fila inferior de forma asimétrica para que el botón flote al fondo a la derecha sin molestar
+    # Usamos las columnas nativas de Streamlit para separar de forma rígida la entrada del botón
     col_input_izq, col_btn_der = st.columns([2.5, 1.2])
     
     with col_input_izq:
-        # El Secreto: El formato format="$%d" le inyecta el símbolo de dinero adentro de la caja del número verde
-        st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, format="$%d", key=f"input_box_{tk}")
+        # Inyectamos el símbolo del tipo de moneda en texto verde justo al lado del cuadro numérico para que no de error
+        st.markdown(f'<div class="grupo-dinero-input"><span style="color:#00e676; font-weight:bold; font-size:0.95rem;">{simbolo_moneda.strip()}</span>', unsafe_allow_html=True)
+        st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
+        st.markdown('</div>', unsafe_allow_html=True)
         
     with col_btn_der:
         if st.button("❌ Eliminar", key=f"borrar_{tk}"):
