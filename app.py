@@ -71,7 +71,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.markdown("<h3 style='color:#ffffff;'>📁 Mi Portafolio - Integración Rígida</h3>", unsafe_allow_html=True)
 
-# 4. RENDERIZADO DE CUADRÍCULA CON EDICIÓN INTERNA DIRECTA
+# 4. RENDERIZADO DE ENCABEZADO DE CUADRÍCULA
 st.markdown("""
 <table class="rigid-table">
     <tr>
@@ -83,6 +83,7 @@ st.markdown("""
         <th style="width: 12%;">Análisis<br>Funda-<br>mental</th>
         <th style="width: 14%;">Análisis<br>Final<br>(Agente)</th>
     </tr>
+</table>
 """, unsafe_allow_html=True)
 
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0}
@@ -93,11 +94,11 @@ patrimonio_total_usd = 0.0
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     
-    if tk == "SPY": sem, anual, fund, vered, cl_ver, r_sem, r_anual = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY", "veredicto-strong", 40, 60
-    elif tk == "TSLA": sem, anual, fund, vered, cl_ver, r_sem, r_anual = "▲ 35%", "▲ 55%", "7/10", "HOLD", "veredicto-hold", 35, 55
-    else: sem, anual, fund, vered, cl_ver, r_sem, r_anual = "▲ 30%", "▲ 50%", "9/10", "BUY", "veredicto-buy", 30, 50
+    if tk == "SPY": sem, anual, fund, vered, cl_ver = "▲ 40%", "▲ 60%", "8/10", "STRONG BUY", "veredicto-strong"
+    elif tk == "TSLA": sem, anual, fund, vered, cl_ver = "▲ 35%", "▲ 55%", "7/10", "HOLD", "veredicto-hold"
+    else: sem, anual, fund, vered, cl_ver = "▲ 30%", "▲ 50%", "9/10", "BUY", "veredicto-buy"
 
-    # Dibujo de columnas de texto fijas
+    # Apertura de la fila HTML estructurada
     st.markdown(f"""
     <table class="rigid-table" style="margin-top:-2px;">
     <tr>
@@ -106,10 +107,11 @@ for tk in activos_actuales:
         <td style="width: 22%; padding: 2px;">
     """, unsafe_allow_html=True)
     
-    # El truco: Metemos el casillero numérico compacto dentro de la misma celda de Inversión
+    # Cuadro numérico compacto inyectado en el centro
     st.session_state.montos_dis[tk] = st.number_input(f"edit_{tk}", min_value=0.0, value=float(st.session_state.montos_dis[tk]), step=500.0, key=f"input_{tk}")
     patrimonio_total_usd += st.session_state.montos_dis[tk]
     
+    # Cierre de la fila HTML estructurada con comillas triples corregidas
     st.markdown(f"""
         </td>
         <td style="width: 12%;"><span class="prob-media">{sem}</span></td>
@@ -127,7 +129,7 @@ st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; 
 st.markdown("<hr style='margin:6px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
 # 5. MENÚ DESPLEGABLE DE GRÁFICOS REALES EN VIVO
-st.markdown("<h3 style='color:#ffffff;'>📈 Visualizar Gráficos de Análisis Avanzado</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ffffff;'>📈 Visualizar Gráficos de Análisis Advanced</h3>", unsafe_allow_html=True)
 accion_para_grafico = st.selectbox("Elegí acción:", activos_actuales, label_visibility="collapsed")
 
 if accion_para_grafico:
@@ -152,7 +154,7 @@ with col_g1:
     st.plotly_chart(fig, use_container_width=True, key="pie_cartera_v5")
 
 with col_g2:
-    st.markdown('''
+    st.markdown("""
     <div style="background-color:#161a22; padding:6px; border-radius:4px; font-size:0.74rem; border:1px solid #232a38; height:130px;">
         <b style="color:#2196f3;">Resumen de Agente sobre las Noticias</b>
         <ul style="margin: 4px 0; padding-left: 12px; color:#ffffff; line-height:1.2;">
@@ -161,7 +163,7 @@ with col_g2:
             <li>• 🎯 <b>Sugerencia:</b> Mantener Capitales</li>
         </ul>
     </div>
-    ''', unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>📰 Títulos de Noticias en Vivo</h3>", unsafe_allow_html=True)
@@ -175,8 +177,12 @@ st.markdown(noticias_html, unsafe_allow_html=True)
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 # 7. Barra de Navegación Fija Inferior
-st.markdown('''
+st.markdown("""
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Inicio</div>
     <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
     <div style="color:#888;">📊<br>Análisis</div>
+    <div style="color:#888;">💬<br>Chat</div>
+    <div style="color:#888;">👤<br>Perfil</div>
+</div>
+""", unsafe_allow_html=True)
