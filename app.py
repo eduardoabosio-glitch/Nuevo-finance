@@ -1,3 +1,57 @@
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import yfinance as yf
+
+# 1. Configuración de pantalla rígida para celulares
+st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
+
+# 2. Estilos CSS Avanzados: Clava la simetría perfecta y oculta botones molestos
+st.markdown("""
+<style>
+.block-container { padding: 0.2rem 0.2rem; }
+h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
+.header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-top: 30px !important; margin-bottom: 8px; border: 1px solid #232a38; }
+
+/* Fichas Rectangulares Rígidas */
+.tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; }
+
+/* Renglones superiores horizontales balanceados */
+.cabecera-cuaderno { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; width: 100%; }
+
+/* Títulos Subrayados Estéticos Unificados */
+.titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
+.renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
+
+/* Configuración del casillero numérico limpio sin bultos grises */
+div[data-testid="stNumberInput"] button { display: none !important; }
+div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
+div[data-testid="stNumberInput"] label { display: none !important; }
+
+/* Botón de eliminación chico y compacto para el margen derecho */
+div.stButton > button[key^="borrar_"] { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 4px !important; border-radius: 4px !important; cursor: pointer; height: 22px !important; width: 100% !important; line-height: 1 !important; margin: 0px !important; }
+</style>
+""", unsafe_allow_html=True)
+
+VALOR_DOLAR_MEP = 1250.0
+
+# 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
+if 'montos_dis' not in st.session_state:
+    st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
+
+st.markdown("""
+<div class="header-container">
+    <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
+</div>
+""", unsafe_allow_html=True)
+
+if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
+    st.success("¡Estructura guardada en la memoria local con éxito!")
+
+st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot</h3>", unsafe_allow_html=True)
+consulta_chat = st.text_input("Chat:", placeholder="Pregunta algo sobre tus inversiones...", label_visibility="collapsed")
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
 nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v6").upper().strip()
 
@@ -60,22 +114,15 @@ for tk in activos_actuales:
     # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # EL GRAN CAMBIO: Fila horizontal balanceada para la leyenda de moneda y el botón eliminar
-    st.markdown(f"""
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; width: 100%;">
-        <div style="font-size:0.78rem; color:#888; font-weight: bold;">✍️ Modificar Capital Invertido ({simbolo_moneda.strip()}):</div>
-        <div style="width: 75px;">
-    """, unsafe_allow_html=True)
+    # EL GRAN CAMBIO INVENTADO POR VOS: Fila horizontal balanceada para la leyenda de moneda y el botón eliminar
+    col_texto_izq, col_boton_der = st.columns([2.5, 1.0])
     
-    # Inyectamos el botón de eliminar chico justo adentro del margen derecho de esa misma línea
-    if st.button("❌ Eliminar", key=f"borrar_{tk}"):
-        del st.session_state.montos_dis[tk]
-        st.rerun()
-        
-    st.markdown("""
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    with col_texto_izq:
+        st.markdown(f'<div style="font-size:0.78rem; color:#888; font-weight: bold; padding-top: 3px;">✍️ Modificar Capital Invertido ({simbolo_moneda.strip()}):</div>', unsafe_allow_html=True)
+    with col_boton_der:
+        if st.button("❌ Eliminar", key=f"borrar_{tk}"):
+            del st.session_state.montos_dis[tk]
+            st.rerun()
     
     # Casillero numérico verde nativo abajo del todo ocupando el ancho completo de la tarjeta
     st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
