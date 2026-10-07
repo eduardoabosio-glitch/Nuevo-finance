@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava los márgenes, el botón abajo y unifica la delgadez
+# 2. Estilos CSS Avanzados: Clava los márgenes, el botón abajo y libera el toque sobre el número verde
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -28,7 +28,7 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 /* TRUCO MAESTRO REPARADO: Pointer-events:none hace que el signo "$" sea invisible al tacto y libere el teclado */
 div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] { position: relative !important; }
-div[data-testid="stNumberInput"]::before { content: "$" !important; position: absolute !important; left: 12px !important; top: 5px !important; color: #00e676 !important; font-weight: bold !important; font-size: 0.95rem !important; z-index: 10 !important; pointer-events: none !important; }
+div[data-testid="stNumberInput"]::before { content: "$" !important; position: absolute !absolute; left: 12px !important; top: 5px !important; color: #00e676 !important; font-weight: bold !important; font-size: 0.95rem !important; z-index: 10 !important; pointer-events: none !important; }
 
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: left !important; padding-left: 26px !important; font-size: 0.92rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
@@ -65,31 +65,28 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
+# EL GRAN REORDENAMIENTO: El selector y el robot del MEP viajan arriba de las fichas
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
 es_pesos = moneda == "Pesos (ARS)"
 simbolo_moneda = "ARS $" if es_pesos else "USD $"
 
-# CEREBRO EN VIVO: Rastreador en tiempo real del Dólar MEP oficial de mercado
-@st.cache_data(ttl=3600)  # Guarda el valor por 1 hora para que tu App vuele de rápido
+@st.cache_data(ttl=3600)
 def obtener_dolar_mep_real():
     try:
-        # Consulta las pizarras financieras de yfinance para el MEP implícito
         ticker_mep = yf.Ticker("ARS=X")
         historial_mep = ticker_mep.history(period="1d")
         if not historial_mep.empty:
             valor_mep = float(historial_mep["Close"].iloc[-1])
-            # Resguardo técnico: si el par inverso devuelve el valor bajo, lo acomodamos
             if valor_mep < 100:
                 return 1260.0
             return valor_mep
     except:
         pass
-    return 1260.0  # Valor de respaldo seguro si internet se corta un segundo
+    return 1260.0
 
 VALOR_DOLAR_MEP = obtener_dolar_mep_real()
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-# Cartel informativo premium que te avisa a cuánto cotiza el MEP real hoy
 if es_pesos:
     st.caption(f"⚡ Cotización Dólar MEP en tiempo real: **$ {VALOR_DOLAR_MEP:,.2f}**")
 
@@ -99,7 +96,7 @@ precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 
-# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO Y VARIABLES DINÁMICAS
+# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO Y VARIABLES DINÁMICAS ACTUALIZADAS
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     monto_actual = st.session_state.montos_dis[tk]
@@ -114,10 +111,8 @@ for tk in activos_actuales:
     else:
         sem, anual, fund, vered, cl_ver, noticias = "▲ 32%", "▲ 48%", "Nota 8/10 'Estabilidad de ingresos y dividendos estables'", "COMPRAR", "#2196f3", "Demanda global en mercados emergentes se mantiene firme"
 
-    # Inicio de la tarjeta rígida
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     
-    # RENGLÓN 1: El nombre a la izquierda y el veredicto en español destacado BIEN A LA DERECHA EXTREMA
     st.markdown(f"""
     <div class="cabecera-cuaderno">
         <span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span>
@@ -125,24 +120,18 @@ for tk in activos_actuales:
     </div>
     """, unsafe_allow_html=True)
             
-    # RENGLÓN 2: Precio de la acción DINÁMICO (Multiplica por el MEP real en vivo al cambiar de moneda)
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
-    
-    # RENGLÓN 3: Análisis Fundamental con título abreviado y prolijo
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 4: Títulos técnicos abreviados organizados en dos columnas simétricas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
     with col_s2:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
         
-    # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 6 DE CONTROL HORIZONTAL BALANCEADO: Muestra el capital convertido en vivo arriba de la caja verde
-    # El secreto técnico: "monto_actual * factor_cambio" calcula el dinero individual en Pesos o Dólares de forma dinámica
+    # EL SECRETO REPARADO: Al estar factor_cambio ya definido arriba, esta línea se entera del cambio al instante
     st.markdown(f"""
     <div class="renglon-control-inferior">
         <div style="font-size:0.84rem; color:#00e676; font-weight: bold; text-decoration: underline;">✍ Capital Asignado: {simbolo_moneda}{monto_actual*factor_cambio:,.2f}</div>
@@ -152,25 +141,21 @@ for tk in activos_actuales:
     </div>
     """, unsafe_allow_html=True)
     
-    # Lógica inteligente para capturar el click del enlace HTML de borrado
     parametros_url = st.query_params
     if "eliminar" in parametros_url and parametros_url["eliminar"] == tk:
         del st.session_state.montos_dis[tk]
         st.query_params.clear()
         st.rerun()
     
-    # Casillero numérico verde nativo abajo del todo (Muestra el valor puro para poder editar de corrido)
     st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
     
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Patrimonio Total Destacado DINÁMICO (Recalcula el total de la cartera al valor MEP del día)
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 5. MENÚ DESPLEGABLE DE GRÁFICOS REALES EN VIVO
 st.markdown("<h3 style='color:#ffffff;'>📈 Visualizar Gráficos Avanzados</h3>", unsafe_allow_html=True)
 accion_para_grafico = st.selectbox("Elegí:", list(st.session_state.montos_dis.keys()), label_visibility="collapsed", key="graf_av")
 if accion_para_grafico:
