@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava la simetría exacta y camufla el botón de eliminar abajo a la derecha
+# 2. Estilos CSS Avanzados: Clava los márgenes e inyecta el símbolo de dinero adentro del casillero
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -25,13 +25,16 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 
-/* Configuración del casillero numérico limpio sin bultos grises */
+/* TRUCO MAESTRO: Forzar un símbolo "$" estático adentro del fondo del casillero de entrada numérico */
 div[data-testid="stNumberInput"] button { display: none !important; }
-div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.9rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
+div[data-testid="stNumberInput"] { position: relative !important; }
+div[data-testid="stNumberInput"]::before { content: "$" !important; position: absolute !important; left: 12px !important; top: 5px !important; color: #00e676 !important; font-weight: bold !important; font-size: 0.95rem !important; z-index: 10 !important; }
+
+div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: left !important; padding-left: 26px !important; font-size: 0.92rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
 
-/* Forzar que el mini botón de eliminar HTML puro sea súper chico, angosto y rojo premium */
-.btn-eliminar-mini { background-color: #b71c1c !important; color: white !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 5px !important; border-radius: 4px !important; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
+/* Botón de eliminación chico, discreto y al fondo a la derecha */
+.btn-eliminar-mini { background-color: #b71c1c; color: white !important; border: none; font-weight: bold; font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -73,7 +76,7 @@ precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 
-# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO
+# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO Y TÍTULOS CORREGIDOS
 for tk in activos_actuales:
     p_base = precios_ref.get(tk, 150.0)
     monto_actual = st.session_state.montos_dis[tk]
@@ -102,24 +105,23 @@ for tk in activos_actuales:
     # RENGLÓN 2: Precio de la acción unificado con su título subrayado azul
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 3: Análisis Fundamental Extenso
-    st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
+    # RENGLÓN 3: Análisis Fundamental con título abreviado y prolijo
+    st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 4: Semanal y Anual simétricos organizados en dos columnas
+    # RENGLÓN 4: Títulos técnicos abreviados organizados en dos columnas simétricas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
-        st.markdown(f'<span class="titulo-subrayado">Técnico Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
+        st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
     with col_s2:
-        st.markdown(f'<span class="titulo-subrayado">Análisis Tec Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
+        st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
         
     # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 6 CORREGIDO: Leyenda de dinero fija a la izquierda y el botón eliminar empaquetado en HTML a la derecha
-    # Al inyectar el botón como un enlace con la clase CSS .btn-eliminar-mini, el sistema lo clava en la misma línea
+    # RENGLÓN 6 DE CONTROL HORIZONTAL: Leyenda de dinero fija a la izquierda y botón eliminar al otro margen derecho
     st.markdown(f"""
     <div class="renglon-control-inferior">
-        <div style="font-size:0.82rem; color:#888; font-weight: bold;">✍️ Modificar Capital Invertido ({simbolo_moneda.strip()}):</div>
+        <div style="font-size:0.82rem; color:#888; font-weight: bold;">✍️ Modificar Capital Invertido:</div>
         <div>
             <a href="?eliminar={tk}" target="_self" class="btn-eliminar-mini">❌ Eliminar</a>
         </div>
