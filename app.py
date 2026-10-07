@@ -37,7 +37,7 @@ div[data-testid="stNumberInput"] label { font-size: 0.84rem !important; color: #
 
 VALOR_DOLAR_MEP = 1250.0
 
-# 3. BASE DE DATOS INTERNA CON MEMORIA DE INVERSIÓN SEPARADA PARA EVITAR CONGELAMIENTOS
+# 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
@@ -153,10 +153,9 @@ for tk in activos_actuales:
         st.query_params.clear()
         st.rerun()
     
-    # EL GRAN TRUCO ROMPE-CONGELAMIENTOS: El casillero se destruye y se recrea usando un ID único de moneda ("key")
-    # Al cambiar de moneda, Streamlit vacía la memoria de la caja vieja y dibuja una nueva con el valor recalculado en vivo
+    # EL GRAN REORDENAMIENTO MATEMÁTICO MUTABLE CON FORMATEO DE MILES:
     monto_mostrar_box = monto_actual * factor_cambio
-    nuevo_monto_box = st.number_input(f"Monto de {tk} ({simbolo_moneda.strip()})", min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, key=f"input_box_{tk}_{moneda}")
+    nuevo_monto_box = st.number_input(f"Monto de {tk} ({simbolo_moneda.strip()})", min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, format="%.2f", key=f"input_box_{tk}_{moneda}")
     
     # Al editar, guardamos siempre la base en dólares atrás para mantener la consistencia perfecta de la base de datos
     if nuevo_monto_box != monto_mostrar_box:
