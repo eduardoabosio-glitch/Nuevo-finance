@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava los márgenes e inyecta el símbolo de dinero adentro del casillero
+# 2. Estilos CSS Avanzados: Clava los márgenes, el botón abajo y libera el toque sobre el número verde
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -25,10 +25,10 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 
-/* TRUCO MAESTRO: Forzar un símbolo "$" estático adentro del fondo del casillero de entrada numérico */
+/* TRUCO MAESTRO REPARADO: Pointer-events:none hace que el signo "$" sea invisible al tacto y libere el teclado */
 div[data-testid="stNumberInput"] button { display: none !important; }
 div[data-testid="stNumberInput"] { position: relative !important; }
-div[data-testid="stNumberInput"]::before { content: "$" !important; position: absolute !important; left: 12px !important; top: 5px !important; color: #00e676 !important; font-weight: bold !important; font-size: 0.95rem !important; z-index: 10 !important; }
+div[data-testid="stNumberInput"]::before { content: "$" !important; position: absolute !important; left: 12px !important; top: 5px !important; color: #00e676 !important; font-weight: bold !important; font-size: 0.95rem !important; z-index: 10 !important; pointer-events: none !important; }
 
 div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: left !important; padding-left: 26px !important; font-size: 0.92rem !important; border-radius: 4px !important; border: 1px solid #232a38 !important; height: 28px !important; }
 div[data-testid="stNumberInput"] label { display: none !important; }
