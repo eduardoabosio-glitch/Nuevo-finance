@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava los márgenes, el botón abajo y libera el toque sobre el número verde
+# 2. Estilos CSS Avanzados: Clava los márgenes, el botón abajo y unifica la delgadez
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -141,10 +141,11 @@ for tk in activos_actuales:
     # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 6 DE CONTROL HORIZONTAL BALANCEADO: Leyenda de dinero fija a la izquierda y botón eliminar al otro margen derecho
+    # RENGLÓN 6 DE CONTROL HORIZONTAL BALANCEADO: Muestra el capital convertido en vivo arriba de la caja verde
+    # El secreto técnico: "monto_actual * factor_cambio" calcula el dinero individual en Pesos o Dólares de forma dinámica
     st.markdown(f"""
     <div class="renglon-control-inferior">
-        <div style="font-size:0.82rem; color:#888; font-weight: bold;">✍ Presioná para cambiar capital ({simbolo_moneda.strip()}):</div>
+        <div style="font-size:0.84rem; color:#00e676; font-weight: bold; text-decoration: underline;">✍ Capital Asignado: {simbolo_moneda}{monto_actual*factor_cambio:,.2f}</div>
         <div>
             <a href="?eliminar={tk}" target="_self" class="btn-eliminar-mini">❌ Eliminar</a>
         </div>
@@ -158,7 +159,7 @@ for tk in activos_actuales:
         st.query_params.clear()
         st.rerun()
     
-    # Casillero numérico verde nativo abajo del todo (Muestra el capital puro para editar de corrido en USD)
+    # Casillero numérico verde nativo abajo del todo (Muestra el valor puro para poder editar de corrido)
     st.session_state.montos_dis[tk] = st.number_input(f"mod_{tk}", min_value=0.0, value=float(monto_actual), step=500.0, key=f"input_box_{tk}")
     
     st.markdown('</div>', unsafe_allow_html=True)
