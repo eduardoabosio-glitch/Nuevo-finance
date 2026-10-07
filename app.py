@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava el casillero numérico integrado y el botón discreto abajo
+# 2. Estilos CSS Avanzados: Clava la ficha limpia de una sola caja numérica integrada
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -25,10 +25,10 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 
-/* Estilizado del casillero numérico integrado nativo */
+/* Estilizado premium del casillero numérico nativo único integrado */
 div[data-testid="stNumberInput"] button { display: none !important; }
-div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.92rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 32px !important; }
-div[data-testid="stNumberInput"] label { font-size: 0.84rem !important; color: #ffffff !important; font-weight: bold !important; margin-bottom: 3px !important; display: block !important; text-decoration: underline !important; }
+div[data-testid="stNumberInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 32px !important; }
+div[data-testid="stNumberInput"] label { font-size: 0.84rem !important; color: #888 !important; font-weight: bold !important; margin-bottom: 3px !important; display: block !important; }
 
 /* Botón de eliminación chico, discreto y al fondo a la derecha */
 .btn-eliminar-mini { background-color: #b71c1c; color: white !important; border: none; font-weight: bold; font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
@@ -44,7 +44,7 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas de Tipeo Directo Simplificado</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas de Tipeo Directo y Moneda Variable</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -135,10 +135,10 @@ for tk in activos_actuales:
     # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 6 CORREGIDO: Título de capital y botón eliminar en la misma línea
+    # RENGLÓN 6 CORREGIDO TOTALMENTE: Solo la etiqueta y el botón eliminar chiquito en el margen opuesto derecho
     st.markdown(f"""
     <div class="renglon-control-inferior">
-        <div style="font-size:0.82rem; color:#888; font-weight: bold;">✍ Modificar Capital ({simbolo_moneda.strip()}):</div>
+        <div style="font-size:0.84rem; color:#888; font-weight: bold;">✍ Capital Invertido Asignado:</div>
         <div>
             <a href="?eliminar={tk}" target="_self" class="btn-eliminar-mini">❌ Eliminar</a>
         </div>
@@ -153,11 +153,11 @@ for tk in activos_actuales:
         st.query_params.clear()
         st.rerun()
     
-    # EL GRAN REORDENAMIENTO: El casillero numérico nativo es el valor real en vivo recalculado al cambiar de moneda
+    # EL GRAN REORDENAMIENTO MATEMÁTICO MUTABLE: El casillero calcula y pesifica de verdad su contenido en vivo
     monto_mostrar_box = monto_actual * factor_cambio
-    nuevo_monto_box = st.number_input(f"✍ Capital Asignado: {simbolo_moneda}{monto_mostrar_box:,.2f}", min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, key=f"input_box_{tk}")
+    nuevo_monto_box = st.number_input(f"Monto de {tk} ({simbolo_moneda.strip()})", min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, key=f"input_box_{tk}")
     
-    # Si el usuario edita el número, guardamos el equivalente en dólares de fondo para no romper la base de datos
+    # Si el usuario edita el número con su teclado, guardamos el equivalente en dólares de fondo para no romper la base de datos
     if nuevo_monto_box != monto_mostrar_box:
         st.session_state.montos_dis[tk] = nuevo_monto_box / factor_cambio
         st.rerun()
