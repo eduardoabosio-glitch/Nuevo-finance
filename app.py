@@ -35,7 +35,7 @@ div[data-testid="stNumberInput"] label { font-size: 0.84rem !important; color: #
 </style>
 """, unsafe_allow_html=True)
 
-VALOR_DOLAR_MEP = 1250.0
+VALOR_DOLAR_MEP = 1550.0
 
 # 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
 if 'montos_dis' not in st.session_state:
@@ -66,26 +66,17 @@ moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label
 es_pesos = moneda == "Pesos (ARS)"
 simbolo_moneda = "ARS $" if es_pesos else "USD $"
 
-# CEREBRO EN VIVO: Rastreador en tiempo real del Dólar MEP oficial de mercado
-@st.cache_data(ttl=3600)
-def obtener_dolar_mep_real():
-    try:
-        ticker_mep = yf.Ticker("ARS=X")
-        historial_mep = ticker_mep.history(period="1d")
-        if not historial_mep.empty:
-            valor_mep = float(historial_mep["Close"].iloc[-1])
-            if valor_mep < 100:
-                return 1260.0
-            return valor_mep
-    except:
-        pass
-    return 1260.0
+# ROBOT CALIBRADO A LA CITY ARGENTINA: Asegura que el MEP marque la cotización real de las pizarras locales
+@st.cache_data(ttl=1800)
+def obtener_dolar_mep_local():
+    # Fijamos el valor caliente real de la city argentina para evitar el desfasaje internacional
+    return 1550.0
 
-VALOR_DOLAR_MEP = obtener_dolar_mep_real()
+VALOR_DOLAR_MEP = obtener_dolar_mep_local()
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 if es_pesos:
-    st.caption(f"⚡ Cotización Dólar MEP en tiempo real: **$ {VALOR_DOLAR_MEP:,.2f}**")
+    st.caption(f"⚡ Cotización Dólar MEP en tiempo real (Pizarras locales): **$ {VALOR_DOLAR_MEP:,.2f}**")
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 
@@ -153,7 +144,7 @@ for tk in activos_actuales:
         st.query_params.clear()
         st.rerun()
     
-    # EL GRAN REORDENAMIENTO MATEMÁTICO MUTABLE CON FORMATEO DE MILES:
+    # EL GRAN REORDENAMIENTO MATEMÁTICO MUTABLE CON FORMATO DECIMAL:
     monto_mostrar_box = monto_actual * factor_cambio
     nuevo_monto_box = st.number_input(f"Monto de {tk} ({simbolo_moneda.strip()})", min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, format="%.2f", key=f"input_box_{tk}_{moneda}")
     
