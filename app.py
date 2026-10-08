@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Diseña la caja de texto unificada verde premium sin carteles molestos
+# 2. Estilos CSS Avanzados: Diseña las tarjetas limpias, las noticias con link y el glosario
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -25,10 +25,14 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 
-/* REGLA DE ACERO: Diseña la caja de texto para que muestre el valor grande en VERDE PREMIM y borre leyendas grises */
+/* Diseña la caja de texto para que muestre el valor grande en VERDE PREMIUM y borre leyendas grises */
 div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; }
 div[data-testid="stTextInput"] label { display: none !important; }
 div[data-testid="stTextInput"] p { display: none !important; }
+
+/* Botonera de noticias y enlaces limpios para el celular */
+.caja-noticia-link { background-color: #161a22; padding: 8px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 6px; font-size: 0.82rem; color: #ffffff; line-height: 1.3; }
+.enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 2px; }
 
 /* Botón de eliminación chico, discreto y al fondo a la derecha */
 .btn-eliminar-mini { background-color: #b71c1c; color: white !important; border: none; font-weight: bold; font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
@@ -44,7 +48,7 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno de Tipeo Unificado Seguro</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado Rígido</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -90,9 +94,9 @@ for tk in activos_actuales:
     patrimonio_total_usd += monto_actual
     
     if tk == "SPY":
-        sem, anual, fund, vered, cl_ver, noticias = "▲ 40%", "▲ 60%", "Nota 9/10 'Alta resiliencia en mercados consolidados'", "COMPRA FUERTE", "#00e676", "Nuevas proyecciones institucionales superan las expectativas"
+        sem, anual, fund, vered, cl_ver, noticias = "▲ 40%", "▲ 60%", "Nota 9/10 'Alta resiliencia en markets'", "COMPRA FUERTE", "#00e676", "Nuevas proyecciones institucionales superan las expectativas"
     elif tk == "TSLA":
-        sem, anual, fund, vered, cl_ver, noticias = "▲ 35%", "▲ 55%", "Nota 7/10 'Alta innovación tecnológica y expansión masiva'", "MANTENER", "#ffeb3b", "Nuevas proyecciones de entregas superan expectativas"
+        sem, anual, fund, vered, cl_ver, noticias = "▲ 35%", "▲ 55%", "Nota 7/10 'Alta innovación tecnológica y expansión'", "MANTENER", "#ffeb3b", "Nuevas proyecciones de entregas superan expectativas"
     elif tk == "AAPL":
         sem, anual, fund, vered, cl_ver, noticias = "▲ 30%", "▲ 50%", "Nota 9/10 'Sólido flujo de caja y recompra de acciones'", "COMPRAR", "#2196f3", "Ecosistema de servicios mantiene crecimiento de dos dígitos"
     else:
@@ -112,20 +116,20 @@ for tk in activos_actuales:
     # RENGLÓN 2: Precio de la acción actual
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 3: Análisis Fundamental
+    # RENGLÓN 2.5: Análisis Fundamental con título abreviado y prolijo
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 4: Títulos técnicos abreviados en dos columnas
+    # RENGLÓN 3: Títulos técnicos abreviados organizados en dos columnas simétricas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
     with col_s2:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
         
-    # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
+    # RENGLÓN 4: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 6 DE CONTROL HORIZONTAL: Etiqueta y botón eliminar chiquito a la derecha extrema
+    # RENGLÓN 5 DE CONTROL HORIZONTAL: Etiqueta y botón eliminar chiquito en el margen opuesto derecho
     st.markdown(f"""
     <div class="renglon-control-inferior">
         <div style="font-size:0.84rem; color:#888; font-weight: bold;">✍ Capital Invertido Asignado:</div>
@@ -135,7 +139,7 @@ for tk in activos_actuales:
     </div>
     """, unsafe_allow_html=True)
     
-    # Lógica inteligente para el botón eliminar
+    # Lógica para el botón eliminar
     parametros_url = st.query_params
     if "eliminar" in parametros_url and parametros_url["eliminar"] == tk:
         if tk in st.session_state.montos_dis:
@@ -143,35 +147,29 @@ for tk in activos_actuales:
         st.query_params.clear()
         st.rerun()
     
-    # EL NUEVO SISTEMA SEGURO: Convertimos el valor a texto para que la caja muestre las comillas impecables de corrido
+    # Caja de texto unificada verde premium libre de carteles ("Press Enter")
     monto_mostrar_box = monto_actual * factor_cambio
     texto_con_comillas = f'"{simbolo_moneda.strip()} {monto_mostrar_box:,.2f}"'
-    
-    # Al ser un st.text_input, Streamlit no aplica el cartel "Press Enter to apply" abajo. Es ultra compacto.
     entrada_texto_usuario = st.text_input(f"box_txt_{tk}", value=texto_con_comillas, key=f"input_box_{tk}_{moneda}")
     
-    # Si modificás el texto, el sistema limpia los caracteres de letras y actualiza la base de datos de fondo
     if entrada_texto_usuario != texto_con_comillas:
         try:
-            # Filtra el texto quedándose únicamente con los números que tipeaste con el teclado
             solo_numeros = "".join([c for c in entrada_texto_usuario if c.isdigit() or c == "."])
             if solo_numeros:
-                valor_numerico_ingresado = float(solo_numeros)
-                st.session_state.montos_dis[tk] = valor_numerico_ingresado / factor_cambio
+                st.session_state.montos_dis[tk] = float(solo_numeros) / factor_cambio
                 st.rerun()
         except:
             pass
     
     st.markdown('</div>', unsafe_allow_html=True)
-
 # Patrimonio Total Destacado DINÁMICO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 5. ENCICLOPEDIA TÉCNICA INTERACTIVA EN REEMPLAZO DE LOS GRÁFICOS AVANZADOS
-st.markdown("<h3 style='color:#ffffff;'>📊 Glosario de Análisis Técnico Inteligente</h3>", unsafe_allow_html=True)
+# 5. GLOSARIOS INTERACTIVOS INTERCONECTADOS
+st.markdown("<h3 style='color:#ffffff;'>📊 Glosarios Técnicos y Fundamentales</h3>", unsafe_allow_html=True)
 
 with st.expander("📊 Ver Métricas del Análisis Técnico Semanal", expanded=False):
     st.markdown("""
@@ -190,6 +188,44 @@ with st.expander("📈 Ver Métricas del Análisis Técnico Anual", expanded=Fal
         • <b style="color:#2196f3;">Soporte Clave Anual e Histórico:</b> Niveles de precio rígidos donde la demanda históricamente frena las caídas. Define el piso técnico seguro del portafolio.
     </div>
     """, unsafe_allow_html=True)
+
+# NUEVA ADICIÓN: GLOSARIO FUNDAMENTAL INTERACTIVO ABAJO DEL TÉCNICO
+with st.expander("🔍 Ver Métricas del Análisis Fundamental", expanded=False):
+    st.markdown("""
+    <div style="background-color:#161a22; padding:8px; border-radius:6px; border:1px solid #232a38; font-size:0.84rem; color:#ffffff; line-height:1.4;">
+        <b style="color:#ffeb3b;">Datos tomados por el Agente para la puntuación fundamental (1 al 10):</b><br><br>
+        • <b style="color:#2196f3;">Ratio Precio-Beneficio (P/E Ratio):</b> Compara el precio de mercado de la acción con las ganancias anuales netas por acción. Indica cuántos años tarda la empresa en generar las ganancias equivalentes a tu inversión y si cotiza barata o sobrevaluada.<br><br>
+        • <b style="color:#2196f3;">Rendimiento de Dividendos (Dividend Yield):</b> Mide el flujo de caja en efectivo que la compañía distribuye anualmente de sus ganancias directo a tu cuenta de inversión. Evalúa la sostenibilidad y madurez del modelo de negocio en el largo plazo.
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
+
+# 6. SECCIÓN EN VIVO: CENTRAL DE NOTICIAS DE MERCADO REAL CON ENLACES AZULES
+st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
+
+# Consultamos noticias reales filtrando solo los activos de Eduardo guardados en st.session_state
+for simbolo in activos_actuales:
+    with st.expander(f"📰 Noticias Recientes de {simbolo}", expanded=False):
+        try:
+            ticker_noticia = yf.Ticker(simbolo)
+            lista_noticias = ticker_noticia.news[:2]  # Trae los 2 titulares más calientes de mercado
+            if lista_noticias:
+                for item in lista_noticias:
+                    tit_txt = item.get('title', 'Noticia de mercado disponible')
+                    link_url = item.get('link', '#')
+                    fuente_not = item.get('publisher', 'Agencia Financiera')
+                    
+                    st.markdown(f"""
+                    <div class="caja-noticia-link">
+                        <b>📍 {fuente_not}:</b> {tit_txt}<br>
+                        <a href="{link_url}" target="_blank" class="enlace-noticia-azul">🔗 Tocar aquí para leer noticia completa</a>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.caption("Sin alertas de prensa urgentes en este momento.")
+        except:
+            st.caption("Cargando cables informativos...")
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 col_g1, col_g2 = st.columns(2)
