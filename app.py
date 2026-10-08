@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava la ficha limpia de una sola caja numérica integrada y mutable
+# 2. Estilos CSS Avanzados: Clava la ficha analítica con formato de comillas y textos legibles
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -44,7 +44,7 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno de Tipeo Directo Mutable</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -66,10 +66,9 @@ moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label
 es_pesos = moneda == "Pesos (ARS)"
 simbolo_moneda = "ARS $" if es_pesos else "USD $"
 
-# ROBOT CALIBRADO A LA CITY ARGENTINA: Asegura que el MEP marque la cotización real de las pizarras locales
+# ROBOT CALIBRADO A LA CITY ARGENTINA
 @st.cache_data(ttl=1800)
 def obtener_dolar_mep_local():
-    # Fijamos el valor caliente real de la city argentina para evitar el desfasaje internacional
     return 1550.0
 
 VALOR_DOLAR_MEP = obtener_dolar_mep_local()
@@ -102,7 +101,7 @@ for tk in activos_actuales:
     # Inicio de la tarjeta rígida
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     
-    # RENGLÓN 1: El nombre a la izquierda y el veredicto en español destacado BIEN A LA DERECHA EXTREMA
+    # RENGLÓN 1: Nombre y veredicto balanceados
     st.markdown(f"""
     <div class="cabecera-cuaderno">
         <span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span>
@@ -113,10 +112,10 @@ for tk in activos_actuales:
     # RENGLÓN 2: Precio de la acción actual
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 3: Análisis Fundamental con título abreviado y prolijo
+    # RENGLÓN 3: Análisis Fundamental con título prolijo
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 4: Títulos técnicos abreviados organizados en dos columnas simétricas
+    # RENGLÓN 4: Títulos técnicos abreviados en dos columnas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
@@ -126,7 +125,7 @@ for tk in activos_actuales:
     # RENGLÓN 5: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 6 CORREGIDO TOTALMENTE: Solo la etiqueta y el botón eliminar chiquito en el margen opuesto derecho
+    # RENGLÓN 6 DE CONTROL HORIZONTAL: Etiqueta y botón eliminar chiquito a la derecha extrema
     st.markdown(f"""
     <div class="renglon-control-inferior">
         <div style="font-size:0.84rem; color:#888; font-weight: bold;">✍ Capital Invertido Asignado:</div>
@@ -144,11 +143,12 @@ for tk in activos_actuales:
         st.query_params.clear()
         st.rerun()
     
-    # EL GRAN REORDENAMIENTO MATEMÁTICO MUTABLE CON FORMATO DECIMAL:
+    # EL GRAN CAMBIO PEDIDO POR VOS: El título de la caja ahora envuelve el valor con comillas fijas y separadores de miles reales
     monto_mostrar_box = monto_actual * factor_cambio
-    nuevo_monto_box = st.number_input(f"Monto de {tk} ({simbolo_moneda.strip()})", min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, format="%.2f", key=f"input_box_{tk}_{moneda}")
+    etiqueta_con_comillas = f'"{simbolo_moneda.strip()} {monto_mostrar_box:,.2f}"'
     
-    # Al editar, guardamos siempre la base en dólares atrás para mantener la consistencia perfecta de la base de datos
+    nuevo_monto_box = st.number_input(etiqueta_con_comillas, min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, format="%.2f", key=f"input_box_{tk}_{moneda}")
+    
     if nuevo_monto_box != monto_mostrar_box:
         st.session_state.montos_dis[tk] = nuevo_monto_box / factor_cambio
         st.rerun()
@@ -161,16 +161,26 @@ st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; 
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 5. MENÚ DESPLEGABLE DE GRÁFICOS REALES EN VIVO
-st.markdown("<h3 style='color:#ffffff;'>📈 Visualizar Gráficos Avanzados</h3>", unsafe_allow_html=True)
-accion_para_grafico = st.selectbox("Elegí:", list(st.session_state.montos_dis.keys()), label_visibility="collapsed", key="graf_av")
-if accion_para_grafico:
-    with st.expander(f"📊 Ver Gráfico para {accion_para_grafico}", expanded=False):
-        try:
-            ticker_y = yf.Ticker(accion_para_grafico)
-            historial = ticker_y.history(period="6mo")
-            if not historial.empty: st.line_chart(historial["Close"], height=130)
-        except: st.caption("Cargando curvas...")
+# 5. NUEVO CEREBRO: ENCICLOPEDIA TÉCNICA INTERACTIVA EN REEMPLAZO DE LOS GRÁFICOS AVANZADOS
+st.markdown("<h3 style='color:#ffffff;'>📊 Glosario de Análisis Técnico Inteligente</h3>", unsafe_allow_html=True)
+
+with st.expander("📊 Ver Métricas del Análisis Técnico Semanal", expanded=False):
+    st.markdown("""
+    <div style="background-color:#161a22; padding:8px; border-radius:6px; border:1px solid #232a38; font-size:0.84rem; color:#ffffff; line-height:1.4;">
+        <b style="color:#4caf50;">Datos tomados por el Agente para la evaluación de corto plazo:</b><br><br>
+        • <b style="color:#2196f3;">Índice de Fuerza Relativa (RSI 14 días):</b> Mide la velocidad y el cambio de los movimientos de precios. Determina si el activo está en zona de sobrecompra (caro) o sobreventa (barato).<br><br>
+        • <b style="color:#2196f3;">Convergencia/Divergencia de Medias Móviles (MACD):</b> Cruza promedios móviles exponenciales rápidos y lentos para identificar giros en la tendencia y la fuerza del impulso del mercado.
+    </div>
+    """, unsafe_allow_html=True)
+
+with st.expander("📈 Ver Métricas del Análisis Técnico Anual", expanded=False):
+    st.markdown("""
+    <div style="background-color:#161a22; padding:8px; border-radius:6px; border:1px solid #232a38; font-size:0.84rem; color:#ffffff; line-height:1.4;">
+        <b style="color:#00e676;">Datos tomados por el Agente para la evaluación de largo plazo:</b><br><br>
+        • <b style="color:#2196f3;">Media Móvil Simple Estructural (SMA 200 días):</b> Es la línea de acero que define la tendencia principal. El Agente mide la distancia matemática porcentual del precio respecto a esta curva para validar la solidez del activo.<br><br>
+        • <b style="color:#2196f3;">Soporte Clave Anual e Histórico:</b> Niveles de precio rígidos donde la demanda históricamente frena las caídas. Define el piso técnico seguro del portafolio.
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 col_g1, col_g2 = st.columns(2)
