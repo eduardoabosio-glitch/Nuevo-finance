@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Oculta el número grande nativo y tiñe la etiqueta con comillas de verde brillante
+# 2. Estilos CSS Avanzados: Mantiene la limpieza visual tiñendo de verde la etiqueta y vuelve la caja invisible pero activa al tacto
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -25,19 +25,21 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .titulo-subrayado { text-decoration: underline !important; font-weight: bold; color: #2196f3; font-size: 0.88rem; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 
-/* EL GRAN RETOQUE OCULTORES: Borramos por completo el número verde grande nativo de abajo para que no duplique renglón */
+/* EL TRUCO SECRETO: Escondemos los botones de más y menos molestos de fábrica */
 div[data-testid="stNumberInput"] button { display: none !important; }
-div[data-testid="stNumberInput"] input { display: none !important; }
 
-/* Cambiamos el texto gris de la etiqueta de Streamlit para que sea grande, visible y de color VERDE BRILLANTE PREMIUM */
-div[data-testid="stNumberInput"] label { font-size: 0.95rem !important; color: #00e676 !important; font-weight: bold !important; margin-bottom: 3px !important; display: block !important; text-decoration: none !important; text-shadow: 0 0 2px rgba(0,230,118,0.2); }
+/* Forzamos que la caja nativa sea 100% transparente para el ojo, pero mantenga su tamaño para recibir tu dedo y abrir el teclado */
+div[data-testid="stNumberInput"] input { background-color: transparent !important; color: transparent !important; border: 1px solid #232a38 !important; border-radius: 6px !important; height: 32px !important; width: 100% !important; font-size: 0.95rem !important; caret-color: #00e676 !important; }
+
+/* Tu texto verde grande con comillas y formato impecable se queda visible y prolijo arriba */
+div[data-testid="stNumberInput"] label { font-size: 0.95rem !important; color: #00e676 !important; font-weight: bold !important; margin-bottom: 3px !important; display: block !important; text-decoration: none !important; }
 
 /* Botón de eliminación chico, discreto y al fondo a la derecha */
 .btn-eliminar-mini { background-color: #b71c1c; color: white !important; border: none; font-weight: bold; font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
-VALOR_DOLAR_MEP = 1550.0
+VALOR_DOLAR_MEP = 1250.0
 
 # 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
 if 'montos_dis' not in st.session_state:
@@ -46,7 +48,7 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno de Tipeo Directo Seguro</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -114,7 +116,7 @@ for tk in activos_actuales:
     # RENGLÓN 2: Precio de la acción actual
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 3: Análisis Fundamental
+    # RENGLÓN 3: Análisis Fundamental con título prolijo
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
     # RENGLÓN 4: Títulos técnicos abreviados en dos columnas
@@ -145,11 +147,10 @@ for tk in activos_actuales:
         st.query_params.clear()
         st.rerun()
     
-    # EL GRAN REORDENAMIENTO ESTÉTICO UNIFICADO: El texto entre comillas se tiñe de verde y el número nativo se oculta
+    # El casillero se vuelve invisible pero mantiene la zona táctil para el dedo
     monto_mostrar_box = monto_actual * factor_cambio
     etiqueta_con_comillas = f'"{simbolo_moneda.strip()} {monto_mostrar_box:,.2f}"'
     
-    # El truco: Se dibuja el número pero la regla CSS borra el campo verde duplicado dejando solo el texto formateado
     nuevo_monto_box = st.number_input(etiqueta_con_comillas, min_value=0.0, value=float(monto_mostrar_box), step=500.0 * factor_cambio, format="%.2f", key=f"input_box_{tk}_{moneda}")
     
     if nuevo_monto_box != monto_mostrar_box:
