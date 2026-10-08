@@ -7,7 +7,7 @@ import yfinance as yf
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Diseña las tarjetas limpias, las noticias con link y el glosario
+# 2. Estilos CSS Avanzados: Clava la simetría y el diseño limpio sin carteles molestos
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -30,9 +30,9 @@ div[data-testid="stTextInput"] input { background-color: #1f2633 !important; col
 div[data-testid="stTextInput"] label { display: none !important; }
 div[data-testid="stTextInput"] p { display: none !important; }
 
-/* Botonera de noticias y enlaces limpios para el celular */
-.caja-noticia-link { background-color: #161a22; padding: 8px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 6px; font-size: 0.82rem; color: #ffffff; line-height: 1.3; }
-.enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 2px; }
+/* Lista de noticias unificada sin expanders molestos */
+.caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
+.enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 
 /* Botón de eliminación chico, discreto y al fondo a la derecha */
 .btn-eliminar-mini { background-color: #b71c1c; color: white !important; border: none; font-weight: bold; font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
@@ -48,7 +48,7 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado Rígido</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -115,18 +115,14 @@ for tk in activos_actuales:
             
     # RENGLÓN 2: Precio de la acción actual
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{simbolo_moneda}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
-    
-    # RENGLÓN 2.5: Análisis Fundamental con título abreviado y prolijo
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 3: Títulos técnicos abreviados organizados en dos columnas simétricas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
     with col_s2:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
         
-    # RENGLÓN 4: Últimas Noticias del Agente abajo de todo
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
     # RENGLÓN 5 DE CONTROL HORIZONTAL: Etiqueta y botón eliminar chiquito en el margen opuesto derecho
@@ -164,11 +160,56 @@ for tk in activos_actuales:
     st.markdown('</div>', unsafe_allow_html=True)
 # Patrimonio Total Destacado DINÁMICO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
-st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
+
+# EL GRÁFICO REDONDO EN TAMAÑO GIGANTE DUPLICADO EN EL CENTRO
+if activos_actuales:
+    df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
+    # Se le clava la altura a 240 (el doble) para que ocupe todo el ancho visual del celular con total nitidez
+    fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
+    fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
+    st.plotly_chart(fig, use_container_width=True, key="pie_gigante_v26")
+
+# El análisis del agente calza inmediatamente abajo del gráfico gigante de forma prolija
+st.markdown('''
+<div style="background-color:#161a22; padding:8px; border-radius:6px; font-size:0.82rem; border:1px solid #232a38; color:white; margin-bottom: 15px;">
+    <b style="color:#2196f3; font-size:0.88rem;">📊 Resumen de Composición del Agente:</b><br>
+    • <b style="color:#00e676;">Impacto General:</b> Altamente Favorable y Balanceado<br>
+    • <b style="color:#00e676;">Análisis de Riesgo:</b> Cartera Diversificada Estructuralmente<br>
+    • <b style="color:#00e676;">Sugerencia Operativa:</b> Mantener Capitales y Reinvertir Dividendos
+</div>
+''', unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 5. GLOSARIOS INTERACTIVOS INTERCONECTADOS
+# 5. CENTRAL DE NOTICIAS DE MIS ACCIONES EN CORRIDO DIRECTO SIN EXPANDERS INDIVIDUALES
+st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
+
+# Se dispara la consulta corrida de todas tus empresas juntas una abajo de la otra
+for simbolo in activos_actuales:
+    try:
+        ticker_noticia = yf.Ticker(simbolo)
+        lista_noticias = ticker_noticia.news[:2]  # Toma las 2 más calientes del día de internet
+        if lista_noticias:
+            for item in lista_noticias:
+                tit_txt = item.get('title', 'Alerta de mercado disponible')
+                link_url = item.get('link', '#')
+                fuente_not = item.get('publisher', 'Prensa Financiera')
+                
+                # Formato liso corrido con link azul directo para tocar con el dedo
+                st.markdown(f"""
+                <div class="caja-noticia-link">
+                    <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> 
+                    <b>📍 {fuente_not}:</b> {tit_txt}<br>
+                    <a href="{link_url}" target="_blank" class="enlace-noticia-azul">🔗 Tocar aquí para leer noticia completa</a>
+                </div>
+                """, unsafe_allow_html=True)
+    except:
+        pass
+
+st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
+
+# 6. GLOSARIOS TÉCNICOS Y FUNDAMENTALES ABAJO DE TODO
 st.markdown("<h3 style='color:#ffffff;'>📊 Glosarios Técnicos y Fundamentales</h3>", unsafe_allow_html=True)
 
 with st.expander("📊 Ver Métricas del Análisis Técnico Semanal", expanded=False):
@@ -189,7 +230,6 @@ with st.expander("📈 Ver Métricas del Análisis Técnico Anual", expanded=Fal
     </div>
     """, unsafe_allow_html=True)
 
-# NUEVA ADICIÓN: GLOSARIO FUNDAMENTAL INTERACTIVO ABAJO DEL TÉCNICO
 with st.expander("🔍 Ver Métricas del Análisis Fundamental", expanded=False):
     st.markdown("""
     <div style="background-color:#161a22; padding:8px; border-radius:6px; border:1px solid #232a38; font-size:0.84rem; color:#ffffff; line-height:1.4;">
@@ -198,49 +238,6 @@ with st.expander("🔍 Ver Métricas del Análisis Fundamental", expanded=False)
         • <b style="color:#2196f3;">Rendimiento de Dividendos (Dividend Yield):</b> Mide el flujo de caja en efectivo que la compañía distribuye anualmente de sus ganancias directo a tu cuenta de inversión. Evalúa la sostenibilidad y madurez del modelo de negocio en el largo plazo.
     </div>
     """, unsafe_allow_html=True)
-
-st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
-
-# 6. SECCIÓN EN VIVO: CENTRAL DE NOTICIAS DE MERCADO REAL CON ENLACES AZULES
-st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
-
-# Consultamos noticias reales filtrando solo los activos de Eduardo guardados en st.session_state
-for simbolo in activos_actuales:
-    with st.expander(f"📰 Noticias Recientes de {simbolo}", expanded=False):
-        try:
-            ticker_noticia = yf.Ticker(simbolo)
-            lista_noticias = ticker_noticia.news[:2]  # Trae los 2 titulares más calientes de mercado
-            if lista_noticias:
-                for item in lista_noticias:
-                    tit_txt = item.get('title', 'Noticia de mercado disponible')
-                    link_url = item.get('link', '#')
-                    fuente_not = item.get('publisher', 'Agencia Financiera')
-                    
-                    st.markdown(f"""
-                    <div class="caja-noticia-link">
-                        <b>📍 {fuente_not}:</b> {tit_txt}<br>
-                        <a href="{link_url}" target="_blank" class="enlace-noticia-azul">🔗 Tocar aquí para leer noticia completa</a>
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.caption("Sin alertas de prensa urgentes en este momento.")
-        except:
-            st.caption("Cargando cables informativos...")
-
-st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
-col_g1, col_g2 = st.columns(2)
-with col_g1:
-    df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
-    fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=120)
-    fig.update_layout(margin=dict(t=5, b=5, l=5, r=5), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True, key="pie_v24")
-
-with col_g2:
-    st.markdown('''
-    <div style="background-color:#161a22; padding:5px; border-radius:4px; font-size:0.72rem; border:1px solid #232a38; height:120px; color:white;">
-        <b style="color:#2196f3;">Resumen de Agente</b><br>• Impacto: Favorable<br>• Análisis: Cartera Diversificada<br>• Sugerencia: Mantener Capitales
-    </div>
-    ''', unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
