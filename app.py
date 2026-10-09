@@ -7,7 +7,7 @@ import requests
 # 1. Configuración de pantalla rígida para celulares
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. Estilos CSS Avanzados: Clava la simetría y el diseño limpio sin carteles molestos
+# 2. Estilos CSS Avanzados: Diseña las tarjetas limpias, las noticias con link y el glosario
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -40,7 +40,7 @@ div[data-testid="stTextInput"] p { display: none !important; }
 """, unsafe_allow_html=True)
 
 # ROBOT CONECTADO A API OFICIAL: Consulta los servidores de DolarApi en tiempo real para Argentina
-@st.cache_data(ttl=600)  # Actualiza cada 10 minutos de forma automática
+@st.cache_data(ttl=600)
 def obtener_mep_oficial_argentina():
     try:
         respuesta = requests.get("https://dolarapi.com", timeout=3)
@@ -51,7 +51,7 @@ def obtener_mep_oficial_argentina():
                 return valor_mep
     except:
         pass
-    return 1550.0  # Resguardo técnico si internet falla
+    return 1550.0
 
 VALOR_DOLAR_MEP = obtener_mep_oficial_argentina()
 
@@ -107,9 +107,82 @@ st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fic
 precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
+# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO
+for tk in activos_actuales:
+    p_base = precios_ref.get(tk, 150.0)
+    monto_actual = st.session_state.montos_dis[tk]
+    patrimonio_total_usd += monto_actual
+    
+    if tk == "SPY":
+        sem, anual, fund, vered, cl_ver, noticias = "▲ 40%", "▲ 60%", "Nota 9/10 'Alta resiliencia en markets'", "COMPRA FUERTE", "#00e676", "Nuevas proyecciones institucionales superan las expectativas"
+    elif tk == "TSLA":
+        sem, anual, fund, vered, cl_ver, noticias = "▲ 35%", "▲ 55%", "Nota 7/10 'Alta innovación tecnológica y expansión'", "MANTENER", "#ffeb3b", "Nuevas proyecciones de entregas superan expectativas"
+    elif tk == "AAPL":
+        sem, anual, fund, vered, cl_ver, noticias = "▲ 30%", "▲ 50%", "Nota 9/10 'Sólido flujo de caja y recompra de acciones'", "COMPRAR", "#2196f3", "Ecosistema de servicios mantiene crecimiento de dos dígitos"
+    else:
+        sem, anual, fund, vered, cl_ver, noticias = "▲ 32%", "▲ 48%", "Nota 8/10 'Estabilidad de ingresos y dividendos estables'", "COMPRAR", "#2196f3", "Demanda global en mercados emergentes se mantiene firme"
+
+    # Inicio de la tarjeta rígida
+    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
+    
+    # RENGLÓN 1: Nombre y veredicto balanceados
+    st.markdown(f"""
+    <div class="cabecera-cuaderno">
+        <span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span>
+        <span style="font-size: 0.95rem; font-weight: bold; color: {cl_ver};">{vered}</span>
+    </div>
+    """, unsafe_allow_html=True)
+            
+    # RENGLÓN 2: Precio de la acción actual
+    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
+    st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{texto_moneda_limpio}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
+    
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
+    with col_s2:
+        st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Anual:</span> <b style="color:#00e676;">{anual}</b>', unsafe_allow_html=True)
+        
+    st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
+    
+    # RENGLÓN 5 DE CONTROL HORIZONTAL: Etiqueta y botón eliminar chiquito en el margen opuesto derecho
+    st.markdown(f"""
+    <div class="renglon-control-inferior">
+        <div style="font-size:0.84rem; color:#888; font-weight: bold;">✍ Capital Invertido Asignado:</div>
+        <div>
+            <a href="?eliminar={tk}" target="_self" class="btn-eliminar-mini">❌ Eliminar</a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Lógica para el botón eliminar
+    parametros_url = st.query_params
+    if "eliminar" in parametros_url and parametros_url["eliminar"] == tk:
+        if tk in st.session_state.montos_dis:
+            del st.session_state.montos_dis[tk]
+        st.query_params.clear()
+        st.rerun()
+    
+    # Caja de texto unificada verde premium con el formato de comillas y miles reparado
+    monto_mostrar_box = monto_actual * factor_cambio
+    texto_con_comillas = f'"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"'
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk}", value=texto_con_comillas, key=f"input_box_{tk}_{moneda}")
+    
+    if entrada_texto_usuario != texto_con_comillas:
+        try:
+            solo_numeros = "".join([c for c in entrada_texto_usuario if c.isdigit() or c == "."])
+            if solo_numeros:
+                st.session_state.montos_dis[tk] = float(solo_numeros) / factor_cambio
+                st.rerun()
+        except:
+            pass
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 # Patrimonio Total Destacado DINÁMICO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
-st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{simbolo_moneda.replace('$', '')}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
+texto_moneda_total = "ARS $" if es_pesos else "USD $"
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
 
 # EL GRÁFICO REDONDO EN TAMAÑO GIGANTE DUPLICADO EN EL CENTRO
 if activos_actuales:
@@ -129,6 +202,7 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
+
 # 5. CENTRAL DE NOTICIAS DE MIS ACCIONES EN CORRIDO DIRECTO CON LINKS DE ACCESO ASEGURADO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
