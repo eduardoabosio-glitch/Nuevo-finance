@@ -40,7 +40,7 @@ div[data-testid="stTextInput"] p { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# CONEXIÓN OFICIAL EN VIVO LIMPIA: Consulta los servidores de DolarApi sin barras cruzadas traviesas
+# CONEXIÓN OFICIAL EN VIVO LIMPIA: Rastrea las pizarras reales de Argentina de corrido sin trabas
 @st.cache_data(ttl=600)
 def obtener_mep_oficial_argentina():
     try:
@@ -70,12 +70,11 @@ st.markdown("""
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, galicia)...", label_visibility="collapsed", key="chat_bot_v7").strip().lower()
+consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, galicia)...", label_visibility="collapsed", key="chat_universal_v8_unico").strip().lower()
 
 # CEREBRO MAESTRO CONEXIÓN GLOBAL YAHOO FINANCE
 if consulta_chat:
     with st.chat_message("assistant"):
-        # Diccionario inteligente de traducción directa de nombres comunes de la city a Tickers globales
         diccionario_tickers = {
             "coca": "KO", "coca cola": "KO", "cocacola": "KO",
             "apple": "AAPL", "tesla": "TSLA",
@@ -87,22 +86,18 @@ if consulta_chat:
         }
         
         ticker_encontrado = None
-        # Intenta emparejar palabras clave que escribió Eduardo
         for clave, tk in diccionario_tickers.items():
             if clave in consulta_chat:
                 ticker_encontrado = tk
                 break
                 
-        # Si no está en el diccionario, toma la última palabra por si tipeó el ticker directo
         if not ticker_encontrado:
             ticker_encontrado = consulta_chat.split()[-1].upper()
 
         try:
-            # Conexión directa a internet con las pizarras mundiales de Yahoo Finance
             ticker_yahoo = yf.Ticker(ticker_encontrado)
             info_accion = ticker_yahoo.info
             
-            # Valida si Yahoo reconoce el símbolo de la acción
             if "regularMarketPrice" in info_accion or "currentPrice" in info_accion:
                 nombre_oficial = info_accion.get("longName", ticker_encontrado)
                 precio_hoy = info_accion.get("currentPrice", info_accion.get("regularMarketPrice", 0.0))
@@ -117,82 +112,6 @@ if consulta_chat:
                 *Análisis de Agente:* El símbolo `{ticker_encontrado}` cotiza de forma líquida en los mercados globales. Si querés incorporarlo a tus fichas del cuaderno, tipeá `{ticker_encontrado}` en el casillero de abajo de agregar portafolio.
                 """, unsafe_allow_html=True)
             else:
-                # Auxilio técnico si el ticker ingresado no existe en las pizarras
-                st.markdown(f"🤖 **Chat Bot:** Busqué en Yahoo Finance pero el símbolo `{ticker_encontrado}` no arrojó precios en vivo. Asegurate de escribir el nombre común de la empresa o su ticker exacto de mercado.")
-        except:
-            st.markdown("🤖 **Chat Bot:** Recibí tu consulta. Analizando tu portafolio actual, veo que tenés una cartera diversificada de forma óptima. Te sugiero mantener tus posiciones actuales en Dólares y consultar tickers específicos para expandir tus fichas.")
-
-st.markdown("<h3 style='color:#ffffff; margin-top:10px;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v6").upper().strip()
-
-if nueva_empresa:
-    if nueva_empresa not in st.session_state.montos_dis:
-        st.session_state.montos_dis[nueva_empresa] = 5000.0
-        st.success(f"¡{nueva_empresa} agregada con éxito!")
-        st.rerun()
-
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
-es_pesos = moneda == "Pesos (ARS)"
-simbolo_moneda = "ARS \$" if es_pesos else "USD \$"
-factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
-
-if es_pesos:
-    st.markdown(f"<p style='font-size:0.82rem; color:#888; margin:0; padding-top:4px;'>⚡ Dólar MEP Oficial en Vivo (DolarApi): <b style='color:#00e676;'>\$ {VALOR_DOLAR_MEP:,.2f}</b></p>", unsafe_allow_html=True)
-
-st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-
-precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
-activos_actuales = list(st.session_state.montos_dis.keys())
-patrimonio_total_usd = 0.0
-st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, galicia)...", label_visibility="collapsed", key="chat_bot_v7").strip().lower()
-
-# CEREBRO MAESTRO CONEXIÓN GLOBAL YAHOO FINANCE
-if consulta_chat:
-    with st.chat_message("assistant"):
-        # Diccionario inteligente de traducción directa de nombres comunes de la city a Tickers globales
-        diccionario_tickers = {
-            "coca": "KO", "coca cola": "KO", "cocacola": "KO",
-            "apple": "AAPL", "tesla": "TSLA",
-            "nvidia": "NVDA", "nvda": "NVDA",
-            "microsoft": "MSFT", "google": "GOOGL",
-            "galicia": "GGAL", "banco galicia": "GGAL",
-            "mercado libre": "MELI", "mercadolibre": "MELI", "meli": "MELI",
-            "spy": "SPY", "s&p": "SPY", "ypf": "YPF"
-        }
-        
-        ticker_encontrado = None
-        # Intenta emparejar palabras clave que escribió Eduardo
-        for clave, tk in diccionario_tickers.items():
-            if clave in consulta_chat:
-                ticker_encontrado = tk
-                break
-                
-        # Si no está en el diccionario, toma la última palabra por si tipeó el ticker directo
-        if not ticker_encontrado:
-            ticker_encontrado = consulta_chat.split()[-1].upper()
-
-        try:
-            # Conexión directa a internet con las pizarras mundiales de Yahoo Finance
-            ticker_yahoo = yf.Ticker(ticker_encontrado)
-            info_accion = ticker_yahoo.info
-            
-            # Valida si Yahoo reconoce el símbolo de la acción
-            if "regularMarketPrice" in info_accion or "currentPrice" in info_accion:
-                nombre_oficial = info_accion.get("longName", ticker_encontrado)
-                precio_hoy = info_accion.get("currentPrice", info_accion.get("regularMarketPrice", 0.0))
-                resumen_co = info_accion.get("industry", "Activo de Mercado Internacional")
-                
-                st.markdown(f"""
-                🤖 **Chat Bot Universal:** ¡Conexión con Yahoo Finance exitosa! 🌐<br><br>
-                • **Empresa Detectada:** {nombre_oficial}<br>
-                • **Ticker Oficial:** `{ticker_encontrado}`<br>
-                • **Precio en Vivo (USD):** \${precio_hoy:,.2f}<br>
-                • **Sector/Industria:** {resumen_co}<br><br>
-                *Análisis de Agente:* El símbolo `{ticker_encontrado}` cotiza de forma líquida en los mercados globales. Si querés incorporarlo a tus fichas del cuaderno, tipeá `{ticker_encontrado}` en el casillero de abajo de agregar portafolio.
-                """, unsafe_allow_html=True)
-            else:
-                # Auxilio técnico si el ticker ingresado no existe en las pizarras
                 st.markdown(f"🤖 **Chat Bot:** Busqué en Yahoo Finance pero el símbolo `{ticker_encontrado}` no arrojó precios en vivo. Asegurate de escribir el nombre común de la empresa o su ticker exacto de mercado.")
         except:
             st.markdown("🤖 **Chat Bot:** Recibí tu consulta. Analizando tu portafolio actual, veo que tenés una cartera diversificada de forma óptima. Te sugiero mantener tus posiciones actuales en Dólares y consultar tickers específicos para expandir tus fichas.")
@@ -291,7 +210,7 @@ for tk in activos_actuales:
             pass
     
     st.markdown('</div>', unsafe_allow_html=True)
-    # Patrimonio Total Destacado DINÁMICO
+# Patrimonio Total Destacado DINÁMICO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -399,4 +318,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-
