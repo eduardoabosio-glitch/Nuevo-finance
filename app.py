@@ -34,8 +34,8 @@ div[data-testid="stTextInput"] p { display: none !important; }
 .caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
 .enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-/* Botón de eliminación chico, discreto y al fondo a la derecha */
-.btn-eliminar-mini { background-color: #b71c1c; color: white !important; border: none; font-weight: bold; font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; text-decoration: none !important; display: inline-block; cursor: pointer; line-height: 1.2; text-align: center; }
+/* Botón de eliminación mini integrado nativo */
+div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 2px 6px !important; border-radius: 4px !important; border: none !important; height: 24px !important; line-height: 1.2 !important; cursor: pointer !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -65,14 +65,14 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Ecuación AL30 en Vivo y Chat Universal Yahoo</div>
+    <div style="font-size:0.7rem; color:#888;">Precios Reales en Vivo y Botón de Borrado Seguro</div>
 </div>
 """, unsafe_allow_html=True)
 
-if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, key="btn_guardar_local_v13"):
+if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, key="btn_guardar_local_v14"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v13").strip().lower()
+consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v14").strip().lower()
 
 # CEREBRO INTELIGENTE UNIVERSAL CON FILTRADO DE IDIOMA Y CONEXIÓN YAHOO DEL AGENTE
 if consulta_chat:
@@ -115,7 +115,7 @@ if consulta_chat:
                     resumen_co = info_accion.get("industry", "Activo de Mercado Internacional")
                     
                     st.markdown(f"""
-                    🤖 **Chat Bot Universal:** ¡Conexión con Yahoo Finance exitosa! 🌐<br><br>
+                    🤖 **Chat Bot:** ¡Conexión con Yahoo Finance exitosa! 🌐<br><br>
                     • **Empresa Detectada:** {nombre_oficial}<br>
                     • **Ticker Oficial:** `{ticker_encontrado}`<br>
                     • **Precio en Vivo (USD):** \${precio_hoy:,.2f}<br>
@@ -129,8 +129,8 @@ if consulta_chat:
         else:
             st.markdown("🤖 **Chat Bot:** Por favor, escribí el nombre de una empresa o un ticker válido para que pueda consultarlo en vivo en Yahoo Finance.")
 
-st.markdown("<h3 style='color:#ffffff; margin-top:10px;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v13").upper().strip()
+st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v14").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -138,7 +138,7 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v13_unica")
+moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v14_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
@@ -147,12 +147,25 @@ if es_pesos:
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 
-precios_ref = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 150.0}
+# MOTOR DE PRECIOS EN VIVO EN REEMPLAZO DE LA LISTA VIEJA FIJA CONGELADA
+@st.cache_data(ttl=300)
+def obtener_precio_en_vivo_yahoo(simbolo_ticket):
+    try:
+        ticker = yf.Ticker(simbolo_ticket)
+        hist = ticker.history(period="1d")
+        if not hist.empty:
+            return float(hist["Close"].iloc[-1])
+    except:
+        pass
+    # Valores de respaldo aproximados si internet o Yahoo se saturan un segundo
+    valores_aux = {"SPY": 510.0, "TSLA": 300.0, "AAPL": 210.0, "KO": 60.0}
+    return valores_aux.get(simbolo_ticket, 150.0)
+
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
-# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO
+# 4. GENERACIÓN DE LAS FICHAS CON ACOPLE ESTÉTICO HORIZONTAL FIJO Y VARIABLES DINÁMICAS REALES
 for tk in activos_actuales:
-    p_base = precios_ref.get(tk, 150.0)
+    p_base = obtener_precio_en_vivo_yahoo(tk)
     monto_actual = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_actual
     
@@ -176,9 +189,9 @@ for tk in activos_actuales:
     </div>
     """, unsafe_allow_html=True)
             
-    # RENGLÓN 2: Precio de la acción actual
+    # RENGLÓN 2: Precio de la acción actual traído en vivo desde internet
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
-    st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{texto_moneda_limpio}{p_base*factor_cambio:,.0f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{texto_moneda_limpio}{p_base*factor_cambio:,.2f}</b></div>', unsafe_allow_html=True)
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
     col_s1, col_s2 = st.columns(2)
@@ -189,23 +202,16 @@ for tk in activos_actuales:
         
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 5 DE CONTROL HORIZONTAL: Etiqueta y botón eliminar chiquito en el margen opuesto derecho
-    st.markdown(f"""
-    <div class="renglon-control-inferior">
-        <div style="font-size:0.84rem; color:#888; font-weight: bold;">✍ Capital Invertido Asignado:</div>
-        <div>
-            <a href="?eliminar={tk}" target="_self" class="btn-eliminar-mini">❌ Eliminar</a>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Lógica para el botón eliminar
-    parametros_url = st.query_params
-    if "eliminar" in parametros_url and parametros_url["eliminar"] == tk:
-        if tk in st.session_state.montos_dis:
-            del st.session_state.montos_dis[tk]
-        st.query_params.clear()
-        st.rerun()
+    # RENGLÓN 5 DE CONTROL HORIZONTAL ELIMINACIÓN SEGURA: Se transforma en un botón nativo real blindado
+    col_lbl, col_btn = st.columns([3, 1])
+    with col_lbl:
+        st.markdown('<div style="font-size:0.84rem; color:#888; font-weight: bold; margin-top:4px;">✍ Capital Invertido Asignado:</div>', unsafe_allow_html=True)
+    with col_btn:
+        # Al presionarse, borra directo de la memoria interna en vivo y limpia la recarga del celular
+        if st.button("❌ Borrar", key=f"delete_btn_v14_{tk}"):
+            if tk in st.session_state.montos_dis:
+                del st.session_state.montos_dis[tk]
+            st.rerun()
     
     # Caja de texto unificada verde premium con el formato de comillas y miles dinámico
     monto_mostrar_box = monto_actual * factor_cambio
@@ -222,7 +228,7 @@ for tk in activos_actuales:
             pass
     
     st.markdown('</div>', unsafe_allow_html=True)
-# Patrimonio Total Destacado DINÁMICO
+# Patrimonio Total Destacado DINÁMICO RECALCULADO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
