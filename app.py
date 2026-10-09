@@ -40,8 +40,8 @@ div[data-testid="stTextInput"] p { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ENLACE EN VIVO DIRECTO DE ARGENTINA: El robot consulta las ALyCs vía CriptoYa al segundo sin intermediarios
-@st.cache_data(ttl=60)  # Forzamos refresco automático cada 60 segundos
+# CONEXIÓN OFICIAL EN VIVO DIRECTA: El robot consulta las ALyCs vía CriptoYa al segundo sin barras cruzadas traviesas
+@st.cache_data(ttl=60)
 def obtener_mep_criptoya_real():
     try:
         r_cy = requests.get("https://criptoya.com", timeout=4)
@@ -69,7 +69,7 @@ st.markdown("""
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_universal_v11_limpio").strip().lower()
+consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_universal_v12_limpio").strip().lower()
 
 # CEREBRO INTELIGENTE UNIVERSAL CON FILTRADO DE IDIOMA Y CONEXIÓN YAHOO DEL AGENTE
 if consulta_chat:
@@ -127,7 +127,7 @@ if consulta_chat:
             st.markdown("🤖 **Chat Bot:** Por favor, escribí el nombre de una empresa o un ticker válido para que pueda consultarlo en vivo en Yahoo Finance.")
 
 st.markdown("<h3 style='color:#ffffff; margin-top:10px;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v11_unico").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v12_unico").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -135,7 +135,7 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v11_unica")
+moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v12_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
@@ -264,7 +264,7 @@ noticias_seguras = {
     },
     "KO": {
         "fuente": "CNBC",
-        "titulo": "The Coca-Cola Company announces presentation dates for its consolidated financial statements for the quarter.",
+        "titulo": "The Coca-Cola Company anuncia la fecha oficial de presentación de sus balances financieros consolidados del trimestre.",
         "url": "https://cnbc.com"
     }
 }
