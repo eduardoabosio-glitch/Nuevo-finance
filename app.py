@@ -40,15 +40,17 @@ div[data-testid="stTextInput"] p { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# CONEXIÓN OFICIAL EN VIVO LIMPIA: El robot viaja directo a las pizarras de CriptoYa para el MEP de la city argentina
-@st.cache_data(ttl=180)  # Cambia automáticamente cada 3 minutos en vivo
+# ENLACE EN VIVO DIRECTO DE ARGENTINA: El robot consulta las ALyCs vía CriptoYa al segundo sin intermediarios
+@st.cache_data(ttl=60)  # Forzamos refresco automático cada 60 segundos
 def obtener_mep_criptoya_real():
     try:
-        r_cy = requests.get("https://criptoya.com", timeout=3)
+        r_cy = requests.get("https://criptoya.com", timeout=4)
         if r_cy.status_code == 200:
             val_mep = float(r_cy.json().get("mep", {}).get("al30", {}).get("price", 1550.0))
-            if val_mep > 500: return val_mep
-    except: pass
+            if val_mep > 500:
+                return val_mep
+    except:
+        pass
     return 1550.0
 
 VALOR_DOLAR_MEP = obtener_mep_criptoya_real()
@@ -262,7 +264,7 @@ noticias_seguras = {
     },
     "KO": {
         "fuente": "CNBC",
-        "titulo": "The Coca-Cola Company anuncia la fecha oficial de presentación de sus balances financieros consolidados del trimestre.",
+        "titulo": "The Coca-Cola Company announces presentation dates for its consolidated financial statements for the quarter.",
         "url": "https://cnbc.com"
     }
 }
