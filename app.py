@@ -72,6 +72,10 @@ VALOR_DOLAR_MEP = obtener_mep_criptoya_real()
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
+# CONTROL DE MONEDAS ANVANCE GLOBAL COMPATIBLE FORZADO ARRIBA
+if 'selector_moneda_global' not in st.session_state:
+    st.session_state.selector_moneda_global = "Dólares (USD)"
+
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
@@ -87,7 +91,7 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 if "ver_cuadricula_resumen" not in st.session_state:
     st.session_state.ver_cuadricula_resumen = False
 
-# El botón nace físicamente acá arriba compacto y chico, pero guardando la orden en memoria interna
+# El botón nace físicamente acá arriba compacto y chico, libre de NameError
 st.markdown("<div style='text-align:center; margin-top:2px; margin-bottom:4px;'>", unsafe_allow_html=True)
 if st.button("📊 Resumen General", key="btn_mini_resumen_v26_alta", use_container_width=True):
     st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
@@ -159,7 +163,15 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-st.markdown("</div>", unsafe_allow_html=True)
+# SELECTOR INTERACTIVO SEGURO ENLAZADO ARRIBA
+moneda_act = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v26_unica")
+es_pesos = moneda_act == "Pesos (ARS)"
+factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
+
+if es_pesos:
+    st.info(f"⚡ Cotización Dólar MEP de Pizarra en Vivo: ARS \$ {VALOR_DOLAR_MEP:,.2f}")
+
+st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 # EL SUPERMOTOR QUANT AVANZADO CON GENERADOR DE DICTAMEN DE HORIZONTES AUTOMÁTICO
 @st.cache_data(ttl=120)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
@@ -437,7 +449,7 @@ for tk in activos_actuales:
     
     monto_mostrar_box = monto_actual * factor_cambio
     texto_con_comillas = f'"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"'
-    entrada_texto_usuario = st.text_input(f"box_txt_{tk}", value=texto_con_comillas, key=f"input_box_{tk}_{moneda}")
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk}", value=texto_con_comillas, key=f"input_box_{tk}_{moneda_act}")
     
     if entrada_texto_usuario != texto_con_comillas:
         try:
@@ -492,7 +504,7 @@ st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_htm
 # 📋 RENDIMIENTO EN CASCADA COMPATIBLE: Dibuja la cuadrícula abajo leyendo la memoria del botón superior
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    # Títulos definitivos aclaratorios unificados perfectos para tu pantalla
+    # Títulos definitivos aclaratorios unificados perfectos para tu pantalla de celular
     df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
     st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta (USD base):</p>", unsafe_allow_html=True)
     st.table(df_matriz)
