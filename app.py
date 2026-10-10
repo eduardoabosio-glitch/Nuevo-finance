@@ -31,10 +31,10 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .stDetails { border: none !important; background-color: transparent !important; box-shadow: none !important; margin-bottom: 4px !important; padding: 0 !important; }
 .stDetails > summary { padding: 4px 0 !important; color: #ffffff !important; font-size: 0.88rem !important; font-weight: bold !important; }
 
-/* Cuadrícula o Matriz Ejecutiva Resumen */
-.dataframe { width: 100% !important; font-size: 0.78rem !important; color: white !important; background-color: #161a22 !important; border: 1px solid #232a38 !important; text-align: center !important; }
-.dataframe th { background-color: #1f2633 !important; color: #2196f3 !important; font-weight: bold !important; padding: 4px !important; }
-.dataframe td { padding: 4px !important; border: 1px solid #232a38 !important; }
+/* Cuadrícula o Matriz Ejecutiva Resumen OPTIMIZADA PARA MÓVILES */
+.dataframe { width: 100% !important; font-size: 0.72rem !important; color: white !important; background-color: #161a22 !important; border: 1px solid #232a38 !important; text-align: center !important; }
+.dataframe th { background-color: #1f2633 !important; color: #2196f3 !important; font-weight: bold !important; padding: 2px !important; }
+.dataframe td { padding: 2px !important; border: 1px solid #232a38 !important; }
 
 /* Diseña la caja de texto para que muestre el valor grande en VERDE PREMIUM */
 div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; }
@@ -72,7 +72,7 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Matriz Ejecutiva Unificada y Cuadrícula de Control Semanal</div>
+    <div style="font-size:0.7rem; color:#888;">Matriz de Mando Slim y Resumen de Agente</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -80,7 +80,7 @@ st.markdown("""
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v24").strip().lower()
+consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v25").strip().lower()
 
 # CEREBRO INTELIGENTE UNIVERSAL CON FILTRADO DE IDIOMA Y CONEXIÓN YAHOO DEL AGENTE
 if consulta_chat:
@@ -138,7 +138,7 @@ if consulta_chat:
             st.markdown("🤖 **Chat Bot:** Por favor, escribí el nombre de una empresa o un ticker válido.")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v24").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v25").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -146,7 +146,7 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v24_unica")
+moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v25_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
@@ -266,7 +266,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             return {
                 "precio": precio_actual, "target_usd": target_price_usd,
                 "prob_sem": f"{prob_semanal}%", "prob_anu": f"{prob_anual}%", "prob_fun": f"{prob_fundamental}%",
-                "rsi": f"{rsi_val:.1f}", "macd": "▲ Alcista" if macd_val > signal_val else "▼ Ajuste",
+                "rsi": f"{rsi_val:.1f} puntos", "macd": "▲ Alcista" if macd_val > signal_val else "▼ Ajuste",
                 "stoch": f"{stoch_k:.0f}",
                 "vol_rel": f"{volumen_hoy/volumen_prom:.2f}x",
                 "emas_c": "▲ EMA9 OK" if ema9 > ema21 else "▼ EMA9 Freno",
@@ -337,20 +337,29 @@ for tk in activos_actuales:
     monto_actual = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_actual
     
-    # Sincronización estricta de la nota de texto pedida por Eduardo
-    if tk == "SPY": nota_txt = "Nota 9/10 Excelente"
-    elif tk == "TSLA": nota_txt = "Nota 7/10 Favorable"
-    elif tk == "AAPL": nota_txt = "Nota 9/10 Excelente"
-    else: nota_txt = "Nota 8/10 Muy Buena"
+    # Sincronización de notas y opiniones resumidas pedidas por Eduardo
+    if tk == "SPY": 
+        nota_txt = "Nota 9/10 Excelente"
+        op_agente = "Exc"
+    elif tk == "TSLA": 
+        nota_txt = "Nota 7/10 Favorable"
+        op_agente = "Reg"
+    elif tk == "AAPL": 
+        nota_txt = "Nota 9/10 Excelente"
+        op_agente = "Exc"
+    else: 
+        nota_txt = "Nota 8/10 Muy Buena"
+        op_agente = "MB"
     
-    # Guardamos los resultados limpios en la lista para que la cuadrícula resumen los lea al toque
+    # NUEVA RECOLECCIÓN COMPACTA: Columnas divididas, sin dividendos y con opinión de noticias del agente
     lista_para_matriz_resumen.append({
         "Activo": tk,
-        "Precio / Target": f"{p_base:,.2f} / {p_target:,.2f}",
-        "Suba Semanal": prob_sem,
-        "Suba Anual": prob_anu,
-        "Fundamental": nota_txt.split()[1],
-        "RSI / Div.": f"{rsi_vivo.split()[0]} / {div_yield}"
+        "Precio": f"{p_base:,.2f}",
+        "Target": f"{p_target:,.2f}",
+        "Sem %": prob_sem,
+        "Anual %": prob_anu,
+        "Fund": prob_fun,
+        "Agente": op_agente
     })
     
     if tk == "SPY":
@@ -393,7 +402,6 @@ for tk in activos_actuales:
         </div>
         """, unsafe_allow_html=True)
 
-    # El porcentaje fundamental se sincroniza de forma estricta con la nota real de la empresa
     with st.expander(f"🔍 Análisis Fundamental: {nota_txt} ({prob_fun})", expanded=False):
         st.markdown(f"""
         <div style="background-color:#19222d; padding:8px; border-radius:4px; font-size:0.84rem; color:white; line-height:1.4;">
@@ -416,7 +424,7 @@ for tk in activos_actuales:
     st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     st.markdown('<div class="renglon-control-inferior"><div style="font-size:0.84rem; color:#888; font-weight: bold;">✍ Capital Invertido Asignado:</div><div></div></div>', unsafe_allow_html=True)
     
-    if st.button("❌ Borrar", key=f"delete_btn_v24_{tk}"):
+    if st.button("❌ Borrar", key=f"delete_btn_v25_{tk}"):
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
     
@@ -444,65 +452,59 @@ if activos_actuales:
     fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
     st.plotly_chart(fig, use_container_width=True, key="pie_gigante_v26")
 
-    # -------------------------------------------------------------------------------------
-    # CEREBRO MAESTRO DE RIESGO DE LA CARTERA (ALGORITMO ALTO NIVEL)
-    # -------------------------------------------------------------------------------------
+    # CEREBRO MAESTRO DE RIESGO DE LA CARTERA
     monto_total = sum(st.session_state.montos_dis.values()) if sum(st.session_state.montos_dis.values()) > 0 else 1.0
     peso_tsla = (st.session_state.montos_dis.get("TSLA", 0.0) / monto_total) * 100
     peso_ko = (st.session_state.montos_dis.get("KO", 0.0) / monto_total) * 100
 
     if peso_tsla > 35:
-        termometro_riesgo = "<span style='background-color:#b71c1c; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🔥 RIESGO ALTO / ALTA VOLATILIDAD</span>"
-        analisis_web_riesgo = "Tu portafolio refleja una fuerte inclinación hacia activos de alta beta e innovación tecnológica agresiva (Tesla). Los informes escaneados en la web advierten que este posicionamiento ofrece el mayor potencial de multiplicación de capital, pero expone tu patrimonio a corrections de corto plazo ante variaciones de tasas de la Reserva Federal o balances."
-        rec_operativa = "Sugerencia del Agente: Para mitigar barquinazos, se recomienda no superar el 30% de exposición en este carril y balancear de forma cruzada inyectando utilidades hacia el búnker defensivo de Coca-Cola."
+        termometro_riesgo = "<span style='background-color:#b71c1c; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🔥 RIESGO ALTO</span>"
+        analisis_web_riesgo = "Tu portafolio refleja una fuerte inclinación hacia activos de alta beta e innovación tecnológica agresica (Tesla)."
+        rec_operativa = "Sugerencia del Agente: Se recomienda balancear inyectando utilidades hacia el búnker defensivo de Coca-Cola."
     elif peso_ko > 40:
-        termometro_riesgo = "<span style='background-color:#1b5e20; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🛡️ PERFIL CONSERVADOR / REFUGIO DE CAPITAL</span>"
-        analisis_web_riesgo = "Estructura general ultra robusta y búnker anti-crisis. La consolidación de datos fundamentales en la web de las grandes bancas indica que la concentración en bienes de consumo masivo resguarda de forma óptima el valor real con la inflación cambiaria, garantizando un flujo predecible de dividendos consolidados."
-        rec_operativa = "Sugerencia del Agente: Cartera ideal para periodos de incertidumbre macroeconómica. Mantener la reinversión constante de dividendos para potenciar el interés compuesto."
+        termometro_riesgo = "<span style='background-color:#1b5e20; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🛡️ PERFIL CONSERVADOR</span>"
+        analisis_web_riesgo = "Estructura general ultra robusta y búnker anti-crisis. Resguarda de forma óptima el valor real contra la inflación."
+        rec_operativa = "Sugerencia del Agente: Cartera ideal para periodos de incertidumbre. Mantener la reinversión constante."
     else:
-        termometro_riesgo = "<span style='background-color:#0d47a1; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>⚖️ PERFIL MODERADO / DIVERSIFICADO ESTRUCTURAL</span>"
-        analisis_web_riesgo = "Composición balanceada y simétrica de alta gama. El escaneo general de las bancas institucionales en Wall Street convalida que el equilibrio entre índices globales (SPY), servicios estables (Apple) y consumo defensivo (Coca-Cola) neutraliza los riesgos de volatilidad del mercado, capturando las subas macro de largo plazo con un riesgo controlado."
-        rec_operativa = "Sugerencia del Agente: Mantener la distribución actual de capitales asignados. Cartera óptima y es resiliente; se aconseja acumular nominales en periodos de ajuste técnico semanal."
+        termometro_riesgo = "<span style='background-color:#0d47a1; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>⚖️ PERFIL MODERADO</span>"
+        analisis_web_riesgo = "Composición balanceada. El equilibrio entre índices (SPY), innovación (Apple) y consumo (Coca-Cola) neutraliza riesgos."
+        rec_operativa = "Sugerencia del Agente: Mantener la distribución actual. Se aconseja acumular nominales en ajustes."
 
-    # INFORME DE RIESGO DE LA CARTERA Y RECOMENDACIÓN OPERATIVA EXPANDIDA DE CORRIDO
+    # INFORME DE RIESGO DE LA CARTERA
     st.markdown(f"""
     <div style="background-color:#161a22; padding:10px; border-radius:6px; font-size:0.82rem; border:1px solid #232a38; color:white; margin-bottom: 15px; line-height:1.45;">
-        <b style="color:#2196f3; font-size:0.90rem;">📊 Análisis de Riesgo Profundo del Agente:</b> Realizado en Vivo<br><br>
+        <b style="color:#2196f3; font-size:0.90rem;">📊 Análisis de Riesgo Profundo del Agente:</b><br><br>
         • <b>Termómetro de Volatilidad Global:</b> {termometro_riesgo}<br><br>
-        • <b style="color:#00e676;">Indagación Web y Perfil de Riesgo:</b> {analisis_web_riesgo}<br><br>
-        • <b style="color:#ffeb3b;">Dictamen Operativo del Comité de Agentes:</b> {rec_operativa}
+        • <b style="color:#00e676;">Indagación Web y Perfil:</b> {analisis_web_riesgo}<br><br>
+        • <b style="color:#ffeb3b;">Dictamen Operativo:</b> {rec_operativa}
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------------------------------
-# LA GRAN ADICIÓN MAESTRA PEDIDA POR EDUARDO: MATRIZ EJECUTIVA EN CUADRÍCULA AUTOMÁTICA
+# REUBICACIÓN MAESTRA SOLICITADA POR EDUARDO: EL BOTÓN SE MUEVE ARRIBA DE TODO COMPACTO
 # -------------------------------------------------------------------------------------
-st.markdown("<h3 style='color:#ffffff;'>📋 Tablero de Mando - Matriz Resumen</h3>", unsafe_allow_html=True)
-
-# Inicializamos el estado del botón del cuadro resumen para que no parpadee al borrar tarjetas
 if "ver_cuadricula_resumen" not in st.session_state:
     st.session_state.ver_cuadricula_resumen = False
 
-# Botón premium de envoltura forzada para desplegar el cuadro con los resultados calculados
-if st.button("📊 Ver Cuadrícula de Resumen General", use_container_width=True):
+# Inyectamos el disparador en formato compacto estilizado
+st.markdown("<div style='text-align:center; margin-top:-4px; margin-bottom:8px;'>", unsafe_allow_html=True)
+if st.button("📊 Resumen General", key="btn_mini_resumen_v25_def", use_container_width=True):
     st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
+st.markdown("</div>", unsafe_allow_html=True)
 
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
-    # Convertimos la lista de recolección en una planilla dataframe pura de Pandas
+    # Convertimos a formato DataFrame plano
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    
-    # Renombramos las columnas con nombres ejecutivos ultra limpios para tu celular
-    df_matriz.columns = ["Activo", "Precio / Target", "Suba Sem.", "Suba Anual", "Fundamental", "RSI / Dividendos"]
-    
-    st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:4px;'>✍ Valores expresados en USD base. Datos unificados del Agente:</p>", unsafe_allow_html=True)
-    # Dibujamos la cuadrícula rígida nativa en base al CSS inyectado en el Bloque 1
+    # NUEVAS COLUMNAS SEPARADAS RIGIDAS ULTRA DELGADAS
+    df_matriz.columns = ["Activo", "Precio", "Target", "Sem %", "Anual %", "Fund", "Agente"]
+    st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta (USD base):</p>", unsafe_allow_html=True)
     st.table(df_matriz)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 5. CENTRAL DE NOTICIAS DE MIS ACCIONES EN CORRIDO DIRECTO CON LINKS DE ACCESO ASEGURADO
+# 5. CENTRAL DE NOTICIAS DE MIS ACCIONES
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 noticias_seguras = {
@@ -546,7 +548,7 @@ for simbolo in activos_actuales:
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
 st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: fixed; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Inicio</div>
     <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
     <div style="color:#888;">📊<br>Análisis</div>
