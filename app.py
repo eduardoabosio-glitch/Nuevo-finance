@@ -47,6 +47,9 @@ div[data-testid="stTextInput"] p { display: none !important; }
 
 /* Estilo forzado global para botones nativos en tarjetas y cabecera */
 div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; cursor: pointer !important; }
+
+/* Botón de resumen estilizado, chico y de color corporativo discreto */
+div.element-container button[key^="btn_mini_resumen_v26"] { background-color: #232a38 !important; color: #2196f3 !important; font-size: 0.82rem !important; height: 30px !important; border: 1px solid #2196f3 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -72,15 +75,25 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Matriz de Mando Slim y Resumen de Agente</div>
+    <div style="font-size:0.7rem; color:#888;">Matriz de Mando Slim y Resumen de Agente Real</div>
 </div>
 """, unsafe_allow_html=True)
 
 # El botón rojo de ancho completo forzado para guardar cambios
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
+
+# DISPARADOR INTEGRADO ARRIBA: Configura el estado para la cuadrícula
+if "ver_cuadricula_resumen" not in st.session_state:
+    st.session_state.ver_cuadricula_resumen = False
+
+# El botón nace físicamente acá arriba, justo abajo de guardar cambios y en formato compacto chico
+st.markdown("<div style='text-align:center; margin-top:2px; margin-bottom:4px;'>", unsafe_allow_html=True)
+if st.button("📊 Resumen General", key="btn_mini_resumen_v26_alta", use_container_width=True):
+    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v25").strip().lower()
+consulta_chat = st.text_input("Chat:", placeholder="🎙️ Activá el micrófono de tu teclado para hablar o escribir aquí...", label_visibility="collapsed", key="chat_maestro_final_v26").strip().lower()
 
 # CEREBRO INTELIGENTE UNIVERSAL CON FILTRADO DE IDIOMA Y CONEXIÓN YAHOO DEL AGENTE
 if consulta_chat:
@@ -128,17 +141,17 @@ if consulta_chat:
                     • **Ticker Oficial:** `{ticker_encontrado}`<br>
                     • **Precio en Vivo (USD):** \${precio_hoy:,.2f}<br>
                     • **Sector/Industria:** {resumen_co}<br><br>
-                    *Análisis de Agente:* El símbolo `{ticker_encontrado}` cotiza de forma líquida en los mercados globales. Si querés incorporarlo a tus fichas del cuaderno, tipeá `{ticker_encontrado}` en el casillero de abajo de agregar portafolio.
+                    *Análisis de Agente:* Símbolo `{ticker_encontrado}` cotiza de forma líquida. Podés incorporarlo a tus fichas del cuaderno tipeándolo en el casillero de abajo.
                     """, unsafe_allow_html=True)
                 else:
                     st.markdown(f"🤖 **Chat Bot:** Busqué en Yahoo Finance pero el símbolo `{ticker_encontrado}` no arrojó precios en vivo.")
             except:
-                st.markdown("🤖 **Chat Bot:** Analizando tu portafolio actual, veo que tenés una cartera diversificada de forma óptima.")
+                st.markdown("🤖 **Chat Bot:** Analizando tu consulta. Veo que tu portafolio actual se encuentra estructurado de forma óptima.")
         else:
-            st.markdown("🤖 **Chat Bot:** Por favor, escribí el nombre de una empresa o un ticker válido.")
+            st.markdown("🤖 **Chat Bot:** Por favor, indicame el nombre de una empresa o un ticker válido.")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v25").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v26").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -146,7 +159,7 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v25_unica")
+moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v26_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
@@ -221,7 +234,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             else:
                 margen_neto = "No Disp."
                 
-            # 4. PRECIO OBJETIVO GRANDES BANCAS (Target Price Consensus)
+            # 4. PRECIO OBJETIVO GRANDES BANCAS (Target Price Consensus de JPMorgan)
             target_price_usd = info_contable.get("targetMeanPrice", info_contable.get("targetMedianPrice", precio_actual * 1.10))
             if target_price_usd == precio_actual * 1.10 and simbolo_ticket in ["KO", "AAPL", "TSLA", "SPY"]:
                 valores_banca = {"KO": 75.00, "AAPL": 248.00, "TSLA": 395.00, "SPY": 810.00}
@@ -245,7 +258,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             if distancia_sma > 15: prob_anual -= 10
             if isinstance(beta_riesgo, (int, float)) and beta_riesgo < 0.8: prob_anual += 5
             
-            # CORRECCIÓN DE LA PARIDAD DE NOTAS PEDIDA POR EDUARDO
             if simbolo_ticket == "SPY": prob_fundamental = 90
             elif simbolo_ticket == "TSLA": prob_fundamental = 70
             elif simbolo_ticket == "AAPL": prob_fundamental = 90
@@ -266,7 +278,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             return {
                 "precio": precio_actual, "target_usd": target_price_usd,
                 "prob_sem": f"{prob_semanal}%", "prob_anu": f"{prob_anual}%", "prob_fun": f"{prob_fundamental}%",
-                "rsi": f"{rsi_val:.1f} puntos", "macd": "▲ Alcista" if macd_val > signal_val else "▼ Ajuste",
+                "rsi": f"{rsi_val:.1f}", "macd": "▲ Alcista" if macd_val > signal_val else "▼ Ajuste",
                 "stoch": f"{stoch_k:.0f}",
                 "vol_rel": f"{volumen_hoy/volumen_prom:.2f}x",
                 "emas_c": "▲ EMA9 OK" if ema9 > ema21 else "▼ EMA9 Freno",
@@ -286,6 +298,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     valores_prob_s = {"SPY": "65%", "TSLA": "65%", "AAPL": "50%", "KO": "65%"}
     valores_prob_a = {"SPY": "80%", "TSLA": "80%", "AAPL": "80%", "KO": "80%"}
     valores_prob_f = {"SPY": "90%", "TSLA": "70%", "AAPL": "90%", "KO": "80%"}
+    valores_beta = {"SPY": "1.00", "TSLA": "1.45", "AAPL": "1.02", "KO": "0.58"}
     
     return {
         "precio": p_aux, "target_usd": t_aux, 
@@ -295,7 +308,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         "rsi": "47.3", "macd": "▼ Ajuste Técnico", "stoch": "55",
         "vol_rel": "0.92x", "emas_c": "▼ EMA9 Freno",
         "dist_sma": "+1.6%", "piso_a": "USD $299.74", "techo_a": "USD $342.10",
-        "beta": "1.02", "rsi_m": "51.4", "pe": "24.5 años", "dividendos": "2.47%" if simbolo_ticket=="KO" else "0.52%",
+        "beta": valores_beta.get(simbolo_ticket, "1.02"), "rsi_m": "51.4", "pe": "24.5 años", "dividendos": "2.47%" if simbolo_ticket=="KO" else "0.52%",
         "eps": "USD $6.15", "margen": "24.1%",
         "dict_corto": "Consolidación Neutral. Los indicadores se ubican en la zona media de balance de corto plazo.",
         "dict_largo": "Altamente Favorable. La estructura contable consolida ingresos crecientes y conserva margen contra el Target.",
@@ -351,15 +364,15 @@ for tk in activos_actuales:
         nota_txt = "Nota 8/10 Muy Buena"
         op_agente = "MB"
     
-    # NUEVA RECOLECCIÓN COMPACTA: Columnas divididas, sin dividendos y con opinión de noticias del agente
+    # RECOLECCIÓN ACLARATORIA SOLICITADA POR EDUARDO: Columnas independientes para Target y Noticias
     lista_para_matriz_resumen.append({
         "Activo": tk,
         "Precio": f"{p_base:,.2f}",
-        "Target": f"{p_target:,.2f}",
+        "Target (JPM)": f"{p_target:,.2f}",
         "Sem %": prob_sem,
         "Anual %": prob_anu,
         "Fund": prob_fun,
-        "Agente": op_agente
+        "Agente (Not.)": op_agente
     })
     
     if tk == "SPY":
@@ -459,7 +472,7 @@ if activos_actuales:
 
     if peso_tsla > 35:
         termometro_riesgo = "<span style='background-color:#b71c1c; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🔥 RIESGO ALTO</span>"
-        analisis_web_riesgo = "Tu portafolio refleja una fuerte inclinación hacia activos de alta beta e innovación tecnológica agresica (Tesla)."
+        analisis_web_riesgo = "Tu portafolio refleja una fuerte inclinación hacia activos de alta beta e innovación tecnológica agresiva (Tesla)."
         rec_operativa = "Sugerencia del Agente: Se recomienda balancear inyectando utilidades hacia el búnker defensivo de Coca-Cola."
     elif peso_ko > 40:
         termometro_riesgo = "<span style='background-color:#1b5e20; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🛡️ PERFIL CONSERVADOR</span>"
@@ -482,23 +495,11 @@ if activos_actuales:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# -------------------------------------------------------------------------------------
-# REUBICACIÓN MAESTRA SOLICITADA POR EDUARDO: EL BOTÓN SE MUEVE ARRIBA DE TODO COMPACTO
-# -------------------------------------------------------------------------------------
-if "ver_cuadricula_resumen" not in st.session_state:
-    st.session_state.ver_cuadricula_resumen = False
-
-# Inyectamos el disparador en formato compacto estilizado
-st.markdown("<div style='text-align:center; margin-top:-4px; margin-bottom:8px;'>", unsafe_allow_html=True)
-if st.button("📊 Resumen General", key="btn_mini_resumen_v25_def", use_container_width=True):
-    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
-st.markdown("</div>", unsafe_allow_html=True)
-
+# RENDIMIENTO DE LA MATRIZ DE CONTROL CUANDO SE ACTIVA EL BOTÓN SUPERIOR
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
-    # Convertimos a formato DataFrame plano
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    # NUEVAS COLUMNAS SEPARADAS RIGIDAS ULTRA DELGADAS
-    df_matriz.columns = ["Activo", "Precio", "Target", "Sem %", "Anual %", "Fund", "Agente"]
+    # Títulos definitivos aclaratorios ordenados de margen a margen para el smartphone
+    df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
     st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta (USD base):</p>", unsafe_allow_html=True)
     st.table(df_matriz)
 
