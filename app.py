@@ -37,7 +37,7 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .dataframe td { padding: 2px !important; border: 1px solid #232a38 !important; }
 
 /* Diseña la caja de texto para que muestre el valor grande en VERDE PREMIUM */
-div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; height: 34px !important; }
+div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; }
 div[data-testid="stTextInput"] label { display: none !important; }
 div[data-testid="stTextInput"] p { display: none !important; }
 
@@ -72,7 +72,7 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Estructura con Doble Botón Réplica de Control de Mando</div>
+    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Desplegables con Certificación JPM Unificada</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -80,11 +80,11 @@ st.markdown("""
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
-# RETENEDOR DE ORDEN INTERNO PARA EL BOTÓN REPLICADO
+# RETENEDOR DE MEMORIA GLOBAL SEGURO PARA EL DOBLE BOTÓN
 if "ver_cuadricula_resumen" not in st.session_state:
     st.session_state.ver_cuadricula_resumen = False
 
-# BOTÓN 1 DE 2: El disparador de arriba, compacto, de corrido y enlazado a la memoria
+# BOTÓN 1 DE 2: El disparador compacto superior enlazado de forma blindada
 st.markdown("<div style='text-align:center; margin-top:2px; margin-bottom:4px;'>", unsafe_allow_html=True)
 if st.button("📊 Resumen General (Arriba)", key="btn_replica_arriba_v26", use_container_width=True):
     st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
@@ -156,6 +156,7 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
+# UNIFICACIÓN RIGUROSA DE NOMBRE PARA EVITAR EL CORTOCIRCUITO
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v26_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
@@ -441,7 +442,7 @@ for tk in activos_actuales:
     
     monto_mostrar_box = monto_actual * factor_cambio
     texto_con_comillas = f'"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"'
-    entrada_texto_usuario = st.text_input(f"box_txt_{tk}", value=texto_con_comillas, key=f"input_box_{tk}_{moneda_act}")
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk}", value=texto_con_comillas, key=f"input_box_{tk}_{moneda}")
     
     if entrada_texto_usuario != texto_con_comillas:
         try:
@@ -494,7 +495,7 @@ if activos_actuales:
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------------------------------
-# EL BOTÓN REPLICA DE ABAJO Y LA RENDERIZACIÓN DE LA PLANILLA DELGADA ACLARATORIA
+# EL BOTÓN RÉPLICA DE ABAJO Y LA RENDERIZACIÓN DE LA PLANILLA DELGADA ACLARATORIA
 # -------------------------------------------------------------------------------------
 st.markdown("<div style='text-align:center; margin-top:4px; margin-bottom:8px;'>", unsafe_allow_html=True)
 if st.button("📊 Resumen General (Abajo)", key="btn_replica_abajo_v26", use_container_width=True):
