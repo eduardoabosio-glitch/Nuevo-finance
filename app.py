@@ -79,16 +79,6 @@ st.markdown("""
 # El botón rojo de ancho completo forzado para guardar cambios
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
-
-# RETENEDOR DE MEMORIA GLOBAL SEGURO PARA EL DOBLE BOTÓN
-if "ver_cuadricula_resumen" not in st.session_state:
-    st.session_state.ver_cuadricula_resumen = False
-
-# BOTÓN 1 DE 2: El disparador compacto superior enlazado de forma blindada
-st.markdown("<div style='text-align:center; margin-top:2px; margin-bottom:4px;'>", unsafe_allow_html=True)
-if st.button("📊 Resumen General (Arriba)", key="btn_replica_arriba_v26", use_container_width=True):
-    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
-st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="🎙️ Activá el micrófono de tu teclado para hablar o escribir aquí...", label_visibility="collapsed", key="chat_maestro_final_v26").strip().lower()
 
@@ -156,7 +146,7 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-# UNIFICACIÓN RIGUROSA DE NOMBRE PARA EVITAR EL CORTOCIRCUITO
+# SELECTOR UNIFICADO ENLANCE ALTO
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v26_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
@@ -495,16 +485,19 @@ if activos_actuales:
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------------------------------
-# EL BOTÓN RÉPLICA DE ABAJO Y LA RENDERIZACIÓN DE LA PLANILLA DELGADA ACLARATORIA
+# EL BOTÓN EXCLUSIVO DE ABAJO Y LA RENDERIZACIÓN DE LA PLANILLA DELGADA ACLARATORIA
 # -------------------------------------------------------------------------------------
+if "ver_cuadricula_resumen" not in st.session_state:
+    st.session_state.ver_cuadricula_resumen = False
+
 st.markdown("<div style='text-align:center; margin-top:4px; margin-bottom:8px;'>", unsafe_allow_html=True)
-if st.button("📊 Resumen General (Abajo)", key="btn_replica_abajo_v26", use_container_width=True):
+if st.button("📊 Resumen General", key="btn_unico_abajo_v26_def", use_container_width=True):
     st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
 st.markdown("</div>", unsafe_allow_html=True)
 
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    # Títulos aclaratorios delgados ordenados para tu teléfono de margen a margen
+    # Títulos definitivos aclaratorios unificados perfectos para tu pantalla de celular
     df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
     st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta (USD base):</p>", unsafe_allow_html=True)
     st.table(df_matriz)
