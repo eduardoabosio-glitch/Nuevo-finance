@@ -37,7 +37,7 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .dataframe td { padding: 2px !important; border: 1px solid #232a38 !important; }
 
 /* Diseña la caja de texto para que muestre el valor grande en VERDE PREMIUM */
-div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; }
+div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; height: 34px !important; }
 div[data-testid="stTextInput"] label { display: none !important; }
 div[data-testid="stTextInput"] p { display: none !important; }
 
@@ -47,9 +47,6 @@ div[data-testid="stTextInput"] p { display: none !important; }
 
 /* Estilo forzado global para botones nativos en tarjetas y cabecera */
 div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; cursor: pointer !important; }
-
-/* Botón de resumen estilizado, chico y de color corporativo discreto */
-div.element-container button[key^="btn_mini_resumen_v26"] { background-color: #232a38 !important; color: #2196f3 !important; font-size: 0.82rem !important; height: 30px !important; border: 1px solid #2196f3 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -72,14 +69,10 @@ VALOR_DOLAR_MEP = obtener_mep_criptoya_real()
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
-# CONTROL DE MONEDAS ANVANCE GLOBAL COMPATIBLE FORZADO ARRIBA
-if 'selector_moneda_global' not in st.session_state:
-    st.session_state.selector_moneda_global = "Dólares (USD)"
-
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Matriz de Mando Slim y Resumen de Agente Real</div>
+    <div style="font-size:0.7rem; color:#888;">Estructura con Doble Botón Réplica de Control de Mando</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -87,13 +80,13 @@ st.markdown("""
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
-# DISPARADOR INTEGRADO CON RECONEXIÓN DE MEMORIA COMPATIBLE
+# RETENEDOR DE ORDEN INTERNO PARA EL BOTÓN REPLICADO
 if "ver_cuadricula_resumen" not in st.session_state:
     st.session_state.ver_cuadricula_resumen = False
 
-# El botón nace físicamente acá arriba compacto y chico, libre de NameError
+# BOTÓN 1 DE 2: El disparador de arriba, compacto, de corrido y enlazado a la memoria
 st.markdown("<div style='text-align:center; margin-top:2px; margin-bottom:4px;'>", unsafe_allow_html=True)
-if st.button("📊 Resumen General", key="btn_mini_resumen_v26_alta", use_container_width=True):
+if st.button("📊 Resumen General (Arriba)", key="btn_replica_arriba_v26", use_container_width=True):
     st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
@@ -163,9 +156,8 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-# SELECTOR INTERACTIVO SEGURO ENLAZADO ARRIBA
-moneda_act = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v26_unica")
-es_pesos = moneda_act == "Pesos (ARS)"
+moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v26_unica")
+es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 if es_pesos:
@@ -501,10 +493,17 @@ if activos_actuales:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 📋 RENDIMIENTO EN CASCADA COMPATIBLE: Dibuja la cuadrícula abajo leyendo la memoria del botón superior
+# -------------------------------------------------------------------------------------
+# EL BOTÓN REPLICA DE ABAJO Y LA RENDERIZACIÓN DE LA PLANILLA DELGADA ACLARATORIA
+# -------------------------------------------------------------------------------------
+st.markdown("<div style='text-align:center; margin-top:4px; margin-bottom:8px;'>", unsafe_allow_html=True)
+if st.button("📊 Resumen General (Abajo)", key="btn_replica_abajo_v26", use_container_width=True):
+    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
+st.markdown("</div>", unsafe_allow_html=True)
+
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    # Títulos definitivos aclaratorios unificados perfectos para tu pantalla de celular
+    # Títulos aclaratorios delgados ordenados para tu teléfono de margen a margen
     df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
     st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta (USD base):</p>", unsafe_allow_html=True)
     st.table(df_matriz)
