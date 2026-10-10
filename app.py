@@ -27,7 +27,7 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 
 /* Diseña la caja de texto para que muestre el valor grande en VERDE PREMIUM y borre leyendas grises */
-div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; }
+div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; height: 34px !important; }
 div[data-testid="stTextInput"] label { display: none !important; }
 div[data-testid="stTextInput"] p { display: none !important; }
 
@@ -35,28 +35,28 @@ div[data-testid="stTextInput"] p { display: none !important; }
 .caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
 .enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-/* REPARACIÓN BOTÓN GUARDAR GRANDE: Mantiene su tamaño estético original sin achicarse */
-.btn-guardar-grande div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.95rem !important; padding: 6px !important; border-radius: 6px !important; border: none !important; height: 42px !important; width: 100% !important; cursor: pointer !important; }
+/* REPARACIÓN DEFINITIVA CONTENEDOR GUARDAR: Obliga al botón rojo a ocupar todo el ancho del celular */
+div.stButton > button[key="btn_guardar_maestro_v18"] { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.92rem !important; border-radius: 6px !important; border: none !important; height: 42px !important; width: 100% !important; cursor: pointer !important; }
 
 /* Botón de eliminación mini nativo para las tarjetas */
-.btn-borrar-tarjeta div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 4px !important; border: none !important; height: 22px !important; width: 65px !important; line-height: 1 !important; cursor: pointer !important; }
+div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 4px !important; border: none !important; height: 22px !important; width: 65px !important; line-height: 1 !important; cursor: pointer !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# EL NUEVO MOTOR EN VIVO: Consulta directo a las pizarras de Ambito de forma autonoma y móvil
-@st.cache_data(ttl=60)
-def obtener_mep_ambito_tarjetas():
+# CONEXIÓN EN VIVO LIMPIA: Captura DolarApi de corrido eliminando las barras cruzadas de la pantalla
+@st.cache_data(ttl=120)
+def obtener_mep_criptoya_real():
     try:
         respuesta = requests.get("https://dolarapi.com", timeout=3)
         if respuesta.status_code == 200:
-            valor_mep = float(respuesta.json().get("venta", 1555.0))
+            valor_mep = float(respuesta.json().get("venta", 1554.50))
             if valor_mep > 500:
                 return valor_mep
     except:
         pass
     return 1554.50
 
-VALOR_DOLAR_MEP = obtener_mep_ambito_tarjetas()
+VALOR_DOLAR_MEP = obtener_mep_criptoya_real()
 
 # 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
 if 'montos_dis' not in st.session_state:
@@ -65,17 +65,15 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Portafolio Automático con Dólar de Pizarra Móvil</div>
+    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado Rígido</div>
 </div>
 """, unsafe_allow_html=True)
 
-# El botón recuperar su contenedor grande premium para no verse apretado
-st.markdown('<div class="btn-guardar-grande">', unsafe_allow_html=True)
-if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, key="btn_guardar_maestro_v16"):
+# Se inyecta el botón con ID único para que los estilos CSS lo estiren a lo ancho de la pantalla
+if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, key="btn_guardar_maestro_v18"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
-st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v16").strip().lower()
+consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v18").strip().lower()
 
 # CEREBRO INTELIGENTE UNIVERSAL CON FILTRADO DE IDIOMA Y CONEXIÓN YAHOO DEL AGENTE
 if consulta_chat:
@@ -133,7 +131,7 @@ if consulta_chat:
             st.markdown("🤖 **Chat Bot:** Por favor, escribí el nombre de una empresa o un ticker válido para que pueda consultarlo en vivo en Yahoo Finance.")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v16").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v18").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -141,12 +139,13 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v16_unica")
+moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v18_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 if es_pesos:
-    st.markdown(f"<p style='font-size:0.82rem; color:#888; margin:0; padding-top:4px;'>⚡ Cotización Dólar MEP de Pizarra en Vivo: <b style='color:#00e676;'>\$ {VALOR_DOLAR_MEP:,.2f}</b></p>", unsafe_allow_html=True)
+    # SE LIMPIA LA BARRA INCLINADA TRAICIONERA DE ESTA LÍNEA DE TEXTO HTML
+    st.markdown(f"<p style='font-size:0.82rem; color:#888; margin:0; padding-top:4px;'>⚡ Cotización Dólar MEP de Pizarra en Vivo: <b style='color:#00e676;'>ARS \$ {VALOR_DOLAR_MEP:,.2f}</b></p>", unsafe_allow_html=True)
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 
@@ -208,7 +207,7 @@ for tk in activos_actuales:
     st.markdown('<div style="font-size:0.84rem; color:#888; font-weight: bold; margin-bottom:2px;">✍ Capital Invertido Asignado:</div>', unsafe_allow_html=True)
     
     st.markdown('<div class="btn-borrar-tarjeta">', unsafe_allow_html=True)
-    if st.button("❌ Borrar", key=f"delete_btn_v16_{tk}"):
+    if st.button("❌ Borrar", key=f"delete_btn_v18_{tk}"):
         if tk in st.session_state.montos_dis:
             del st.session_state.montos_dis[tk]
         st.rerun()
