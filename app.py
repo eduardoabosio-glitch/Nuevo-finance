@@ -35,20 +35,20 @@ div[data-testid="stTextInput"] p { display: none !important; }
 .caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
 .enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-/* Estilo forzado global para botones nativos en tarjetas */
+/* Estilo forzado global para botones nativos en tarjetas y cabecera */
 div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; cursor: pointer !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# CONEXIÓN OFICIAL EN VIVO LIMPIA: Rastrea DolarApi sin trabas
-@st.cache_data(ttl=120)
+# CONEXIÓN OFICIAL EN VIVO LIMPIA: Caza el MEP móvil de las ALyCs al segundo sin congelamientos
+@st.cache_data(ttl=60)
 def obtener_mep_criptoya_real():
     try:
-        respuesta = requests.get("https://dolarapi.com", timeout=3)
-        if respuesta.status_code == 200:
-            valor_mep = float(respuesta.json().get("venta", 1554.50))
-            if valor_mep > 500:
-                return valor_mep
+        r_cy = requests.get("https://criptoya.com", timeout=3)
+        if r_cy.status_code == 200:
+            val_mep = float(r_cy.json().get("mep", {}).get("al30", {}).get("price", 1554.50))
+            if val_mep > 500:
+                return val_mep
     except:
         pass
     return 1554.50
@@ -66,7 +66,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# BOTÓN ENVOLTURA TOTALMENTE FORZADA: Rompe el bloqueo visual y se estira al 100% de la pantalla
+# El botón rojo estirado premium de ancho completo forzado para tu dedo
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
@@ -141,8 +141,8 @@ es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 if es_pesos:
-    # ELIMINADA LA BARRA INVERTIDA DE ESCAPE PARA EVITAR EL CONGELAMIENTO VISUAL
-    st.markdown(f"<p style='font-size:0.82rem; color:#888; margin:0; padding-top:4px;'>⚡ Cotización Dólar MEP de Pizarra en Vivo: <b style='color:#00e676;'>ARS \$ {VALOR_DOLAR_MEP:,.2f}</b></p>", unsafe_allow_html=True)
+    # REEMPLAZO DEFINITIVO: Formato st.info nativo limpio sin barras inclinadas invertidas
+    st.info(f"⚡ Cotización Dólar MEP de Pizarra en Vivo: ARS \$ {VALOR_DOLAR_MEP:,.2f}")
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 
@@ -247,7 +247,7 @@ st.markdown('''
     <b style="color:#2196f3; font-size:0.88rem;">📊 Resumen de Composición del Agente:</b><br>
     • <b style="color:#00e676;">Impacto General:</b> Altamente Favorable y Balanceado<br>
     • <b style="color:#00e676;">Análisis de Riesgo:</b> Cartera Diversificada Estructuralmente<br>
-    • <b style="color:#00e676;">Sugerencia Operativa:</b> Mantener Capitales y Reinvertir Dividendos
+    • <b style="color:#00e676;">Sugerencia Operativa:</b> Mantener Capitales and Reinvertir Dividendos
 </div>
 ''', unsafe_allow_html=True)
 
