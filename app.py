@@ -83,11 +83,11 @@ st.markdown("""
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
-# DISPARADOR INTEGRADO ARRIBA: Configura el estado para la cuadrícula
+# DISPARADOR INTEGRADO CON RECONEXIÓN DE MEMORIA COMPATIBLE
 if "ver_cuadricula_resumen" not in st.session_state:
     st.session_state.ver_cuadricula_resumen = False
 
-# El botón nace físicamente acá arriba, justo abajo de guardar cambios y en formato compacto chico
+# El botón nace físicamente acá arriba compacto y chico, pero guardando la orden en memoria interna
 st.markdown("<div style='text-align:center; margin-top:2px; margin-bottom:4px;'>", unsafe_allow_html=True)
 if st.button("📊 Resumen General", key="btn_mini_resumen_v26_alta", use_container_width=True):
     st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
@@ -159,14 +159,7 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v26_unica")
-es_pesos = moneda == "Pesos (ARS)"
-factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
-
-if es_pesos:
-    st.info(f"⚡ Cotización Dólar MEP de Pizarra en Vivo: ARS \$ {VALOR_DOLAR_MEP:,.2f}")
-
-st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 # EL SUPERMOTOR QUANT AVANZADO CON GENERADOR DE DICTAMEN DE HORIZONTES AUTOMÁTICO
 @st.cache_data(ttl=120)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
@@ -258,6 +251,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             if distancia_sma > 15: prob_anual -= 10
             if isinstance(beta_riesgo, (int, float)) and beta_riesgo < 0.8: prob_anual += 5
             
+            # CORRECCIÓN DE LA PARIDAD DE NOTAS PEDIDA POR EDUARDO
             if simbolo_ticket == "SPY": prob_fundamental = 90
             elif simbolo_ticket == "TSLA": prob_fundamental = 70
             elif simbolo_ticket == "AAPL": prob_fundamental = 90
@@ -495,10 +489,10 @@ if activos_actuales:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# RENDIMIENTO DE LA MATRIZ DE CONTROL CUANDO SE ACTIVA EL BOTÓN SUPERIOR
+# 📋 RENDIMIENTO EN CASCADA COMPATIBLE: Dibuja la cuadrícula abajo leyendo la memoria del botón superior
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    # Títulos definitivos aclaratorios ordenados de margen a margen para el smartphone
+    # Títulos definitivos aclaratorios unificados perfectos para tu pantalla
     df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
     st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta (USD base):</p>", unsafe_allow_html=True)
     st.table(df_matriz)
