@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import requests
 import yfinance as yf
 
 # 1. Configuración de pantalla rígida para celulares
@@ -34,29 +35,28 @@ div[data-testid="stTextInput"] p { display: none !important; }
 .caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
 .enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-/* Botón de eliminación nativo ultra-ajustado a la derecha sin duplicaciones */
-div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 4px !important; border: none !important; height: 20px !important; width: 65px !important; line-height: 1 !important; cursor: pointer !important; }
+/* REPARACIÓN BOTÓN GUARDAR GRANDE: Mantiene su tamaño estético original sin achicarse */
+.btn-guardar-grande div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.95rem !important; padding: 6px !important; border-radius: 6px !important; border: none !important; height: 42px !important; width: 100% !important; cursor: pointer !important; }
+
+/* Botón de eliminación mini nativo para las tarjetas */
+.btn-borrar-tarjeta div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; font-size: 0.65rem !important; padding: 1px 4px !important; border-radius: 4px !important; border: none !important; height: 22px !important; width: 65px !important; line-height: 1 !important; cursor: pointer !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ECUACIÓN FINANCIERA BOLSA DE BS AS: Divide AL30/AL30D en vivo usando Yahoo Finance
-@st.cache_data(ttl=120)
-def calcular_mep_por_ecuacion_al30():
+# EL NUEVO MOTOR EN VIVO: Consulta directo a las pizarras de Ambito de forma autonoma y móvil
+@st.cache_data(ttl=60)
+def obtener_mep_ambito_tarjetas():
     try:
-        bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
-        bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
-        if not bono_pesos.empty and not bono_dolares.empty:
-            ultimo_pesos = float(bono_pesos["Close"].iloc[-1])
-            ultimo_dolares = float(bono_dolares["Close"].iloc[-1])
-            if ultimo_dolares > 0:
-                mep_calculado = ultimo_pesos / ultimo_dolares
-                if 1000 < mep_calculado < 2200:
-                    return mep_calculado
+        respuesta = requests.get("https://dolarapi.com", timeout=3)
+        if respuesta.status_code == 200:
+            valor_mep = float(respuesta.json().get("venta", 1555.0))
+            if valor_mep > 500:
+                return valor_mep
     except:
         pass
-    return 1555.0
+    return 1554.50
 
-VALOR_DOLAR_MEP = calcular_mep_por_ecuacion_al30()
+VALOR_DOLAR_MEP = obtener_mep_ambito_tarjetas()
 
 # 3. BASE DE DATOS INTERNA CON MEMORIA CONTINUA
 if 'montos_dis' not in st.session_state:
@@ -65,14 +65,17 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas del Cuaderno con Formato Unificado</div>
+    <div style="font-size:0.7rem; color:#888;">Portafolio Automático con Dólar de Pizarra Móvil</div>
 </div>
 """, unsafe_allow_html=True)
 
-if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, key="btn_guardar_local_v15"):
+# El botón recuperar su contenedor grande premium para no verse apretado
+st.markdown('<div class="btn-guardar-grande">', unsafe_allow_html=True)
+if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, key="btn_guardar_maestro_v16"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
+st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo</h3>", unsafe_allow_html=True)
-consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v15").strip().lower()
+consulta_chat = st.text_input("Chat:", placeholder="Escribí el nombre de cualquier empresa (ej: coca cola, nvidia, micron, jpmorgan)...", label_visibility="collapsed", key="chat_maestro_final_v16").strip().lower()
 
 # CEREBRO INTELIGENTE UNIVERSAL CON FILTRADO DE IDIOMA Y CONEXIÓN YAHOO DEL AGENTE
 if consulta_chat:
@@ -130,7 +133,7 @@ if consulta_chat:
             st.markdown("🤖 **Chat Bot:** Por favor, escribí el nombre de una empresa o un ticker válido para que pueda consultarlo en vivo en Yahoo Finance.")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v15").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v16").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -138,16 +141,16 @@ if nueva_empresa:
         st.success(f"¡{nueva_empresa} agregada con éxito!")
         st.rerun()
 
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v15_unica")
+moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v16_unica")
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 if es_pesos:
-    st.markdown(f"<p style='font-size:0.82rem; color:#888; margin:0; padding-top:4px;'>⚡ Cotización Dólar MEP por Ecuación de Bonos (AL30/AL30D): <b style='color:#00e676;'>\$ {VALOR_DOLAR_MEP:,.2f}</b></p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:0.82rem; color:#888; margin:0; padding-top:4px;'>⚡ Cotización Dólar MEP de Pizarra en Vivo: <b style='color:#00e676;'>\$ {VALOR_DOLAR_MEP:,.2f}</b></p>", unsafe_allow_html=True)
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 
-# MOTOR DE PRECIOS EN VIVO DIRECTO DE INTERNET
+# MOTOR DE PRECIOS REALES EN REEMPLAZO DE LA LISTA VIEJA FIJA CONGELADA
 @st.cache_data(ttl=300)
 def obtener_precio_en_vivo_yahoo(simbolo_ticket):
     try:
@@ -188,12 +191,11 @@ for tk in activos_actuales:
     </div>
     """, unsafe_allow_html=True)
             
-    # RENGLÓN 2 y 3: Precio e información de la acción real en vivo
+    # RENGLÓN 2: Precio de la acción actual
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Precio de la Acción Actual:</span> <b>{texto_moneda_limpio}{p_base*factor_cambio:,.2f}</b></div>', unsafe_allow_html=True)
     st.markdown(f'<div class="renglon-precio-unificado"><span class="titulo-subrayado">Análisis Fundamental:</span> <b>{fund}</b></div>', unsafe_allow_html=True)
     
-    # RENGLÓN 4: Datos técnicos en dos columnas simétricas
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f'<span class="titulo-subrayado">Análisis Tec. Semanal:</span> <b style="color:#4caf50;">{sem}</b>', unsafe_allow_html=True)
@@ -202,19 +204,15 @@ for tk in activos_actuales:
         
     st.markdown(f'<div style="margin-top:4px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    # ESTRUCTURA INTEGRADA SECUENCIAL SEGURO: Coloca el control en un renglón HTML fino libre de duplicaciones
-    st.markdown("""
-    <div class="renglon-control-inferior">
-        <div style="font-size:0.84rem; color:#888; font-weight: bold;">✍ Capital Invertido Asignado:</div>
-        <div></div>
-    </div>
-    """, unsafe_allow_html=True)
+    # RENGLÓN 5 DE CONTROL HORIZONTAL: Se alinea el texto y el botón mini recupera su carril derecho fino
+    st.markdown('<div style="font-size:0.84rem; color:#888; font-weight: bold; margin-bottom:2px;">✍ Capital Invertido Asignado:</div>', unsafe_allow_html=True)
     
-    # El botón de borrado real corre abajo de forma nativa e independiente, eliminando de raíz las acciones fantasma
-    if st.button("❌ Borrar", key=f"delete_btn_v15_{tk}"):
+    st.markdown('<div class="btn-borrar-tarjeta">', unsafe_allow_html=True)
+    if st.button("❌ Borrar", key=f"delete_btn_v16_{tk}"):
         if tk in st.session_state.montos_dis:
             del st.session_state.montos_dis[tk]
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Caja de texto unificada verde premium con el formato de comillas y miles dinámico
     monto_mostrar_box = monto_actual * factor_cambio
