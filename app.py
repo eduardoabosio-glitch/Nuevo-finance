@@ -1,5 +1,5 @@
 
-import streamlit as st
+import streamlit st
 import pandas as pd
 import plotly.express as px
 import requests
@@ -72,13 +72,16 @@ if 'montos_dis' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Fichas Corporativas con Conexión de Balances en Vivo</div>
+    <div style="font-size:0.7rem; color:#888;">Matriz de Mando Slim y Resumen de Agente Real</div>
 </div>
 """, unsafe_allow_html=True)
 
 # El botón rojo de ancho completo forzado para guardar cambios
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
+
+# REUBICACIÓN MAESTRA DEL CARTEL DEL DOLAR MEP: Fijo arriba de todo para control visual permanente
+st.info(f"⚡ Cotización Dólar MEP de Cierre de Pizarra (BYMA): ARS $ {VALOR_DOLAR_MEP:,.2f}")
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo & BYMA</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="🎙️ Activá el micrófono de tu teclado para hablar o escribir aquí...", label_visibility="collapsed", key="chat_maestro_final_v27_byma").strip().lower()
 
@@ -167,7 +170,6 @@ if consulta_chat:
                 except:
                     st.markdown(f"🤖 **Chat Bot:** Error al conectar con la pizarra de BYMA para la acción local `{tk_ba}`.")
             else:
-                # Caso genérico para cualquier otro ticker que meta el usuario
                 try:
                     obj_gen = yf.Ticker(base_ticker)
                     p_gen = obj_gen.info.get("currentPrice", obj_gen.info.get("regularMarketPrice", 0.0))
@@ -190,14 +192,10 @@ moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-if es_pesos:
-    st.sidebar.markdown(f"📊 Cotización Dólar MEP: {VALOR_DOLAR_MEP}")
-
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-# EL SUPERMOTOR QUANT AVANZADO CON CONEXIÓN DE INFORMES REALES JPMORGAN
+    # EL SUPERMOTOR QUANT AVANZADO CON CONEXIÓN DE INFORMES REALES JPMORGAN
 @st.cache_data(ttl=120)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
-    # Limpiamos el sufijo local de BYMA si viene con .BA para calcular los osciladores core de Wall Street
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     try:
         ticker = yf.Ticker(sigla_limpia)
@@ -264,7 +262,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
                 margen_neto = "No Disp."
                 
             # CONEXIÓN DE CONCENSO ACTUALIZADO DE JPMORGAN SOLICITADO POR EDUARDO
-            # Forzamos los precios objetivos a lo que marcan los últimos informes de tus fotos reales
             valores_jpmorgan_reales = {
                 "KO": 95.00,       # Andrea Teixeira sube Coca Cola a USD $95
                 "AAPL": 360.00,    # Samik Chatterjee sube Apple a USD $360
@@ -323,7 +320,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     except:
         pass
     
-    # Resguardo rígido alternativo calibrado con los últimos cierres de BYMA/Wall Street
+    # Resguardo rígido de fin de semana calibrado de forma factible
     valores_aux_p = {"SPY": 778.57, "TSLA": 382.70, "AAPL": 336.64, "KO": 88.05, "CEPU": 1200.0, "GGAL": 1400.0}
     valores_aux_t = {"SPY": 810.00, "TSLA": 392.42, "AAPL": 360.00, "KO": 95.00, "CEPU": 1350.0, "GGAL": 1550.0}
     p_aux = valores_aux_p.get(sigla_limpia, 150.0)
