@@ -27,7 +27,7 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .titulo-subrayado { font-weight: bold; color: #2196f3; font-size: 0.88rem; }
 .renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
 
-/* Elimina bordes and leyendas grises de los expanders */
+/* Elimina bordes y leyendas grises de los expanders para que parezcan títulos interactivos puros */
 .stDetails { border: none !important; background-color: transparent !important; box-shadow: none !important; margin-bottom: 4px !important; padding: 0 !important; }
 .stDetails > summary { padding: 4px 0 !important; color: #ffffff !important; font-size: 0.88rem !important; font-weight: bold !important; }
 
@@ -57,6 +57,22 @@ VALOR_DOLAR_MEP = 1254.50
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
+# DICCIONARIO MAESTRO EXTRAÍDO AL BLOQUE 1 PARA ALIGERAR EL PROGRAMA DEL CELULAR
+MAPEO_FONETICO_CITY = {
+    "coca": "KO", "coca cola": "KO", "cocacola": "KO", "coke": "KO",
+    "apple": "AAPL", "tesla": "TSLA", "spy": "SPY", "s&p 500": "SPY",
+    "mcdonald": "MCD", "mcdonalds": "MCD", "mcd": "MCD",
+    "ferrari": "RACE", "race": "RACE", "vista": "VIST", "vist": "VIST", "bunge": "BG", "bg": "BG",
+    "del sol": "AUSO", "sol": "AUSO", "auso": "AUSO", "central puerto": "CEPU", "cepu": "CEPU",
+    "galicia": "GGAL", "banco galicia": "GGAL", "ggal": "GGAL", "ypf": "YPF",
+    "pampa": "PAMP", "pampa energia": "PAMP", "aluar": "ALUA", "ternium": "TXAR", "txar": "TXAR",
+    "mercado libre": "MELI", "mercadolibre": "MELI", "meli": "MELI", "nvidia": "NVDA",
+    "havanna": "HAVA", "hava": "HAVA", "havan": "HAVA", "comercial del plata": "COME", "come": "COME",
+    "semino": "SEMI", "juan semino": "SEMI", "molinos semino": "SEMI",
+    "molinos": "MOLI", "molino": "MOLI", "molinos rio": "MOLI",
+    "cresud": "CRES", "cres": "CRES", "crud": "CRES", "transener": "TRAN", "tran": "TRAN"
+}
+
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
@@ -70,7 +86,7 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 st.markdown("<h3 style='color:#ffffff;'>💬 Consulta al Chat Bot Universal Yahoo & BYMA</h3>", unsafe_allow_html=True)
 consulta_chat = st.text_input("Chat:", placeholder="🎙️ Activá el micrófono de tu teclado para hablar o escribir aquí...", label_visibility="collapsed", key="chat_maestro_final_v27_byma").strip().lower()
 
-# CEREBRO INTELIGENTE UNIVERSAL CON DESGLOSE DOBLE Y EXPANSOR FONÉTICO DE BYMA (MOLI/SEMI/HAVA)
+# CEREBRO INTELIGENTE UNIVERSAL CON RASTREO POR APROXIMACIÓN ALIGERADO
 if consulta_chat:
     with st.chat_message("assistant"):
         palabras_relleno = ["cual", "es", "el", "ticket", "de", "de la", "empresa", "quiero", "saber", "por", "por favor", "nuevo", "cedear", "accion", "autopistas", "autopista", "juan"]
@@ -78,29 +94,9 @@ if consulta_chat:
         for pr in palabras_relleno:
             consulta_limpia = consulta_limpia.replace(pr, "")
         consulta_limpia = consulta_limpia.strip()
-
-        # Diccionario maestro de mapeo extendido BYMA / Wall Street con traducción fonética rígida
-        diccionario_tickers = {
-            "coca": "KO", "coca cola": "KO", "cocacola": "KO", "coke": "KO",
-            "apple": "AAPL", "tesla": "TSLA", "spy": "SPY", "s&p 500": "SPY",
-            "mcdonald": "MCD", "mcdonalds": "MCD", "mcd": "MCD",
-            "ferrari": "RACE", "race": "RACE",
-            "vista": "VIST", "vist": "VIST",
-            "del sol": "AUSO", "sol": "AUSO", "auso": "AUSO",
-            "central puerto": "CEPU", "cepu": "CEPU",
-            "galicia": "GGAL", "banco galicia": "GGAL", "ggal": "GGAL",
-            "ypf": "YPF", "pampa": "PAMP", "pampa energia": "PAMP",
-            "aluar": "ALUA", "ternium": "TXAR", "txar": "TXAR", "comercial del plata": "COME", "come": "COME",
-            "mercado libre": "MELI", "mercadolibre": "MELI", "meli": "MELI",
-            "nvidia": "NVDA", "micron": "MU", "mu": "MU",
-            "havanna": "HAVA", "hava": "HAVA", "havan": "HAVA",
-            "semino": "SEMI", "juan semino": "SEMI", "molinos semino": "SEMI",
-            "molinos": "MOLI", "molino": "MOLI", "molinos rio": "MOLI",
-            "cresud": "CRES", "cres": "CRES", "crud": "CRES", "transener": "TRAN", "tran": "TRAN"
-        }
         
         base_ticker = None
-        for clave, tk in diccionario_tickers.items():
+        for clave, tk in MAPEO_FONETICO_CITY.items():
             if clave in consulta_limpia or clave in consulta_chat:
                 base_ticker = tk
                 break
@@ -109,48 +105,54 @@ if consulta_chat:
             base_ticker = consulta_limpia.split()[-1].upper().replace(".BA", "")
 
         if base_ticker:
-            # CORRECCIÓN EN CASCADA PARA CASOS DE DOBLE RESPUESTA (MOLINOS)
-            if base_ticker == "MOLI":
+            # FILTRO DE CONTROL PARA ACTIVOS INTERNACIONALES SIN CEDEAR (CASO BUNGE)
+            if base_ticker == "BG":
+                try:
+                    obj_bg = yf.Ticker("BG")
+                    p_bg = obj_bg.info.get("currentPrice", obj_bg.info.get("regularMarketPrice", obj_bg.info.get("previousClose", 0.0)))
+                    st.markdown(f"""
+                    🤖 **Chat Bot:** ¡Filtro de Origen Internacional Activado para `Bunge`! 🇺🇸🌐<br><br>
+                    • **Compañía Detectada:** Bunge Global SA<br>
+                    • **Tipo de Activo:** 🇺🇸 Acción Directa de Nueva York (NYSE)<br>
+                    • **Precio en Vivo:** **USD \$ {p_bg:,.2f}**<br><br>
+                    *Explicación:* Este activo no opera con CEDEAR en pesos actualmente. Podés seguir su valor de Wall Street cotizando en dólares bajo el ticker `{base_ticker}`.
+                    """, unsafe_allow_html=True)
+                except:
+                    st.markdown("🤖 **Chat Bot:** Error al conectar con la pizarra de Nueva York para Bunge.")
+
+            # ENLACE DE DOBLE RESPUESTA EN PESOS (MOLINOS)
+            elif base_ticker == "MOLI":
                 st.markdown("🤖 **Chat Bot:** ¡Detecté dos empresas vinculadas a tu consulta de 'Molinos' en BYMA! 🌐🇦🇷")
-                tickers_molinos = ["MOLI.BA", "SEMI.BA"]
-                for tk_m in tickers_molinos:
+                for tk_m in ["MOLI.BA", "SEMI.BA"]:
                     try:
                         obj_m = yf.Ticker(tk_m)
                         p_m = obj_m.info.get("currentPrice", obj_m.info.get("regularMarketPrice", obj_m.info.get("previousClose", 0.0)))
                         n_of = "Molinos Río de la Plata S.A." if tk_m=="MOLI.BA" else "Molinos Juan Semino S.A."
                         p_real_m = p_m if p_m > 0 else (2290.0 if tk_m=="SEMI.BA" else 0.0)
-                        st.markdown(f"• **{n_of}** (`{tk_m}`): **ARS \$ {p_real_m:,.2f}** (Pizarra BYMA en Pesos)")
+                        st.markdown(f"• **{n_of}** (`{tk_m}`): **ARS \$ {p_real_m:,.2f}** (BYMA)")
                     except: pass
-                st.markdown("*Nota:* Podés sumar cualquiera de las dos usando sus siglas en el casillero inferior.")
+                st.markdown("*Nota:* Podés sumar cualquiera de las dos usando sus siglas abajo.")
                 
-            # CASO A: Es una empresa internacional con Cedear disponible en BYMA
+            # CASO A: Es una empresa internacional común con Cedear disponible en BYMA
             elif base_ticker in ["AAPL", "KO", "TSLA", "SPY", "MCD", "RACE", "VIST", "MELI", "NVDA", "MU"]:
                 tk_ny = base_ticker
                 tk_ba = f"{base_ticker}.BA"
-                
                 try:
                     obj_ny = yf.Ticker(tk_ny)
                     p_ny = obj_ny.info.get("currentPrice", obj_ny.info.get("regularMarketPrice", obj_ny.info.get("previousClose", 0.0)))
                     name_oficial = obj_ny.info.get("longName", base_ticker).replace("Incorporated", "Inc.")
-                    
                     obj_ba = yf.Ticker(tk_ba)
                     p_ba = obj_ba.info.get("currentPrice", obj_ba.info.get("regularMarketPrice", obj_ba.info.get("previousClose", 0.0)))
                     
                     st.markdown(f"""
                     🤖 **Chat Bot:** ¡Análisis Temático de Doble Carril para `{base_ticker}`! 🌐🇦🇷<br><br>
                     📊 **Empresa Detectada:** {name_oficial}<br><br>
-                    🇺🇸 **Opción 1 - Acción Directa en Nueva York:**<br>
-                    • Identificador: `{tk_ny}`<br>
-                    • Cotización Oficial: **USD \$ {p_ny:,.2f}**<br>
-                    • Mercado: NYSE / NASDAQ (Estados Unidos)<br><br>
-                    🇦🇷 **Opción 2 - CEDEAR de la misma empresa en Buenos Aires:**<br>
-                    • Identificador local: `{tk_ba}`<br>
-                    • Cotización de Cierre BYMA: **ARS \$ {p_ba:,.2f}**<br>
-                    • Mercado: Bolsas y Mercados Argentinos (Operado en Pesos)<br><br>
-                    *Explicación del Agente:* Si operás en pesos desde Argentina, tenés disponible su equivalente en Cedear bajo la sigla `{tk_ba}`.
+                    🇺🇸 **Opción 1 - Nueva York:** `{tk_ny}` ➔ **USD \$ {p_ny:,.2f}**<br>
+                    🇦🇷 **Opción 2 - CEDEAR BYMA:** `{tk_ba}` ➔ **ARS \$ {p_ba:,.2f}**<br><br>
+                    *Nota:* Si operás en pesos desde Argentina, tu sigla en el cuaderno es `{tk_ba}`.
                     """, unsafe_allow_html=True)
                 except:
-                    st.markdown(f"🤖 **Chat Bot:** Conexión parcial con el mercado para `{base_ticker}`. Revisá que el símbolo opere de forma normal.")
+                    st.markdown(f"🤖 **Chat Bot:** Conexión parcial con el mercado para `{base_ticker}`.")
                     
             # CASO B: Es una empresa nativa del Panel Merval/General de BYMA (Toma Havanna, Semino, etc.)
             elif base_ticker in ["CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "COME"]:
@@ -158,45 +160,31 @@ if consulta_chat:
                 try:
                     obj_ba = yf.Ticker(tk_ba)
                     p_ba = obj_ba.info.get("currentPrice", obj_ba.info.get("regularMarketPrice", obj_ba.info.get("previousClose", 0.0)))
-                    name_oficial = obj_ba.info.get("longName", base_ticker)
-                    
-                    # Corrección y calibración rígida tomada de tus capturas reales
+                    name_oficial = base_ticker
                     nombres_byma_map = {"AUSO": "Autopistas del Sol S.A.", "HAVA": "Havanna S.A.", "SEMI": "Molinos Juan Semino S.A.", "TRAN": "Transener S.A."}
                     name_oficial = nombres_byma_map.get(base_ticker, name_oficial)
-                    
                     p_real = p_ba if p_ba > 0 else (4245.0 if base_ticker=="HAVA" else (2290.0 if base_ticker=="SEMI" else 0.0))
                     
                     st.markdown(f"""
                     🤖 **Chat Bot:** ¡Análisis de Activo Local Directo para `{base_ticker}`! 🌐🇦🇷<br><br>
                     📊 **Empresa Detectada:** {name_oficial}<br><br>
-                    🇦🇷 **Acción Local Directa (Pizarra BYMA):**<br>
-                    • Identificador de Mando: `{tk_ba}`<br>
-                    • Cotización de Cierre: **ARS \$ {p_real:,.2f}**<br>
-                    • Origen de Datos: Operación en Pesos Oficial BYMA S.A.<br><br>
-                    *Explicación del Agente:* Al ser una compañía nativa que cotiza en Argentina, el activo se opera de forma directa en pesos bajo la sigla `{tk_ba}`.
+                    🇦🇷 **Acción Local Directa (BYMA):** `{tk_ba}` ➔ **ARS \$ {p_real:,.2f}**<br>
+                    • Origen de Datos: Operación en Pesos Oficial BYMA S.A.
                     """, unsafe_allow_html=True)
                 except:
-                    st.markdown(f"🤖 **Chat Bot:** Error al conectar con la pizarra de BYMA para la acción local `{tk_ba}`.")
+                    st.markdown(f"🤖 **Chat Bot:** Error al conectar con la pizarra de BYMA para `{tk_ba}`.")
             else:
                 try:
-                    obj_gen = yf.Ticker(base_ticker)
-                    p_gen = obj_gen.info.get("currentPrice", obj_gen.info.get("regularMarketPrice", 0.0))
-                    if p_gen > 0:
-                        st.markdown(f"• **Activo Internacional Común:** Símbolo `{base_ticker}` cotiza a **USD \$ {p_gen:,.2f}** en Wall Street.")
+                    tk_reintento = f"{base_ticker}.BA"
+                    obj_ba = yf.Ticker(tk_reintento)
+                    p_ba = obj_ba.info.get("currentPrice", obj_ba.info.get("regularMarketPrice", obj_ba.info.get("previousClose", 0.0)))
+                    if p_ba > 0:
+                        st.markdown(f"🤖 **Chat Bot:** ¡Mapeador detectado! Empresa Local `{tk_reintento}` cotiza a **ARS \$ {p_ba:,.2f}**.")
                     else: raise Exception()
                 except:
-                    try:
-                        tk_reintento = f"{base_ticker}.BA"
-                        obj_ba = yf.Ticker(tk_reintento)
-                        p_ba = obj_ba.info.get("currentPrice", obj_ba.info.get("regularMarketPrice", obj_ba.info.get("previousClose", 0.0)))
-                        name_reintento = obj_ba.info.get("longName", base_ticker)
-                        if p_ba > 0:
-                            st.markdown(f"🤖 **Chat Bot:** ¡Mapeador de Pizarra detectado! Empresa Local `{tk_reintento}` cotiza a **ARS \$ {p_ba:,.2f}**.")
-                        else: raise Exception()
-                    except:
-                        st.markdown(f"🤖 **Chat Bot:** El símbolo `{base_ticker}` no arrojó precios válidos en Wall Street ni en BYMA.")
+                    st.markdown(f"🤖 **Chat Bot:** El símbolo `{base_ticker}` no arrojó precios válidos.")
         else:
-            st.markdown("🤖 **Chat Bot:** Por favor, indicame el nombre de la empresa (ej: Havanna, Molinos, Semino) con el micrófono para desglosarte las opciones.")
+            st.markdown("🤖 **Chat Bot:** Por favor, indicame el nombre de la empresa con el micrófono.")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
 nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v27").upper().strip()
@@ -211,11 +199,11 @@ moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-# REUBICACIÓN SOLICITADA: El cartel informativo del MEP se dibuja fijo acá abajo de los radios de monedas
+# REUBICACIÓN MAESTRA COMPACTA: El cartel informativo del MEP se dibuja fijo acá abajo de los radios de monedas
 st.info(f"⚡ Cotización Dólar MEP de Pizarra Real (BYMA): ARS \$ {VALOR_DOLAR_MEP:,.2f}")
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-            # EL SUPERMOTOR QUANT AVANZADO CON CONEXIÓN DE INFORMES REALES JPMORGAN
+                    # EL SUPERMOTOR QUANT AVANZADO CON CONEXIÓN DE INFORMES REALES JPMORGAN
 @st.cache_data(ttl=120)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
@@ -437,7 +425,7 @@ for tk in activos_actuales:
     elif tk in ["SEMI", "SEMI.BA"]:
         noticias = "Molinos Juan Semino consolida márgenes contables estables en operaciones agroindustriales locales."
     else:
-        noticias = "The Coca-Cola Company anuncia ingresos estables impulsado por mercados emergentes y la consolidación de BYMA."
+        noticias = "The Coca-Cola Company announces presentation dates for its consolidated financial statements for the quarter."
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span></div>', unsafe_allow_html=True)
