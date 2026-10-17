@@ -376,7 +376,7 @@ for tk in activos_actuales:
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-    # 8. PANEL DE CIERRE, GRÁFICOS Y RESUMEN GENERAL ABAJO DE TODO
+# 8. PANEL DE CIERRE, GRÁFICOS Y RESUMEN GENERAL ABAJO DE TODO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -431,32 +431,30 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS MAESTRA DINÁMICA POR EL AGENTE (DISEÑO EDUARDO)
+# 9. CENTRAL DE NOTICIAS MAESTRA DINÁMICA POR EL AGENTE (CORREGIDO VARIABLES)
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = simbolo.replace(".BA", "")
     try:
-        # El Agente navega Yahoo Finance y extrae en vivo las noticias reales de cada activo cargado
         ticker_noticia = yf.Ticker(simbolo_limpio)
         lista_cables = ticker_noticia.news
         
         if lista_cables and len(lista_cables) > 0:
             cable_principal = lista_cables[0]
             fuente_c = cable_principal.get("publisher", "Markets Web")
-            tit_c = cable_principal.get("title", f"Análisis de balance y movimientos corporativos para {simbolo_limpio}.")
+            tit_c = cable_principal.get("title", f"Análisis de balance y movimientos corporativos.")
             url_c = cable_principal.get("link", f"https://yahoo.com{simbolo_limpio}")
             
             st.markdown(f"""
             <div class="caja-noticia-link">
-                <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 {fuente_c}:</b> {tit_txt_c}<br>
+                <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 {fuente_c}:</b> {tit_c}<br>
                 <a href="{url_c}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para leer completa en la web</a>
             </div>
             """, unsafe_allow_html=True)
         else:
             raise Exception()
     except:
-        # Resguardo alternativo dinámico por si algún servidor local BYMA está saturado el fin de semana
         st.markdown(f"""
         <div class="caja-noticia-link">
             <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Agencia Bursátil:</b> Consolidación estructural de balances e ingresos operativos vigentes para la firma {simbolo_limpio} en BYMA S.A.<br>
@@ -468,6 +466,7 @@ st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_htm
 
 st.markdown('''
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
+    <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Inicio</div>
     <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
     <div style="color:#888;">📊<br>Análisis</div>
@@ -475,4 +474,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-                                                                        
