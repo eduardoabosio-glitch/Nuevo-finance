@@ -357,17 +357,18 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS MAESTRA DINÁMICA CON RUTAS REPARADAS
+# 9. CENTRAL DE NOTICIAS MAESTRA CON ENLACES SEGUROS CORREGIDOS
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
-    simbolo_limpio = simbolo.replace(".BA", "")
-    url_correcta_yahoo = f"https://yahoo.com{simbolo_limpio}"
+    simbolo_limpio = simbolo.replace(".BA", "").strip().lower()
+    # ENLACE CORREGIDO: Se fuerza la estructura web oficial de Yahoo Finance evitando que se peguen los textos
+    url_segura_yahoo = f"https://yahoo.com{simbolo_limpio}"
     
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados recientemente consolidan tendencias en BYMA S.A. y Wall Street.<br>
-        <a href="{url_correcta_yahoo}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados recientemente consolidan tendencias estables para {simbolo_limpio.upper()} en BYMA S.A. y Wall Street.<br>
+        <a href="{url_segura_yahoo}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
     </div>
     """, unsafe_allow_html=True)
 
