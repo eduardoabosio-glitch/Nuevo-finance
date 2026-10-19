@@ -361,28 +361,24 @@ st.markdown(f"""
 🔗 Tocar para leer completa en la web
 
 """, unsafe_allow_html=True)
-else:
-raise Exception()
-except:
-st.markdown(f"""
 
-[{simbolo}] 📍 Monitor Bursátil: Informes corporativos y análisis macro publicados este fin de semana consolidan tendencias estables para {simbolo_limpio} en BYMA S.A.
+    except:
+        st.markdown(f"""
+        <div class="caja-noticia-link">
+            <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados este fin de semana consolidan tendencias estables para {simbolo_limpio} en BYMA S.A.<br>
+            <a href="https://yahoo.com{simbolo_limpio}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar cable de fin de semana</a>
+        </div>
+        """, unsafe_allow_html=True)
 
-🔗 Tocar para consultar cable de fin de semana
+st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-""", unsafe_allow_html=True)
-st.markdown("", unsafe_allow_html=True)
 st.markdown('''
-
-🏠
-Inicio
-💼
-Portafolio
-📊
-Análisis
-💬
-Chat
-👤
-Perfil
-
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
+    <div style="color:#888;">🏠<br>Inicio</div>
+    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
+    <div style="color:#888;">📊<br>Análisis</div>
+    <div style="color:#888;">💬<br>Chat</div>
+    <div style="color:#888;">👤<br>Perfil</div>
+</div>
 ''', unsafe_allow_html=True)
+
