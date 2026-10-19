@@ -50,7 +50,6 @@ div[data-testid="stTextInput"] p { display: none !important; }
 div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; cursor: pointer !important; }
 </style>
 """, unsafe_allow_html=True)
-
 # 3. EL SUPERMOTOR AGENTE RASQUETEADOR DE PIZARRAS TRIPARTITO EN TIEMPO REAL
 @st.cache_data(ttl=60)
 def agente_calcular_promedio_mep_real():
@@ -73,6 +72,7 @@ def agente_calcular_promedio_mep_real():
     return promedio_vivo, "⚡ Promedio Tripartito Merval en Tiempo Real"
 
 VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_promedio_mep_real()
+
 # 4. BASE DE DATOS INTERNA CON MEMORIA CONTINUA Y ALMACENAMIENTO DE PRECIOS DEL AGENTE
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
@@ -80,7 +80,6 @@ if 'montos_dis' not in st.session_state:
 if 'precios_agente' not in st.session_state:
     st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "AAPL": 343.46, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00}
 
-# DICCIONARIO MAESTRO FONÉTICO DE LA CITY
 MAPEO_FONETICO_CITY = {
     "coca": "KO", "coca cola": "KO", "cocacola": "KO", "coke": "KO",
     "apple": "AAPL", "tesla": "TSLA", "spy": "SPY", "s&p 500": "SPY",
@@ -95,7 +94,6 @@ MAPEO_FONETICO_CITY = {
     "molinos": "MOLI", "molino": "MOLI", "molinos rio": "MOLI",
     "cresud": "CRES", "cres": "CRES", "crud": "CRES", "transener": "TRAN", "tran": "TRAN"
 }
-
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
@@ -145,7 +143,7 @@ if consulta_agente:
                 st.info("📌 **Veredicto del Agente:** Encontré dos empresas vinculadas en la pizarra de BYMA:")
                 for tk_m in ["MOLI.BA", "SEMI.BA"]:
                     try:
-                        obj_m = yf.Ticker(tk_m.replace(".BA", ""))
+                        obj_m = yf.Ticker(tk_m)
                         hist_m = obj_m.history(period="5d")
                         p_m = float(hist_m["Close"].iloc[-1]) if not hist_m.empty else 0.0
                         n_of = "Molinos Río de la Plata S.A." if tk_m=="MOLI.BA" else "Molinos Juan Semino S.A."
@@ -160,14 +158,21 @@ if consulta_agente:
                 p_ny_real = p_vivo if p_vivo > 0 else st.session_state.precios_agente.get(base_ticker, 150.0)
                 st.session_state.precios_agente[base_ticker] = p_ny_real
                 try:
-                    obj_ba = yf.Ticker(base_ticker)
+                    obj_ba = yf.Ticker(tk_ba)
                     hist_ba = obj_ba.history(period="5d")
                     p_ba_calc = float(hist_ba["Close"].iloc[-1]) if not hist_ba.empty else 0.0
-                    p_ba_real = p_ba_calc if p_ba_calc > 0 else (p_ny_real * 1537.05 / 5.0)
+                    p_ba_real = p_ba_calc if p_ba_calc > 0 else (p_ny_real * VALOR_DOLAR_MEP / 5.0)
                     st.success(f"📌 **Veredicto:** Doble carril verificado para `{base_ticker}`. Línea internacional: **USD \$ {p_ny_real:,.2f}** | Línea Cedear BYMA: **ARS \$ {p_ba_real:,.2f}**.")
                 except:
                     st.success(f"📌 **Veredicto:** Doble carril verificado para `{base_ticker}`. Línea internacional: **USD \$ {p_ny_real:,.2f}**.")
             elif base_ticker in ["CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "COME"]:
+                try:
+                    obj_local = yf.Ticker(f"{base_ticker}.BA")
+                    hist_local = obj_local.history(period="5d")
+                    if not hist_local.empty:
+                        p_vivo = float(hist_local["Close"].iloc[-1])
+                except: pass
+                
                 p_real_local = p_vivo if p_vivo > 0 else st.session_state.precios_agente.get(base_ticker, 37.70)
                 st.session_state.precios_agente[base_ticker] = p_real_local
                 n_of_m = {"AUSO": "Autopistas del Sol S.A.", "HAVA": "Havanna S.A.", "SEMI": "Molinos Juan Semino S.A.", "COME": "Comercial del Plata S.A."}.get(base_ticker, base_ticker)
@@ -194,26 +199,23 @@ moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-# CARTEL INFORMATIVO FIJO ABAJO DE LAS MONEDAS
 st.info(f"⚡ Cotización de Ultra Precisión (Promedio Infobae-Ámbito-Nación): ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS CONTRA DOBLE CONVERSIÓN
-@st.cache_data(ttl=120)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
-    
-    # El sistema hereda de forma rígida el precio real descubierto por el Agente
     precio_memoria_compartida = st.session_state.precios_agente.get(sigla_limpia, 150.0)
+    es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI"]
+    ticker_yf = f"{sigla_limpia}.BA" if es_local_pure else sigla_limpia
     
     try:
-        ticker = yf.Ticker(sigla_limpia)
+        ticker = yf.Ticker(ticker_yf)
         df_hist = ticker.history(period="60d")
         info_contable = ticker.info
         
         if not df_hist.empty and len(df_hist) > 35:
             precio_actual = float(df_hist["Close"].iloc[-1])
-            
             delta = df_hist["Close"].diff()
             ganancia = delta.where(delta > 0, 0)
             perdida = -delta.where(delta < 0, 0)
@@ -232,7 +234,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             
             volumen_hoy = float(df_hist["Volume"].iloc[-1])
             volumen_prom = float(df_hist["Volume"].rolling(window=14).mean().iloc[-1])
-            
             sma_30 = df_hist["Close"].rolling(window=30).mean().iloc[-1]
             piso_historico = df_hist["Low"].min()
             techo_historico = df_hist["High"].max()
@@ -249,41 +250,38 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             eps_contable = info_contable.get("trailingEps", "No Disponible")
             margen_neto = "No Disp."
             
-            valores_jpmorgan_reales = {
-                "KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "COME": 0.11
-            }
-            
-            es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN"]
+            valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "COME": 0.11}
             
             if es_local_pure:
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual / VALOR_DOLAR_MEP if VALOR_DOLAR_MEP > 0 else 1.0)
+                simbolo_moneda_piso_techo = "ARS $"
             else:
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, info_contable.get("targetMeanPrice", precio_actual * 1.10))
+                simbolo_moneda_piso_techo = "USD $"
             
             return {
                 "precio": precio_actual, "target_usd": target_price_usd, "es_local": es_local_pure,
                 "prob_sem": "65%", "prob_anu": "80%", "prob_fun": "85%",
                 "rsi": f"{rsi_val:.1f}", "macd": "▲ Alcista" if macd_val > signal_val else "▼ Ajuste",
                 "stoch": f"{stoch_k:.0f}", "vol_rel": f"{volumen_hoy/volumen_prom:.2f}x", "emas_c": "▲ EMA9 OK",
-                "dist_sma": f"{distancia_sma:+.1f}%", "piso_a": f"USD ${piso_historico:,.2f}", "techo_a": f"USD ${techo_historico:,.2f}",
+                "dist_sma": f"{distancia_sma:+.1f}%", "piso_a": f"{simbolo_moneda_piso_techo}{piso_historico:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{techo_historico:,.2f}",
                 "beta": f"{beta_riesgo:.2f}", "rsi_m": "52.0", "pe": pe_ratio, "dividendos": div_yield, "eps": f"USD ${eps_contable}" if isinstance(eps_contable, (int,float)) else "No Disp.", "margen": margen_neto,
                 "dict_corto": "Favorable.", "dict_largo": "Soporte sólido."
             }
     except: pass
     
-    # Resguardo de contingencia calibrado heredando de st.session_state
     valores_aux_t = {"SPY": 810.00, "TSLA": 392.42, "AAPL": 360.00, "KO": 95.00, "CEPU": 1350.0, "GGAL": 1550.0, "AUSO": 3200.0, "HAVA": 4900.0, "SEMI": 2650.0, "MOLI": 4400.0, "COME": 165.00}
-    es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN"]
-    
     if es_local_pure:
         t_aux = valores_aux_t.get(sigla_limpia, precio_memoria_compartida * 1.1) / VALOR_DOLAR_MEP
+        simbolo_moneda_piso_techo = "ARS $"
     else:
         t_aux = valores_aux_t.get(sigla_limpia, precio_memoria_compartida * 1.1)
+        simbolo_moneda_piso_techo = "USD $"
     
     return {
         "precio": precio_memoria_compartida, "target_usd": t_aux, "es_local": es_local_pure, "prob_sem": "60%", "prob_anu": "80%", "prob_fun": "80%",
         "rsi": "47.3", "macd": "▼ Ajuste", "stoch": "55", "vol_rel": "0.92x", "emas_c": "▼ EMA9 Freno",
-        "dist_sma": "+1.6%", "piso_a": "USD $299.74", "techo_a": "USD $342.10", "beta": "1.02", "rsi_m": "51.4",
+        "dist_sma": "+1.6%", "piso_a": f"{simbolo_moneda_piso_techo}299.74", "techo_a": f"{simbolo_moneda_piso_techo}342.10", "beta": "1.02", "rsi_m": "51.4",
         "pe": "24.5 años", "dividendos": "2.47%" if sigla_limpia=="KO" else "0.52%", "eps": "USD $6.15", "margen": "24.1%",
         "dict_corto": "Consolidación Neutral.", "dict_largo": "Altamente Favorable."
     }
@@ -304,15 +302,10 @@ for tk in activos_actuales:
     nota_txt = "Nota 9/10 Excelente" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Nota 7/10 Favorable" if tk in ["TSLA", "TSLA.BA"] else "Nota 8/10 Muy Buena")
     op_agente = "Exc" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Reg" if tk in ["TSLA", "TSLA.BA"] else "MB")
     
-    # Balanceador de columnas para la Matriz Resumen de abajo de todo
-    if es_local_nativa:
-        val_t_matriz = p_target if es_pesos else (p_target / VALOR_DOLAR_MEP)
-    else:
-        val_t_matriz = p_target * VALOR_DOLAR_MEP if es_pesos else p_target
+    val_t_matriz = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
 
     lista_para_matriz_resumen.append({
-        "Activo": tk, "Precio": f"{p_base:,.2f}",
-        "Target (JPM)": f"{val_t_matriz:,.2f}",
+        "Activo": tk, "Precio": f"{p_base:,.2f}", "Target (JPM)": f"{val_t_matriz:,.2f}",
         "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente
     })
     
@@ -323,7 +316,6 @@ for tk in activos_actuales:
             
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
-    # FILTRO QUIRÚRGICO DE CONTROL EDUARDO: Anula las dobles conversiones para activos argentinos
     if es_local_nativa:
         p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
@@ -353,13 +345,13 @@ for tk in activos_actuales:
     
     if entrada_texto_usuario != texto_con_comillas:
         try:
-            solo_numeros = "".join([c for c in entrada_texto_usuario if c.isdigit() or c == "."])
-            if solo_numeros:
-                st.session_state.montos_dis[tk] = float(solo_numeros) / factor_cambio
+            limpio = entrada_texto_usuario.replace('"', '').replace('ARS $', '').replace('USD $', '').replace('$', '').replace(',', '').strip()
+            if limpio:
+                st.session_state.montos_dis[tk] = float(limpio) / factor_cambio
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-# 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
+    # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -402,19 +394,20 @@ if "ver_cuadricula_resumen" not in st.session_state:
     st.session_state.ver_cuadricula_resumen = False
 
 st.markdown("<div style='text-align:center; margin-top:4px; margin-bottom:8px;'>", unsafe_allow_html=True)
-if st.button("📊 Resumen General", key="btn_unico_abajo_v26_def", use_container_width=True):
+if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v26_def", use_container_width=True):
     st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
+    st.rerun()
 st.markdown("</div>", unsafe_allow_html=True)
 
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
-    st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta (USD base):</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta:</p>", unsafe_allow_html=True)
     st.table(df_matriz)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS MAESTRA DINÁMICA POR EL AGENTE (BARRIDO 7 DÍAS CORREGIDO)
+# 9. CENTRAL DE NOTICIAS MAESTRA DINÁMICA POR EL AGENTE
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
@@ -426,7 +419,7 @@ for simbolo in activos_actuales:
         if lista_cables and len(lista_cables) > 0:
             cable_principal = lista_cables[0]
             fuente_c = cable_principal.get("publisher", "Markets Web")
-            tit_c = cable_principal.get("title", f"Reportes contables y corporativos consolidados de los últimos días.")
+            tit_c = cable_principal.get("title", f"Reportes contables y corporativos consolidados.")
             url_c = cable_principal.get("link", f"https://yahoo.com{simbolo_limpio}")
             
             st.markdown(f"""
@@ -441,11 +434,11 @@ for simbolo in activos_actuales:
         st.markdown(f"""
         <div class="caja-noticia-link">
             <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados recientemente consolidan tendencias estables para {simbolo_limpio} en BYMA S.A.<br>
-            <a href="https://yahoo.com{simbolo_limpio}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar cable de fin de semana</a>
+            <a href="https://yahoo.com{simbolo_limpio}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar cable de la City</a>
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
+st.markdown("<div style='padding-bottom: 60px;'></div>", unsafe_allow_html=True)
 
 st.markdown('''
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
@@ -456,3 +449,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
+                                     
