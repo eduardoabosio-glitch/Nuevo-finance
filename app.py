@@ -50,6 +50,13 @@ div[data-testid="stTextInput"] p { display: none !important; }
 div.stButton > button { background-color: #b71c1c !important; color: white !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; cursor: pointer !important; }
 </style>
 """, unsafe_allow_html=True)
+
+st.markdown("""
+<div class="header-container">
+    <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
+    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Desplegables con Certificación JPM Unificada</div>
+</div>
+""", unsafe_allow_html=True)
 # 3. EL SUPERMOTOR AGENTE RASQUETEADOR DE PIZARRAS TRIPARTITO EN TIEMPO REAL
 @st.cache_data(ttl=60)
 def agente_calcular_promedio_mep_real():
@@ -94,97 +101,91 @@ MAPEO_FONETICO_CITY = {
     "molinos": "MOLI", "molino": "MOLI", "molinos rio": "MOLI",
     "cresud": "CRES", "cres": "CRES", "crud": "CRES", "transener": "TRAN", "tran": "TRAN"
 }
-st.markdown("""
-<div class="header-container">
-    <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Desplegables con Certificación JPM Unificada</div>
-</div>
-""", unsafe_allow_html=True)
-
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
 # 5. COMPONENTE DEL AGENTE FINANCIERO DE NAVEGACIÓN WEB
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Consulta al Agente Financiero de Ultra Precisión</h3>", unsafe_allow_html=True)
-consulta_agente = st.text_input("Consulta:", placeholder="🎙️ Activá el micrófono de tu teclado para dictar o escribir un activo aquí...", label_visibility="collapsed", key="agente_browsing_v27").strip().lower()
+consulta_agente = st.text_input("Consulta:", placeholder="🎙️ Dictá o escribí un activo o 'lista' para ver empresas...", label_visibility="collapsed", key="agente_browsing_v27").strip().lower()
 
 if consulta_agente:
     with st.chat_message("assistant"):
-        palabras_relleno = ["cual", "es", "el", "ticket", "de", "de la", "empresa", "quiero", "saber", "por", "por favor", "nuevo", "cedear", "accion", "autopistas", "autopista", "juan"]
-        consulta_limpia = consulta_agente
-        for pr in palabras_relleno:
-            consulta_limpia = consulta_limpia.replace(pr, "")
-        consulta_limpia = consulta_limpia.strip()
-        
-        base_ticker = None
-        for clave, tk in MAPEO_FONETICO_CITY.items():
-            if clave in consulta_limpia or clave in consulta_agente:
-                base_ticker = tk
-                break
-                
-        if not base_ticker and consulta_limpia:
-            base_ticker = consulta_limpia.split()[-1].upper().replace(".BA", "")
-
-        if base_ticker:
-            st.write(f"🤖 **Agente de Navegación:** Escaneando web para `{base_ticker}`... 🔍")
-            
-            try:
-                t_obj = yf.Ticker(base_ticker)
-                hist_p = t_obj.history(period="5d")
-                p_vivo = float(hist_p["Close"].iloc[-1]) if not hist_p.empty else 0.0
-            except:
-                p_vivo = 0.0
-                
-            if base_ticker == "BG":
-                p_real_ny = p_vivo if p_vivo > 0 else 105.50
-                st.session_state.precios_agente["BG"] = p_real_ny
-                st.success(f"📌 **Veredicto:** Bunge Global SA verificado en NYSE. Precio en Wall Street: **USD \$ {p_real_ny:,.2f}**.")
-            elif base_ticker == "MOLI":
-                st.info("📌 **Veredicto del Agente:** Encontré dos empresas vinculadas en la pizarra de BYMA:")
-                for tk_m in ["MOLI.BA", "SEMI.BA"]:
-                    try:
-                        obj_m = yf.Ticker(tk_m)
-                        hist_m = obj_m.history(period="5d")
-                        p_m = float(hist_m["Close"].iloc[-1]) if not hist_m.empty else 0.0
-                        n_of = "Molinos Río de la Plata S.A." if tk_m=="MOLI.BA" else "Molinos Juan Semino S.A."
-                        p_real_m = p_m if p_m > 0 else (2290.0 if tk_m=="SEMI.BA" else 3950.0)
-                        st.session_state.precios_agente[tk_m.replace(".BA", "")] = p_real_m
-                        st.write(f"• **{n_of}** (`{tk_m}`): **ARS \$ {p_real_m:,.2f}**")
-                    except: pass
-                st.write("*Dictamen:* Podés agregar el ticker deseado tipeándolo abajo.")
-            elif base_ticker in ["AAPL", "KO", "TSLA", "SPY", "MCD", "RACE", "VIST", "MELI", "NVDA", "MU"]:
-                tk_ny = base_ticker
-                tk_ba = f"{base_ticker}.BA"
-                p_ny_real = p_vivo if p_vivo > 0 else st.session_state.precios_agente.get(base_ticker, 150.0)
-                st.session_state.precios_agente[base_ticker] = p_ny_real
-                try:
-                    obj_ba = yf.Ticker(tk_ba)
-                    hist_ba = obj_ba.history(period="5d")
-                    p_ba_calc = float(hist_ba["Close"].iloc[-1]) if not hist_ba.empty else 0.0
-                    p_ba_real = p_ba_calc if p_ba_calc > 0 else (p_ny_real * VALOR_DOLAR_MEP / 5.0)
-                    st.success(f"📌 **Veredicto:** Doble carril verificado para `{base_ticker}`. Línea internacional: **USD \$ {p_ny_real:,.2f}** | Línea Cedear BYMA: **ARS \$ {p_ba_real:,.2f}**.")
-                except:
-                    st.success(f"📌 **Veredicto:** Doble carril verificado para `{base_ticker}`. Línea internacional: **USD \$ {p_ny_real:,.2f}**.")
-            elif base_ticker in ["CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "COME"]:
-                try:
-                    obj_local = yf.Ticker(f"{base_ticker}.BA")
-                    hist_local = obj_local.history(period="5d")
-                    if not hist_local.empty:
-                        p_vivo = float(hist_local["Close"].iloc[-1])
-                except: pass
-                
-                p_real_local = p_vivo if p_vivo > 0 else st.session_state.precios_agente.get(base_ticker, 37.70)
-                st.session_state.precios_agente[base_ticker] = p_real_local
-                n_of_m = {"AUSO": "Autopistas del Sol S.A.", "HAVA": "Havanna S.A.", "SEMI": "Molinos Juan Semino S.A.", "COME": "Comercial del Plata S.A."}.get(base_ticker, base_ticker)
-                st.success(f"📌 **Veredicto:** Activo nacional localizado en la central de BYMA. Ticker: `{base_ticker}.BA` (`{n_of_m}`). Cotización: **ARS \$ {p_real_local:,.2f}**.")
-            else:
-                if p_vivo > 0:
-                    st.session_state.precios_agente[base_ticker] = p_vivo
-                    st.success(f"🤖 **Agente:** Símbolo `{base_ticker}` localizado con éxito a un valor de pizarra de **{p_vivo:,.2f}**.")
-                else:
-                    st.warning(f"🤖 **Agente:** El identificador requerido `{base_ticker}` no arrojó registros en la city. Se conserva valor de resguardo histórico en memoria.")
+        if "lista" in consulta_agente or "cedear" in consulta_agente or "accion" in consulta_agente or "empresas" in consulta_agente:
+            st.write("🤖 **Agente:** Catálogo oficial BYMA / CEDEARs ordenado alfabéticamente:")
+            lista_ordenada_city = sorted(MAPEO_FONETICO_CITY.items(), key=lambda x: x[0])
+            opciones_selector = [f"{nombre.upper()} ({ticker})" for nombre, ticker in lista_ordenada_city]
+            empresa_seleccionada = st.selectbox("Seleccioná una empresa para analizar:", opciones_selector, key="selector_alfabetico_agente")
+            if empresa_seleccionada:
+                ticker_extraido = empresa_seleccionada.split("(")[-1].replace(")", "").strip()
+                st.info(f"💡 Podés agregar `{ticker_extraido}` escribiéndolo en la caja de abajo de todo para fijarlo en tus fichas.")
         else:
-            st.write("🤖 **Agente:** Por favor, indicame el nombre o sigla de la empresa con tu micrófono.")
+            palabras_relleno = ["cual", "es", "el", "ticket", "de", "de la", "empresa", "quiero", "saber", "por", "por favor", "nuevo", "cedear", "accion", "autopistas", "autopista", "juan"]
+            consulta_limpia = consulta_agente
+            for pr in palabras_relleno:
+                consulta_limpia = consulta_limpia.replace(pr, "")
+            consulta_limpia = consulta_limpia.strip()
+            
+            base_ticker = None
+            for clave, tk in MAPEO_FONETICO_CITY.items():
+                if clave in consulta_limpia or clave in consulta_agente:
+                    base_ticker = tk
+                    break
+                    
+            if not base_ticker and consulta_limpia:
+                base_ticker = consulta_limpia.split()[-1].upper().replace(".BA", "")
+
+            if base_ticker:
+                st.write(f"🤖 **Agente de Navegación:** Escaneando web para `{base_ticker}`... 🔍")
+                try:
+                    t_obj = yf.Ticker(f"{base_ticker}.BA" if base_ticker in ["MOLI", "SEMI", "COME", "GGAL", "YPF", "CEPU", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "TRAN"] else base_ticker)
+                    hist_p = t_obj.history(period="5d")
+                    p_vivo = float(hist_p["Close"].iloc[-1]) if not hist_p.empty else 0.0
+                except:
+                    p_vivo = 0.0
+                    
+                if base_ticker == "BG":
+                    p_real_ny = p_vivo if p_vivo > 0 else 105.50
+                    st.session_state.precios_agente["BG"] = p_real_ny
+                    st.success(f"📌 **Veredicto:** Bunge Global SA verificado en NYSE. Precio en Wall Street: **USD \$ {p_real_ny:,.2f}**.")
+                elif base_ticker == "MOLI":
+                    st.info("📌 **Veredicto del Agente:** Encontré dos empresas vinculadas en la pizarra de BYMA:")
+                    for tk_m in ["MOLI.BA", "SEMI.BA"]:
+                        try:
+                            obj_m = yf.Ticker(tk_m)
+                            hist_m = obj_m.history(period="5d")
+                            p_m = float(hist_m["Close"].iloc[-1]) if not hist_m.empty else 0.0
+                            n_of = "Molinos Río de la Plata S.A." if tk_m=="MOLI.BA" else "Molinos Juan Semino S.A."
+                            p_real_m = p_m if p_m > 0 else (2290.0 if tk_m=="SEMI.BA" else 3950.0)
+                            st.session_state.precios_agente[tk_m.replace(".BA", "")] = p_real_m
+                            st.write(f"• **{n_of}** (`{tk_m}`): **ARS \$ {p_real_m:,.2f}**")
+                        except: pass
+                    st.write("*Dictamen:* Podés agregar el ticker deseado tipeándolo abajo.")
+                elif base_ticker in ["AAPL", "KO", "TSLA", "SPY", "MCD", "RACE", "VIST", "MELI", "NVDA", "MU"]:
+                    tk_ny = base_ticker
+                    tk_ba = f"{base_ticker}.BA"
+                    p_ny_real = p_vivo if p_vivo > 0 else st.session_state.precios_agente.get(base_ticker, 150.0)
+                    st.session_state.precios_agente[base_ticker] = p_ny_real
+                    try:
+                        obj_ba = yf.Ticker(tk_ba)
+                        hist_ba = obj_ba.history(period="5d")
+                        p_ba_calc = float(hist_ba["Close"].iloc[-1]) if not hist_ba.empty else 0.0
+                        p_ba_real = p_ba_calc if p_ba_calc > 0 else (p_ny_real * VALOR_DOLAR_MEP / 5.0)
+                        st.success(f"📌 **Veredicto:** Doble carril verificado para `{base_ticker}`. Línea internacional: **USD \$ {p_ny_real:,.2f}** | Línea Cedear BYMA: **ARS \$ {p_ba_real:,.2f}**.")
+                    except:
+                        st.success(f"📌 **Veredicto:** Doble carril verificado para `{base_ticker}`. Línea internacional: **USD \$ {p_ny_real:,.2f}**.")
+                elif base_ticker in ["CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "COME"]:
+                    p_real_local = p_vivo if p_vivo > 0 else st.session_state.precios_agente.get(base_ticker, 37.70)
+                    st.session_state.precios_agente[base_ticker] = p_real_local
+                    n_of_m = {"AUSO": "Autopistas del Sol S.A.", "HAVA": "Havanna S.A.", "SEMI": "Molinos Juan Semino S.A.", "COME": "Comercial del Plata S.A."}.get(base_ticker, base_ticker)
+                    st.success(f"📌 **Veredicto:** Activo nacional localizado en la central de BYMA. Ticker: `{base_ticker}.BA` (`{n_of_m}`). Cotización: **ARS \$ {p_real_local:,.2f}**.")
+                else:
+                    if p_vivo > 0:
+                        st.session_state.precios_agente[base_ticker] = p_vivo
+                        st.success(f"🤖 **Agente:** Símbolo `{base_ticker}` localizado con éxito a un valor de pizarra de **{p_vivo:,.2f}**.")
+                    else:
+                        st.warning(f"🤖 **Agente:** El identificador requerido `{base_ticker}` no arrojó registros en la city. Se conserva valor de resguardo histórico en memoria.")
+            else:
+                st.write("🤖 **Agente:** Por favor, indicame el nombre o sigla de la empresa con tu micrófono.")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
 nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker y dale a enter...", key="buscador_agregar_final_v27").upper().strip()
@@ -416,7 +417,8 @@ for simbolo in activos_actuales:
         ticker_noticia = yf.Ticker(simbolo_limpio)
         lista_cables = ticker_noticia.news
         
-        if lista_cables and len(lista_cables) > 0:
+        # Validación robusta de diccionarios de noticias nativas
+        if isinstance(lista_cables, list) and len(lista_cables) > 0 and isinstance(lista_cables[0], dict):
             cable_principal = lista_cables[0]
             fuente_c = cable_principal.get("publisher", "Markets Web")
             tit_c = cable_principal.get("title", f"Reportes contables y corporativos consolidados.")
@@ -431,10 +433,11 @@ for simbolo in activos_actuales:
         else:
             raise Exception()
     except:
+        # Fallback seguro con links estructurados correctos a Yahoo Finance
         st.markdown(f"""
         <div class="caja-noticia-link">
             <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados recientemente consolidan tendencias estables para {simbolo_limpio} en BYMA S.A.<br>
-            <a href="https://yahoo.com{simbolo_limpio}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar cable de la City</a>
+            <a href="https://yahoo.com{simbolo_limpio}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
         </div>
         """, unsafe_allow_html=True)
 
@@ -449,4 +452,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-                                     
+            
