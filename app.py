@@ -327,7 +327,7 @@ if activos_actuales:
     else:
         termometro_riesgo = "<span style='background-color:#0d47a1; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>⚖️ PERFIL MODERADO</span>"
         analisis_web_riesgo = "Composición balanceada entre índices, servicios y consumo masivo."
-        rec_operativa = "Sugerencia: Mantener la distribución macro actual."
+        rec_operativa = "Sugerencia: Mantener la distribution macro actual."
 
     st.markdown(f"""
     <div style="background-color:#161a22; padding:10px; border-radius:6px; font-size:0.82rem; border:1px solid #232a38; color:white; margin-bottom: 15px; line-height:1.45;">
@@ -357,20 +357,43 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS MAESTRA CON ENLACES SEGUROS CORREGIDOS
+# 9. CENTRAL DE NOTICIAS MAESTRA EN LÍNEA - ARQUITECTURA MANUAL ANTIBLOQUEOS
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = simbolo.replace(".BA", "").strip().lower()
-    # ENLACE CORREGIDO: Se fuerza la estructura web oficial de Yahoo Finance evitando que se peguen los textos
-    url_segura_yahoo = f"https://yahoo.com{simbolo_limpio}"
     
-    st.markdown(f"""
-    <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados recientemente consolidan tendencias estables para {simbolo_limpio.upper()} en BYMA S.A. y Wall Street.<br>
-        <a href="{url_segura_yahoo}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
-    </div>
-    """, unsafe_allow_html=True)
+    # Construcción ciega y blindada del link para evitar dobles conversiones o pegados de texto
+    url_segura_final = "https://yahoo.com" + str(simbolo_limpio)
+    
+    try:
+        ticker_noticia = yf.Ticker(simbolo_limpio)
+        lista_cables = ticker_noticia.news
+        
+        # Adaptación al nuevo formato de respuesta anidado de yfinance
+        if isinstance(lista_cables, list) and len(lista_cables) > 0:
+            cable = lista_cables[0]
+            sub_contenido = cable.get("content", {}) if "content" in cable else cable
+            
+            fuente_c = sub_contenido.get("publisher", "Markets Web")
+            tit_c = sub_contenido.get("title", f"Reportes financieros consolidados de la pizarra de BYMA.")
+            
+            st.markdown(f"""
+            <div class="caja-noticia-link">
+                <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 {fuente_c}:</b> {tit_c}<br>
+                <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para leer completa en la web</a>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            raise Exception()
+    except:
+        # Fallback de seguridad inyectando la variable construida letra por letra
+        st.markdown(f"""
+        <div class="caja-noticia-link">
+            <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados recientemente consolidan tendencias en BYMA S.A. y Wall Street.<br>
+            <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
+        </div>
+        """, unsafe_allow_html=True)
 
 st.markdown("<div style='padding-bottom: 60px;'></div>", unsafe_allow_html=True)
 
@@ -383,4 +406,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
+            
