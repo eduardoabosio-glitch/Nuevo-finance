@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -60,22 +61,18 @@ st.markdown("""
 @st.cache_data(ttl=60)
 def agente_calcular_mep_bonos_real():
     try:
-        # Se capturan las cotizaciones del cierre de los bonos soberanos en BYMA
         bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
         bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
         
         if not bono_pesos.empty and not bono_dolares.empty:
             ultimo_ars = float(bono_pesos["Close"].iloc[-1])
             ultimo_usd = float(bono_dolares["Close"].iloc[-1])
-            
-            # Arbitraje directo: Relación Pesos / Dólares
             mep_calculado = ultimo_ars / ultimo_usd
             if 500 < mep_calculado < 3000:
                 return mep_calculado, "⚡ Cotización por Paridad de Bonos AL30 en Tiempo Real"
     except:
         pass
     
-    # Resguardo fijo de contingencia inteligente para Fines de Semana o feriados bancarios
     mep_cierre_infobae = 1539.43
     mep_cierre_ambito = 1536.73
     mep_cierre_nacion = 1535.00
@@ -209,8 +206,12 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         "prob_sem": "56%", "prob_anu": "82%", "prob_fun": "85%", "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "emas_c": "▲ EMA9 OK",
         "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": "1.02",
         "pe": "No Aplica", "dividendos": "0.00%", "eps": "No Disponible", "margen": "No Disp.", "dict_corto": "Consolidación.", "dict_largo": "Soporte."
-            }
-    # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+    }
+
+activos_actuales = list(st.session_state.montos_dis.keys())
+patrimonio_total_usd = 0.0
+lista_para_matriz_resumen = []
+# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk)
     p_base = datos_reales["precio"]
@@ -272,7 +273,7 @@ for tk in activos_actuales:
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-    # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
+# 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -334,7 +335,7 @@ st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones
 for simbolo in activos_actuales:
     simbolo_limpio = simbolo.replace(".BA", "").strip().lower()
     
-    # Construcción estricta letra por letra de la URL para evitar que el navegador la junte
+    # Construcción estricta separada para blindar la URL contra pegados de texto
     url_segura_final = "https://yahoo.com" + str(simbolo_limpio)
     
     st.markdown(f"""
@@ -355,4 +356,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
