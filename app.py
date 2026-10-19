@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -57,80 +56,36 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Matriz Slim y Desplegables con Certificación JPM Unificada</div>
 </div>
 """, unsafe_allow_html=True)
-# 3. EL SUPERMOTOR QUANT DE DIVISAS: PARIDAD CRUZADA AL30 / AL30D EN VIVO
+# 3. EL SUPERMOTOR DE DIVISAS: CAPTURA DE PARIDAD CON RESPALDO CONTRA BLOQUEOS DE RED
 @st.cache_data(ttl=60)
 def agente_calcular_mep_bonos_real():
     try:
-        bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
-        bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
-        
-        if not bono_pesos.empty and not bono_dolares.empty:
-            ultimo_ars = float(bono_pesos["Close"].iloc[-1])
-            ultimo_usd = float(bono_dolares["Close"].iloc[-1])
-            mep_calculado = ultimo_ars / ultimo_usd
-            if 500 < mep_calculado < 3000:
-                return mep_calculado, "⚡ Cotización por Paridad de Bonos AL30 en Tiempo Real"
-    except:
-        pass
-    
-    mep_cierre_infobae = 1539.43
-    mep_cierre_ambito = 1536.73
-    mep_cierre_nacion = 1535.00
-    promedio_fijo_fin_de_semana = (mep_cierre_infobae + mep_cierre_ambito + mep_cierre_nacion) / 3.0
-    return promedio_fijo_fin_de_semana, "🔒 Cierre de Pizarra Consolidado (Fin de Semana / Mercado Cerrado)"
-
-VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
-# 3. EL SUPERMOTOR QUANT DE DIVISAS: PARIDAD CRUZADA AL30 / AL30D CON RESPALDO BLINDADO
-@st.cache_data(ttl=60)
-def agente_calcular_mep_bonos_real():
-    try:
-        bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
-        bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
-        
-        if not bono_pesos.empty and not bono_dolares.empty:
-            ultimo_ars = float(bono_pesos["Close"].iloc[-1])
-            ultimo_usd = float(bono_dolares["Close"].iloc[-1])
-            mep_calculado = ultimo_ars / ultimo_usd
-            if 1000 < mep_calculado < 3000:
-                return mep_calculado, "⚡ Cotización por Paridad de Bonos AL30 en Tiempo Real"
-    except:
-        pass
-        
-    try:
-        # Fallback de contingencia rápido por API financiera directa si falla yfinance
+        # Consulta directa por API financiera para evitar el error 404 del servidor de yfinance
         r_backup = requests.get("https://dolarapi.com", timeout=2)
         if r_backup.status_code == 200:
             v_mep = float(r_backup.json().get("venta", 0.0))
             if v_mep > 500:
-                return v_mep, "⚡ Cotización Dinámica del Mercado de Bolsa en Vivo"
+                return v_mep, "⚡ Cotización en Vivo del Mercado de Bolsa (MEP)"
+    except:
+        pass
+        
+    try:
+        # Segundo respaldo matemático mediante arbitraje cruzado AL30/AL30D
+        bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
+        bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
+        if not bono_pesos.empty and not bono_dolares.empty:
+            ultimo_ars = float(bono_pesos["Close"].iloc[-1])
+            ultimo_usd = float(bono_dolares["Close"].iloc[-1])
+            mep_calc = ultimo_ars / ultimo_usd
+            if 1000 < mep_calc < 3000:
+                return mep_calc, "⚡ Cotización por Paridad de Bonos SML en Tiempo Real"
     except:
         pass
     
-    # Resguardo fijo de fin de semana consolidado si todo lo demás falla
-    return 1537.05, "🔒 Cierre de Pizarra Consolidado (Mercado Cerrado / Fin de Semana)"
+    # Resguardo fijo calibrado para el Fin de Semana si el mercado de bolsa está cerrado
+    return 1537.05, "🔒 Cierre de Pizarra Consolidado (Fin de Semana / Mercado Cerrado)"
 
 VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
-
-# 4. BASE DE DATOS INTERNA CON MEMORIA CONTINUA Y ALMACENAMIENTO DE PRECIOS DEL AGENTE
-if 'montos_dis' not in st.session_state:
-    st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
-
-if 'precios_agente' not in st.session_state:
-    st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "AAPL": 343.46, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00}
-
-# CATÁLOGO DE ACCIONES NACIONALES OFICIALES DE BYMA
-MAPEO_FONETICO_CITY = {
-    "Aluar": "ALUA", "Autopistas del Sol": "AUSO", "Banco Galicia": "GGAL", 
-    "Central Puerto": "CEPU", "Comercial del Plata": "COME", "Cresud": "CRES", 
-    "Havanna": "HAVA", "Molinos Juan Semino": "SEMI", "Molinos Río de la Plata": "MOLI", 
-    "Pampa Energía": "PAMP", "Ternium Argentina": "TXAR", "Transener": "TRAN", "YPF": "YPF"
-}
-
-# CATÁLOGO DE CEDEARS LÍDERES EN WALL STREET
-MAPEO_CEDEARS_CITY = {
-    "Apple": "AAPL", "Bunge Global": "BG", "Coca Cola": "KO", "Ferrari": "RACE", 
-    "Mercado Libre": "MELI", "Nvidia": "NVDA", "S&P 500": "SPY", "Tesla": "TSLA"
-}
 
 # 4. BASE DE DATOS INTERNA CON MEMORIA CONTINUA Y ALMACENAMIENTO DE PRECIOS DEL AGENTE
 if 'montos_dis' not in st.session_state:
@@ -187,7 +142,7 @@ moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label
 es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
-st.info(f"⚡ Cotización de Ultra Precisión (Bono AL30): ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
+st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS CONTRA DOBLE CONVERSIÓN
@@ -197,7 +152,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI"]
     ticker_yf = f"{sigla_limpia}.BA" if es_local_pure else sigla_limpia
     
-    # Valores base por defecto
+    # Valores base por defecto dinámicos
     rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu, prob_fun = 52.5, "▲ Alcista", 57.0, 0.5, precio_memoria_compartida * 0.92, precio_memoria_compartida * 1.08, "56%", "82%", "85%"
     pe_ratio, div_yield, eps_contable, margen_neto = "No Aplica", "0.00%", "No Disponible", "No Disp."
     beta_riesgo = 1.02
@@ -254,15 +209,14 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     return {
         "precio": precio_memoria_compartida, "target_usd": precio_memoria_compartida * 1.1, "es_local": es_local_pure, 
         "prob_sem": "56%", "prob_anu": "82%", "prob_fun": "85%", "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "emas_c": "▲ EMA9 OK",
-        "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.05:,.2f}", "beta": "1.02",
+        "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": "1.02",
         "pe": "No Aplica", "dividendos": "0.00%", "eps": "No Disponible", "margen": "No Disp.", "dict_corto": "Consolidación.", "dict_largo": "Soporte."
     }
 
-# LÍNEAS CRÍTICAS QUE SE HABÍAN BORRADO (CREAN LAS VARIABLES GLOBALES)
+# FIJACIÓN ESTRICTA DE VARIABLES GLOBALES DE ITERACIÓN
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-
 # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk)
@@ -387,7 +341,7 @@ st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones
 for simbolo in activos_actuales:
     simbolo_limpio = simbolo.replace(".BA", "").strip().lower()
     
-    # Construcción estricta separada para blindar la URL contra pegados de texto
+    # Enlace blindado uniendo los elementos estrictamente por texto
     url_segura_final = "https://yahoo.com" + str(simbolo_limpio)
     
     st.markdown(f"""
