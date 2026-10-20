@@ -70,7 +70,7 @@ def agente_calcular_mep_bonos_real():
         pass
         
     try:
-        # 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
+    # 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
 @st.cache_data(ttl=60)
 def agente_calcular_mep_bonos_real():
     mep_ultimo_cierre_fijo = 1537.05
@@ -87,7 +87,7 @@ def agente_calcular_mep_bonos_real():
             bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
             
             if not bono_pesos.empty and not bono_dolares.empty:
-                ultimo_ars = float(bono_pesos["Close"].iloc[-1])
+                ultimo_ars = float(
                 ultimo_usd = float(bono_dolares["Close"].iloc[-1])
                 mep_calculado = ultimo_ars / ultimo_usd
                 if 1000 < mep_calculado < 3000:
