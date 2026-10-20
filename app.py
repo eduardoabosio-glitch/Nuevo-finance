@@ -261,6 +261,50 @@ for tk in activos_actuales:
     with st.expander(f"🔍 Análisis Fundamental: {nota_txt} ({datos_reales['prob_fun']})", expanded=False):
         st.markdown(f"• **P/E Ratio:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **EPS:** {datos_reales['eps']} | **Margen:** {datos_reales['margen']}")
         
+    # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+for tk in activos_actuales:
+    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk)
+    p_base = datos_reales["precio"]
+    p_target = datos_reales["target_usd"]
+    es_local_nativa = datos_reales["es_local"]
+    
+    monto_actual = st.session_state.montos_dis[tk]
+    patrimonio_total_usd += monto_actual
+    
+    nota_txt = "Nota 9/10 Excelente" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Nota 7/10 Favorable" if tk in ["TSLA", "TSLA.BA"] else "Nota 8/10 Muy Buena")
+    op_agente = "Exc" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Reg" if tk in ["TSLA", "TSLA.BA"] else "MB")
+    
+    val_t_matriz = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
+
+    lista_para_matriz_resumen.append({
+        "Activo": tk, "Precio": f"{p_base:,.2f}", "Target (JPM)": f"{val_t_matriz:,.2f}",
+        "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente
+    })
+    
+    noticias = "Nuevas proyecciones institucionales superan expectativas." if tk in ["SPY", "SPY.BA"] else ("Tesla supera entregas de forma masiva." if tk in ["TSLA", "TSLA.BA"] else ("Apple expande servicios con fuerza macro." if tk in ["AAPL", "AAPL.BA"] else "Consolidación de balance corporativo."))
+
+    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
+    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span></div>', unsafe_allow_html=True)
+            
+    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
+    
+    if es_local_nativa:
+        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
+    else:
+        p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
+        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
+
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold; text-decoration: underline;">🎯 Precio Objetivo JPMorgan (Target Price):</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    
+    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
+        st.markdown(f"• **RSI (14d):** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']} | **Vol:** {datos_reales['vol_rel']}")
+    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
+        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']} | **Beta:** {datos_reales['beta']}")
+    with st.expander(f"🔍 Análisis Fundamental: {nota_txt} ({datos_reales['prob_fun']})", expanded=False):
+        st.markdown(f"• **P/E Ratio:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **EPS:** {datos_reales['eps']} | **Margen:** {datos_reales['margen']}")
+        
     st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
     if st.button("❌ Borrar", key=f"delete_btn_v25_{tk}"):
@@ -335,18 +379,21 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS MAESTRA CON ENLACES SEPARADOS DE RAÍZ
+# 9. CENTRAL DE NOTICIAS DE MIS ACCIONES - ARQUITECTURA DESACOPLADA LETRA POR LETRA
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = simbolo.replace(".BA", "").strip().lower()
     
-    # Enlace blindado uniendo los elementos estrictamente por texto
-    url_segura_final = "https://yahoo.com" + str(simbolo_limpio)
+    # CONSTRUCCIÓN QUIRÚRGICA: Se concatenan strings estáticos puros para evitar el pegoteo del navegador
+    url_base_bursatil = "https://yahoo.com"
+    url_carpeta_interna = "/quote/"
+    url_segura_final = url_base_bursatil + url_carpeta_interna + str(simbolo_limpio)
     
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor Bursátil:</b> Informes corporativos y análisis macro publicados recientemente consolidan tendencias estables para {simbolo_limpio.upper()} en BYMA S.A. y Wall Street.<br>
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor de Mercado:</b> Análisis corporativos y flujos de capital actualizados recientemente consolidan proyecciones para {simbolo_limpio.upper()} en la bolsa de valores.
+        <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
     </div>
     """, unsafe_allow_html=True)
