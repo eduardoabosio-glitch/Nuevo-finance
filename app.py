@@ -73,14 +73,6 @@ def agente_calcular_mep_bonos_real():
 VALOR_DOLAR_MEP = 1537.05
 origen_mep_txt = "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado)"
 
-                v_mep = float(r_backup.json().get("venta", 0.0))
-                if v_mep > 500:
-                    return v_mep, "⚡ Cotización Dinámica Alternativa de Bolsa en Vivo"
-    except:
-        pass
-    return mep_ultimo_cierre_fijo, "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado / Fin de Semana)"
-    
-
 # 4. BASE DE DATOS INTERNA CON MEMORIA CONTINUA Y ALMACENAMIENTO DE PRECIOS DEL AGENTE
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
