@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -150,37 +151,37 @@ MAPEO_ETFS_COMAFI = {
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
-# 5. COMPONENTE DEL AGENTE FINANCIERO: TRES SELECTORES EN FILA HORIZONTAL
+# 5. COMPONENTE DEL AGENTE FINANCIERO: TRES SELECTORES EN FILA HORIZONTAL CON DOBLE TICKER EN COLOR
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Rápida Avanzada</h3>", unsafe_allow_html=True)
 
 col_acc, col_ced, col_etf = st.columns(3)
 
 with col_acc:
-    opciones_acc = [f"🟢 {n} ({t})" for n, t in sorted(MAPEO_ACCIONES_RAVA.items())]
+    opciones_acc = [f"🟢 {n} [Arg: {t.replace('.BA', '')}]" for n, t in sorted(MAPEO_ACCIONES_RAVA.items())]
     sel_acc = st.selectbox("🇦🇷 Acciones BYMA:", ["- Seleccionar -"] + opciones_acc, key="sel_prov_acc")
 
 with col_ced:
-    opciones_ced = [f"🔵 {n} ({t})" for n, t in sorted(MAPEO_CEDEARS_COMAFI.items())]
+    opciones_ced = [f"🔵 {n} [Arg: {t}]" for n, t in sorted(MAPEO_CEDEARS_COMAFI.items())]
     sel_ced = st.selectbox("🇺🇸 CEDEARs:", ["- Seleccionar -"] + opciones_ced, key="sel_prov_ced")
 
 with col_etf:
-    opciones_etf = [f"📊 {n} ({t})" for n, t in sorted(MAPEO_ETFS_COMAFI.items())]
+    opciones_etf = [f"📊 {n} [Arg: {t}]" for n, t in sorted(MAPEO_ETFS_COMAFI.items())]
     sel_etf = st.selectbox("📈 Índices ETFs:", ["- Seleccionar -"] + opciones_etf, key="sel_prov_etf")
 
-# ACLARATORIO AZUL INTERACTIVO - SOLUCIÓN PARA QUE LIMPIE Y MUESTRE EL ÚLTIMO TICKER TOCADO
+# ACLARATORIO AZUL INTERACTIVO RECONFIGURADO
 ticker_final_detectado = None
 
 if sel_acc != "- Seleccionar -":
-    ticker_final_detectado = sel_acc.split("(")[-1].replace(")", "").strip()
+    ticker_final_detectado = sel_acc.split("[Arg:")[-1].replace("]", "").strip() + ".BA"
 elif sel_ced != "- Seleccionar -":
-    ticker_final_detectado = sel_ced.split("(")[-1].replace(")", "").strip()
+    ticker_final_detectado = sel_ced.split("[Arg:")[-1].replace("]", "").strip()
 elif sel_etf != "- Seleccionar -":
-    ticker_final_detectado = sel_etf.split("(")[-1].replace(")", "").strip()
+    ticker_final_detectado = sel_etf.split("[Arg:")[-1].replace("]", "").strip()
 
 if ticker_final_detectado:
     st.markdown(f"""
     <div style="background-color:#19222d; padding:10px; border-radius:6px; border-left:4px solid #2196f3; margin-bottom:12px; font-size:0.85rem; color:white;">
-        💡 <b>Último Ticker Detectado en la City:</b> <span style="color:#00e676; font-weight:bold;">{ticker_final_detectado}</span><br>
+        💡 <b>Último Ticker Detectado para operar en Argentina:</b> <span style="color:#00e676; font-weight:bold;">{ticker_final_detectado}</span><br>
         Para fijarlo en tu portafolio de abajo, escríbelo tal cual en la caja verde y dale Enter.
     </div>
     """, unsafe_allow_html=True)
@@ -188,7 +189,6 @@ if ticker_final_detectado:
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
 nueva_empresa_raw = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker (ej: GGAL.BA, TSLA) y dale a enter...", key="buscador_agregar_final_v27").strip()
 
-# AUTOMATIZACIÓN DE MAYÚSCULAS Y AJUSTE DE CONTINGENCIA PARA AGROMETAL / AGRO
 nueva_empresa = nueva_empresa_raw.upper()
 if nueva_empresa == "AGRO":
     nueva_empresa = "AGRO.BA"
@@ -278,7 +278,6 @@ patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
 # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
-    # Corrección de paridad quirúrgica para forzar el ticker limpio en yfinance
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
     p_base = datos_reales["precio"]
@@ -396,7 +395,7 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO MANUAL COMPLETO EN GOOGLE FINANCE
+# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO DIRECTO EN GOOGLE FINANCE
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
