@@ -56,20 +56,7 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Matriz Slim y Desplegables con Certificación JPM Unificada</div>
 </div>
 """, unsafe_allow_html=True)
-# 3. EL SUPERMOTOR DE DIVISAS: CAPTURA DE PARIDAD CON RESPALDO CONTRA BLOQUEOS DE RED
-@st.cache_data(ttl=60)
-def agente_calcular_mep_bonos_real():
-    try:
-        # Consulta directa por API financiera para evitar el error 404 del servidor de yfinance
-        r_backup = requests.get("https://dolarapi.com", timeout=2)
-        if r_backup.status_code == 200:
-            v_mep = float(r_backup.json().get("venta", 0.0))
-            if v_mep > 500:
-                return v_mep, "⚡ Cotización en Vivo del Mercado de Bolsa (MEP)"
-    except:
-        pass
-        
-    
+# 3. VALORES DEL DÓLAR MEP FIJOS PARA CIERRE DE PIZARRA CONTROLADO
 VALOR_DOLAR_MEP = 1537.05
 origen_mep_txt = "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado)"
 
@@ -80,43 +67,99 @@ if 'montos_dis' not in st.session_state:
 if 'precios_agente' not in st.session_state:
     st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "AAPL": 343.46, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00}
 
-# CATÁLOGO DE ACCIONES NACIONALES OFICIALES DE BYMA
-MAPEO_FONETICO_CITY = {
-    "Aluar": "ALUA", "Autopistas del Sol": "AUSO", "Banco Galicia": "GGAL", 
-    "Central Puerto": "CEPU", "Comercial del Plata": "COME", "Cresud": "CRES", 
-    "Havanna": "HAVA", "Molinos Juan Semino": "SEMI", "Molinos Río de la Plata": "MOLI", 
-    "Pampa Energía": "PAMP", "Ternium Argentina": "TXAR", "Transener": "TRAN", "YPF": "YPF"
+# ACCIONES NACIONALES CON ORIGEN ARGENTINA (RAVA)
+MAPEO_ACCIONES_RAVA = {
+    "Agrometal (Argentina)": "AGRO.BA", "Aluar (Argentina)": "ALUA.BA", "Autopistas del Sol (Argentina)": "AUSO.BA", 
+    "Banco Macro (Argentina)": "BMA.BA", "BBVA Banco Francés (Argentina)": "BBAR.BA", "Boldt S.A. (Argentina)": "BDL.BA",
+    "Bolsas y Mercados Argentinos (Argentina)": "BYMA.BA", "Capex S.A. (Argentina)": "CAPX.BA", "Carboclor (Argentina)": "CARC.BA",
+    "Carlos Casado (Argentina)": "CADO.BA", "Central Puerto (Argentina)": "CEPU.BA", "Celulosa Argentina (Argentina)": "CELU.BA",
+    "Cablevisión Holding (Argentina)": "CVH.BA", "Comercial del Plata (Argentina)": "COME.BA", "Consultatio (Argentina)": "CTIO.BA",
+    "Cresud (Argentina)": "CRES.BA", "Distribuidora Gas del Centro (Argentina)": "DGCE.BA", "Distribuidora Gas Cuyana (Argentina)": "DGCU2.BA",
+    "Domec (Argentina)": "DOME.BA", "Edenor S.A. (Argentina)": "EDN.BA", "Endesa Costanera (Argentina)": "CECO2.BA",
+    "Ferrum S.A. (Argentina)": "FERR.BA", "Fiplasto (Argentina)": "FIPL.BA", "Gas Natural Ban (Argentina)": "GBAN.BA",
+    "Grupo Clarín (Argentina)": "GCLA.BA", "Grupo Financiero Galicia (Argentina)": "GGAL.BA", "Grimoldi S.A. (Argentina)": "GRIM.BA",
+    "Havanna S.A. (Argentina)": "HAVA.BA", "Holcim Argentina (Argentina)": "HARG.BA", "Inversora Juramento (Argentina)": "INVJ.BA",
+    "IRSA (Argentina)": "IRSA.BA", "Ledesma S.A. (Argentina)": "LEDE.BA", "Loma Negra (Argentina)": "LOMA.BA",
+    "Longvie S.A. (Argentina)": "LONG.BA", "Metrogas (Argentina)": "METR.BA", "Mirgor S.A. (Argentina)": "MIRG.BA",
+    "Molinos Agro (Argentina)": "MOLA.BA", "Molinos Juan Semino (Argentina)": "SEMI.BA", "Molinos Río de la Plata (Argentina)": "MOLI.BA",
+    "Morixe Hermanos (Argentina)": "MORI.BA", "Pampa Energía (Argentina)": "PAMP.BA", "Richmond Laboratorios (Argentina)": "RICH.BA",
+    "Rigolleau S.A. (Argentina)": "RIGO.BA", "San Miguel S.A. (Argentina)": "SAMI.BA", "Telecom Argentina (Argentina)": "TECO2.BA",
+    "Ternium Argentina (Argentina)": "TXAR.BA", "Transportadora Gas del Norte (Argentina)": "TGNO4.BA",
+    "Transportadora Gas del Sur (Argentina)": "TGSU2.BA", "Transener (Argentina)": "TRAN.BA", "YPF S.A. (Argentina)": "YPFD.BA"
 }
 
-# CATÁLOGO DE CEDEARS LÍDERES EN WALL STREET
-MAPEO_CEDEARS_CITY = {
-    "Apple": "AAPL", "Bunge Global": "BG", "Coca Cola": "KO", "Ferrari": "RACE", 
-    "Mercado Libre": "MELI", "Nvidia": "NVDA", "S&P 500": "SPY", "Tesla": "TSLA"
+# CEDEARS DE ACCIONES INTERNACIONALES CON PAÍS DE ORIGEN (COMAFI)
+MAPEO_CEDEARS_COMAFI = {
+    "Alibaba (China)": "BABA", "Amazon (Estados Unidos)": "AMZN", "Advanced Micro Devices (Estados Unidos)": "AMD", 
+    "Apple (Estados Unidos)": "AAPL", "Ambev (Brasil)": "ABEV", "Abbott Laboratories (Estados Unidos)": "ABT", 
+    "Adobe (Estados Unidos)": "ADBE", "Adecoagro (Argentina)": "AGRO", "Airbnb (Estados Unidos)": "ABNB", 
+    "Bank of America (Estados Unidos)": "BAC", "Barrick Gold (Canadá)": "B", "Bunge Global (Estados Unidos)": "BG", 
+    "Bioceres (Argentina)": "BIOX", "Bitfarms (Canadá)": "KEEL", "Caterpillar (Estados Unidos)": "CAT", 
+    "Citigroup (Estados Unidos)": "C", "Coca Cola (Estados Unidos)": "KO", "Chevron (Estados Unidos)": "CVX", 
+    "eBay (Estados Unidos)": "EBAY", "Electronic Arts (Estados Unidos)": "EA", "Eli Lilly (Estados Unidos)": "LLY", 
+    "Embraer (Brasil)": "EMBJ", "Ferrari (Italia)": "RACE", "FedEx (Estados Unidos)": "FDX", 
+    "Ford Motor Company (Estados Unidos)": "F", "General Electric (Estados Unidos)": "GE", 
+    "General Motors (Estados Unidos)": "GM", "Google (Estados Unidos)": "GOOGL", "Goldman Sachs (Estados Unidos)": "GS", 
+    "Hut 8 Mining (Canadá)": "HUT", "Intel (Estados Unidos)": "INTC", "IBM (Estados Unidos)": "IBM", 
+    "Itaú Unibanco (Brasil)": "ITUB", "J.P. Morgan (Estados Unidos)": "JPM", "Johnson & Johnson (Estados Unidos)": "JNJ", 
+    "Jumia Technologies (Alemania)": "JMIA", "Lockheed Martin (Estados Unidos)": "LMT", "Lojas Renner (Brasil)": "LREN3", 
+    "Mastercard (Estados Unidos)": "MA", "McDonald's (Estados Unidos)": "MCD", "Mercado Libre (Argentina)": "MELI", 
+    "Meta / Facebook (Estados Unidos)": "META", "Microsoft (Estados Unidos)": "MSFT", "Moderna (Estados Unidos)": "MRNA", 
+    "Microstrategy (Estados Unidos)": "MSTR", "Natura Cosméticos (Brasil)": "NATU3", "Nvidia (Estados Unidos)": "NVDA", 
+    "Occidental Petroleum (Estados Unidos)": "OXY", "Palo Alto Networks (Estados Unidos)": "PANW", "Petrobras (Brasil)": "PETR3", 
+    "Roblox Corp (Estados Unidos)": "RBLX", "Salesforce (Estados Unidos)": "CRM", "Satellogic (Argentina)": "SATL", 
+    "Tesla (Estados Unidos)": "TSLA", "The Walt Disney Co (Estados Unidos)": "DIS", "Uber Technologies (Estados Unidos)": "UBER", 
+    "United Airlines (Estados Unidos)": "UAL", "Vale S.A. (Brasil)": "VALE3", "Walmart (Estados Unidos)": "WMT"
+}
+
+# CEDEARS DE ETFS CON PAÍS DE ORIGEN INDEXADO
+MAPEO_ETFS_COMAFI = {
+    "SPDR S&P 500 ETF (Estados Unidos)": "SPY", "Invesco QQQ Trust (Estados Unidos)": "QQQ", 
+    "iShares Russell 2000 (Estados Unidos)": "IWM", "iShares MSCI Emerging Markets (Global)": "EEM", 
+    "Financial Select Sector SPDR (Estados Unidos)": "XLF", "Energy Select Sector SPDR (Estados Unidos)": "XLE", 
+    "SPDR Dow Jones Industrial (Estados Unidos)": "DIA", "iShares MSCI Brazil ETF (Brasil)": "EWZ", 
+    "Ark Innovation ETF (Estados Unidos)": "ARKK", "ProShares Short S&P500 (Estados Unidos)": "SH", 
+    "ETF SPDR Gold Trust (Estados Unidos)": "GLD", "iShares Ethereum Trust ETF (Global)": "ETHA", 
+    "Global X Uranium ETF (Global)": "URA", "VanEck Semiconductor ETF (Estados Unidos)": "SMH", 
+    "Direxion Daily S&P 500 Bull 3X (Estados Unidos)": "SPXL", "Utilities Select Sector SPDR (Estados Unidos)": "XLU", 
+    "First Trust Nasdaq Cybersecurity (Estados Unidos)": "CIBR", "ProShares UltraPro QQQ (Estados Unidos)": "TQQQ", 
+    "iPath Series B S&P 500 VIX (Estados Unidos)": "VXX", "iShares US Aerospace & Defense (Estados Unidos)": "ITA", 
+    "iShares Global Clean Energy (Global)": "ICLN", "iShares MSCI South Korea (Corea del Sur)": "EWY", 
+    "SPDR S&P Metals & Mining (Estados Unidos)": "XME", "Invesco S&P 500 Equal Weight (Estados Unidos)": "RSP"
 }
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
-# 5. COMPONENTE DEL AGENTE FINANCIERO: CATÁLOGO DIRECTO ORDENADO ALFABÉTICAMENTE
-st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Catálogo Oficial de la City (BYMA y CEDEARs)</h3>", unsafe_allow_html=True)
+# 5. COMPONENTE DEL AGENTE FINANCIERO: TRES SELECTORES EN FILA HORIZONTAL
+st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Rápida Avanzada</h3>", unsafe_allow_html=True)
 
-# Construcción de la lista alfabética separando por Acciones y CEDEARs de forma quirúrgica
-opciones_alfabeticas = []
-for nombre, tk in sorted(MAPEO_FONETICO_CITY.items()):
-    opciones_alfabeticas.append(f"🟢 [ACCIÓN] {nombre} ({tk})")
-for nombre, tk in sorted(MAPEO_CEDEARS_CITY.items()):
-    opciones_alfabeticas.append(f"🔵 [CEDEAR] {nombre} ({tk})")
+col_acc, col_ced, col_etf = st.columns(3)
 
-# Ordenamos toda la lista final por orden alfabético estricto
-opciones_alfabeticas.sort()
+with col_acc:
+    opciones_acc = [f"🟢 {n} ({t.replace('.BA', '')})" for n, t in sorted(MAPEO_ACCIONES_RAVA.items())]
+    sel_acc = st.selectbox("🇦🇷 Acciones BYMA:", ["- Seleccionar -"] + opciones_acc, key="sel_prov_acc")
 
-empresa_seleccionada = st.selectbox("Seleccioná un activo para consultar su Ticker:", opciones_alfabeticas, key="catalogo_alfabetico_unico")
+with col_ced:
+    opciones_ced = [f"🔵 {n} ({t})" for n, t in sorted(MAPEO_CEDEARS_COMAFI.items())]
+    sel_ced = st.selectbox("🇺🇸 CEDEARs:", ["- Seleccionar -"] + opciones_ced, key="sel_prov_ced")
 
-if empresa_seleccionada:
-    ticker_extraido = empresa_seleccionada.split("(")[-1].replace(")", "").strip()
-    st.info(f"💡 Ticker detectado: `{ticker_extraido}`. Para fijarlo en tu portafolio, ingresalo en la caja de abajo y dale Enter.")
+with col_etf:
+    opciones_etf = [f"📊 {n} ({t})" for n, t in sorted(MAPEO_ETFS_COMAFI.items())]
+    sel_etf = st.selectbox("📈 Índices ETFs:", ["- Seleccionar -"] + opciones_etf, key="sel_prov_etf")
+
+ticker_final_detectado = None
+if sel_acc != "- Seleccionar -":
+    ticker_final_detectado = sel_acc.split("(")[-1].replace(")", "").strip() + ".BA"
+elif sel_ced != "- Seleccionar -":
+    ticker_final_detectado = sel_ced.split("(")[-1].replace(")", "").strip()
+elif sel_etf != "- Seleccionar -":
+    ticker_final_detectado = sel_etf.split("(")[-1].replace(")", "").strip()
+
+if ticker_final_detectado:
+    st.info(f"💡 Ticker detectado para la City: `{ticker_final_detectado}`. Para fijarlo abajo en tus fichas del cuaderno, escríbelo en la caja y dale Enter.")
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker (ej: GGAL, TSLA) y dale a enter...", key="buscador_agregar_final_v27").upper().strip()
+nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker (ej: GGAL.BA, TSLA) y dale a enter...", key="buscador_agregar_final_v27").upper().strip()
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
@@ -199,55 +242,10 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         "pe": "No Aplica", "dividendos": "0.00%", "eps": "No Disponible", "margen": "No Disp.", "dict_corto": "Consolidación.", "dict_largo": "Soporte."
     }
 
-# FIJACIÓN ESTRICTA DE VARIABLES GLOBALES DE ITERACIÓN
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
 # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
-for tk in activos_actuales:
-    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk)
-    p_base = datos_reales["precio"]
-    p_target = datos_reales["target_usd"]
-    es_local_nativa = datos_reales["es_local"]
-    
-    monto_actual = st.session_state.montos_dis[tk]
-    patrimonio_total_usd += monto_actual
-    
-    nota_txt = "Nota 9/10 Excelente" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Nota 7/10 Favorable" if tk in ["TSLA", "TSLA.BA"] else "Nota 8/10 Muy Buena")
-    op_agente = "Exc" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Reg" if tk in ["TSLA", "TSLA.BA"] else "MB")
-    
-    val_t_matriz = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
-
-    lista_para_matriz_resumen.append({
-        "Activo": tk, "Precio": f"{p_base:,.2f}", "Target (JPM)": f"{val_t_matriz:,.2f}",
-        "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente
-    })
-    
-    noticias = "Nuevas proyecciones institucionales superan expectativas." if tk in ["SPY", "SPY.BA"] else ("Tesla supera entregas de forma masiva." if tk in ["TSLA", "TSLA.BA"] else ("Apple expande servicios con fuerza macro." if tk in ["AAPL", "AAPL.BA"] else "Consolidación de balance corporativo."))
-
-    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
-    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span></div>', unsafe_allow_html=True)
-            
-    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
-    
-    if es_local_nativa:
-        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
-        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
-    else:
-        p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
-        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
-
-    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold; text-decoration: underline;">🎯 Precio Objetivo JPMorgan (Target Price):</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
-    
-    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
-        st.markdown(f"• **RSI (14d):** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']} | **Vol:** {datos_reales['vol_rel']}")
-    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
-        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']} | **Beta:** {datos_reales['beta']}")
-    with st.expander(f"🔍 Análisis Fundamental: {nota_txt} ({datos_reales['prob_fun']})", expanded=False):
-        st.markdown(f"• **P/E Ratio:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **EPS:** {datos_reales['eps']} | **Margen:** {datos_reales['margen']}")
-        
-    # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk)
     p_base = datos_reales["precio"]
@@ -365,7 +363,7 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO MANUAL EN GOOGLE FINANCE
+# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO DIRECTO EN GOOGLE FINANCE
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
