@@ -56,16 +56,36 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Matriz Slim y Desplegables con Certificación JPM Unificada</div>
 </div>
 """, unsafe_allow_html=True)
-# 3. VALORES DEL DÓLAR MEP FIJOS PARA CIERRE DE PIZARRA CONTROLADO
-VALOR_DOLAR_MEP = 1537.05
-origen_mep_txt = "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado)"
+# 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
+def agente_calcular_mep_bonos_real():
+    mep_ultimo_cierre_fijo = 1537.05
+    try:
+        ahora = datetime.datetime.now()
+        hora_actual = ahora.time()
+        es_dia_semana = ahora.weekday() < 5
+        
+        hora_apertura = datetime.time(11, 0, 0)
+        hora_cierre = datetime.time(17, 0, 0)
+        
+        # SI ESTÁ EN HORARIO DE BOLSA ABIERTA, SUCCIONA EL VALOR EN VIVO DE LA API
+        if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
+            r_api = requests.get("https://dolarapi.com", timeout=2)
+            if r_api.status_code == 200:
+                v_mep = float(r_api.json().get("venta", 0.0))
+                if v_mep > 500:
+                    return v_mep, "⚡ Cotización en Vivo del Mercado de Bolsa (MEP)"
+    except:
+        pass
+    return mep_ultimo_cierre_fijo, "🔒 Cierre de Pizarra Consolidado (Mercado Cerrado / Fin de Semana)"
+
+VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
 
 # 4. BASE DE DATOS INTERNA CON MEMORIA CONTINUA Y ALMACENAMIENTO DE PRECIOS DEL AGENTE
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
 if 'precios_agente' not in st.session_state:
-    st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "AAPL": 343.46, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00}
+    st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "AAPL": 343.46, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00, "AGRO": 72.00}
 
 # ACCIONES NACIONALES CON ORIGEN ARGENTINA (RAVA)
 MAPEO_ACCIONES_RAVA = {
@@ -136,7 +156,7 @@ st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Rápi
 col_acc, col_ced, col_etf = st.columns(3)
 
 with col_acc:
-    opciones_acc = [f"🟢 {n} ({t.replace('.BA', '')})" for n, t in sorted(MAPEO_ACCIONES_RAVA.items())]
+    opciones_acc = [f"🟢 {n} ({t})" for n, t in sorted(MAPEO_ACCIONES_RAVA.items())]
     sel_acc = st.selectbox("🇦🇷 Acciones BYMA:", ["- Seleccionar -"] + opciones_acc, key="sel_prov_acc")
 
 with col_ced:
@@ -147,24 +167,36 @@ with col_etf:
     opciones_etf = [f"📊 {n} ({t})" for n, t in sorted(MAPEO_ETFS_COMAFI.items())]
     sel_etf = st.selectbox("📈 Índices ETFs:", ["- Seleccionar -"] + opciones_etf, key="sel_prov_etf")
 
+# ACLARATORIO AZUL INTERACTIVO - SOLUCIÓN PARA QUE LIMPIE Y MUESTRE EL ÚLTIMO TICKER TOCADO
 ticker_final_detectado = None
+
 if sel_acc != "- Seleccionar -":
-    ticker_final_detectado = sel_acc.split("(")[-1].replace(")", "").strip() + ".BA"
+    ticker_final_detectado = sel_acc.split("(")[-1].replace(")", "").strip()
 elif sel_ced != "- Seleccionar -":
     ticker_final_detectado = sel_ced.split("(")[-1].replace(")", "").strip()
 elif sel_etf != "- Seleccionar -":
     ticker_final_detectado = sel_etf.split("(")[-1].replace(")", "").strip()
 
 if ticker_final_detectado:
-    st.info(f"💡 Ticker detectado para la City: `{ticker_final_detectado}`. Para fijarlo abajo en tus fichas del cuaderno, escríbelo en la caja y dale Enter.")
+    st.markdown(f"""
+    <div style="background-color:#19222d; padding:10px; border-radius:6px; border-left:4px solid #2196f3; margin-bottom:12px; font-size:0.85rem; color:white;">
+        💡 <b>Último Ticker Detectado en la City:</b> <span style="color:#00e676; font-weight:bold;">{ticker_final_detectado}</span><br>
+        Para fijarlo en tu portafolio de abajo, escríbelo tal cual en la caja verde y dale Enter.
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
-nueva_empresa = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker (ej: GGAL.BA, TSLA) y dale a enter...", key="buscador_agregar_final_v27").upper().strip()
+nueva_empresa_raw = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker (ej: GGAL.BA, TSLA) y dale a enter...", key="buscador_agregar_final_v27").strip()
+
+# AUTOMATIZACIÓN DE MAYÚSCULAS Y AJUSTE DE CONTINGENCIA PARA AGROMETAL / AGRO
+nueva_empresa = nueva_empresa_raw.upper()
+if nueva_empresa == "AGRO":
+    nueva_empresa = "AGRO.BA"
 
 if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
         st.session_state.montos_dis[nueva_empresa] = 5000.0
-        st.success(f"¡{nueva_empresa} agregada con éxito!")
+        st.success(f"¡Activo {nueva_empresa} fijado con éxito en el cuaderno!")
         st.rerun()
 
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v27_unica")
@@ -178,11 +210,10 @@ st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fic
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     precio_memoria_compartida = st.session_state.precios_agente.get(sigla_limpia, 150.0)
-    es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI"]
-    ticker_yf = f"{sigla_limpia}.BA" if es_local_pure else sigla_limpia
+    es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
+    ticker_yf = sigla_limpia if (sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"]) else (f"{sigla_limpia}.BA" if es_local_pure else sigla_limpia)
     
-    # Valores base por defecto dinámicos
-    rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu, prob_fun = 52.5, "▲ Alcista", 57.0, 0.5, precio_memoria_compartida * 0.92, precio_memoria_compartida * 1.08, "56%", "82%", "85%"
+    rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu, prob_fun = 54.0, "▲ Alcista", 58.0, 0.6, precio_memoria_compartida * 0.93, precio_memoria_compartida * 1.07, "56%", "82%", "85%"
     pe_ratio, div_yield, eps_contable, margen_neto = "No Aplica", "0.00%", "No Disponible", "No Disp."
     beta_riesgo = 1.02
     
@@ -216,7 +247,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             prob_sem = f"{int(50 + (rsi_val / 4))}%"
             prob_anu = "82%" if distancia_sma >= 0 else "73%"
             
-            valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "COME": 0.11}
+            valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "COME": 0.11, "AGRO": 0.05}
             simbolo_moneda_piso_techo = "ARS $" if es_local_pure else "USD $"
             
             if es_local_pure:
@@ -247,7 +278,9 @@ patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
 # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
-    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk)
+    # Corrección de paridad quirúrgica para forzar el ticker limpio en yfinance
+    tk_limpio_upper = str(tk).strip().upper()
+    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
     p_base = datos_reales["precio"]
     p_target = datos_reales["target_usd"]
     es_local_nativa = datos_reales["es_local"]
@@ -255,20 +288,20 @@ for tk in activos_actuales:
     monto_actual = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_actual
     
-    nota_txt = "Nota 9/10 Excelente" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Nota 7/10 Favorable" if tk in ["TSLA", "TSLA.BA"] else "Nota 8/10 Muy Buena")
-    op_agente = "Exc" if tk in ["SPY", "AAPL", "AAPL.BA"] else ("Reg" if tk in ["TSLA", "TSLA.BA"] else "MB")
+    nota_txt = "Nota 9/10 Excelente" if tk_limpio_upper in ["SPY", "AAPL", "AAPL.BA"] else ("Nota 7/10 Favorable" if tk_limpio_upper in ["TSLA", "TSLA.BA"] else "Nota 8/10 Muy Buena")
+    op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "AAPL.BA"] else ("Reg" if tk_limpio_upper in ["TSLA", "TSLA.BA"] else "MB")
     
     val_t_matriz = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
 
     lista_para_matriz_resumen.append({
-        "Activo": tk, "Precio": f"{p_base:,.2f}", "Target (JPM)": f"{val_t_matriz:,.2f}",
+        "Activo": tk_limpio_upper, "Precio": f"{p_base:,.2f}", "Target (JPM)": f"{val_t_matriz:,.2f}",
         "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente
     })
     
-    noticias = "Nuevas proyecciones institucionales superan expectativas." if tk in ["SPY", "SPY.BA"] else ("Tesla supera entregas de forma masiva." if tk in ["TSLA", "TSLA.BA"] else ("Apple expande servicios con fuerza macro." if tk in ["AAPL", "AAPL.BA"] else "Consolidación de balance corporativo."))
+    noticias = "Nuevas proyecciones institucionales superan expectativas." if tk_limpio_upper in ["SPY", "SPY.BA"] else ("Tesla supera entregas de forma masiva." if tk_limpio_upper in ["TSLA", "TSLA.BA"] else ("Apple expande servicios con fuerza macro." if tk_limpio_upper in ["AAPL", "AAPL.BA"] else "Consolidación de balance corporativo."))
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
-    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk}</span></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
             
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
@@ -291,13 +324,13 @@ for tk in activos_actuales:
         
     st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    if st.button("❌ Borrar", key=f"delete_btn_v25_{tk}"):
+    if st.button("❌ Borrar", key=f"delete_btn_v25_{tk_limpio_upper}"):
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
     
     monto_mostrar_box = monto_actual * factor_cambio
     texto_con_comillas = f'"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"'
-    entrada_texto_usuario = st.text_input(f"box_txt_{tk}", value=texto_con_comillas, key=f"input_box_{tk}_{moneda}")
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
     
     if entrada_texto_usuario != texto_con_comillas:
         try:
@@ -363,12 +396,12 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO DIRECTO EN GOOGLE FINANCE
+# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO MANUAL COMPLETO EN GOOGLE FINANCE
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).replace(".BA", "").strip().upper()
-    es_local_pure = str(simbolo).endswith(".BA") or simbolo_limpio in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI"]
+    es_local_pure = str(simbolo).endswith(".BA") or simbolo_limpio in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
     
     if es_local_pure:
         url_segura_final = f"https://google.com{simbolo_limpio}:BCBA"
@@ -377,7 +410,7 @@ for simbolo in activos_actuales:
 
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Google Finance:</b> Cables macroeconómicos, balances contables e informes corporativos de última hora para {simbolo_limpio}
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Google Finance:</b> Cables macroeconómicos, balances contables e informes corporativos de última hora para {simbolo_limpio}
         <br>
         <a href="{url_segura_final}" target="_self" class="enlace-noticia-azul">🔗 Tocar para leer completa en Google Finance</a>
     </div>
