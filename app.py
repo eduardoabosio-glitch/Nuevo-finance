@@ -365,20 +365,25 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS DE MIS ACCIONES - ENRUTAMIENTO MANUAL ABSOLUTO
+# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO MANUAL EN GOOGLE FINANCE
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).replace(".BA", "").strip().upper()
+    es_local_pure = str(simbolo).endswith(".BA") or simbolo_limpio in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI"]
     
-    # ENLACE SEGURO UNIVERSAL: Concatenación directa sin caracteres extraños para móviles
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
-    
+    # Construcción precisa de mercados para Google Finance (BCBA para pesos, NASDAQ/NYSE para Cedears)
+    if es_local_pure:
+        url_segura_final = f"https://google.com{simbolo_limpio}:BCBA"
+    else:
+        # Se define ruta universal para activos internacionales en Wall Street
+        url_segura_final = f"https://google.com{simbolo_limpio}:NASDAQ"
+
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor de Mercado:</b> Análisis corporativos y flujos de capital consolidados para {simbolo_limpio} en la pizarra de cotizaciones de Wall Street y BYMA.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Google Finance:</b> Cables macroeconómicos, balances contables e informes corporativos de última hora para {simbolo_limpio}
         <br>
-        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
+        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para leer completa en Google Finance</a>
     </div>
     """, unsafe_allow_html=True)
 
