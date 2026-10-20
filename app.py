@@ -365,20 +365,18 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS DE MIS ACCIONES - ARQUITECTURA DESACOPLADA LETRA POR LETRA
+# 9. CENTRAL DE NOTICIAS DE MIS ACCIONES - ENRUTAMIENTO MANUAL ABSOLUTO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
-    simbolo_limpio = simbolo.replace(".BA", "").strip().lower()
+    simbolo_limpio = str(simbolo).replace(".BA", "").strip().upper()
     
-    # CONSTRUCCIÓN QUIRÚRGICA: Se concatenan strings estáticos puros para evitar el pegoteo del navegador
-    url_base_bursatil = "https://yahoo.com"
-    url_carpeta_interna = "/quote/"
-    url_segura_final = url_base_bursatil + url_carpeta_interna + str(simbolo_limpio)
+    # ENLACE SEGURO UNIVERSAL: Concatenación directa sin caracteres extraños para móviles
+    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor de Mercado:</b> Análisis corporativos y flujos de capital actualizados recientemente consolidan proyecciones para {simbolo_limpio.upper()} en la bolsa de valores.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Monitor de Mercado:</b> Análisis corporativos y flujos de capital consolidados para {simbolo_limpio} en la pizarra de cotizaciones de Wall Street y BYMA.
         <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
     </div>
