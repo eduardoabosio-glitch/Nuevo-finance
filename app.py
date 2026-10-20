@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -90,63 +89,114 @@ if 'precios_agente' not in st.session_state:
 
 # ACCIONES NACIONALES CON ORIGEN ARGENTINA (RAVA)
 MAPEO_ACCIONES_RAVA = {
-    "Agrometal (Argentina)": "AGRO.BA", "Aluar (Argentina)": "ALUA.BA", "Autopistas del Sol (Argentina)": "AUSO.BA", 
-    "Banco Macro (Argentina)": "BMA.BA", "BBVA Banco Francés (Argentina)": "BBAR.BA", "Boldt S.A. (Argentina)": "BDL.BA",
-    "Bolsas y Mercados Argentinos (Argentina)": "BYMA.BA", "Capex S.A. (Argentina)": "CAPX.BA", "Carboclor (Argentina)": "CARC.BA",
-    "Carlos Casado (Argentina)": "CADO.BA", "Central Puerto (Argentina)": "CEPU.BA", "Celulosa Argentina (Argentina)": "CELU.BA",
-    "Cablevisión Holding (Argentina)": "CVH.BA", "Comercial del Plata (Argentina)": "COME.BA", "Consultatio (Argentina)": "CTIO.BA",
-    "Cresud (Argentina)": "CRES.BA", "Distribuidora Gas del Centro (Argentina)": "DGCE.BA", "Distribuidora Gas Cuyana (Argentina)": "DGCU2.BA",
-    "Domec (Argentina)": "DOME.BA", "Edenor S.A. (Argentina)": "EDN.BA", "Endesa Costanera (Argentina)": "CECO2.BA",
-    "Ferrum S.A. (Argentina)": "FERR.BA", "Fiplasto (Argentina)": "FIPL.BA", "Gas Natural Ban (Argentina)": "GBAN.BA",
-    "Grupo Clarín (Argentina)": "GCLA.BA", "Grupo Financiero Galicia (Argentina)": "GGAL.BA", "Grimoldi S.A. (Argentina)": "GRIM.BA",
-    "Havanna S.A. (Argentina)": "HAVA.BA", "Holcim Argentina (Argentina)": "HARG.BA", "Inversora Juramento (Argentina)": "INVJ.BA",
-    "IRSA (Argentina)": "IRSA.BA", "Ledesma S.A. (Argentina)": "LEDE.BA", "Loma Negra (Argentina)": "LOMA.BA",
-    "Longvie S.A. (Argentina)": "LONG.BA", "Metrogas (Argentina)": "METR.BA", "Mirgor S.A. (Argentina)": "MIRG.BA",
-    "Molinos Agro (Argentina)": "MOLA.BA", "Molinos Juan Semino (Argentina)": "SEMI.BA", "Molinos Río de la Plata (Argentina)": "MOLI.BA",
-    "Morixe Hermanos (Argentina)": "MORI.BA", "Pampa Energía (Argentina)": "PAMP.BA", "Richmond Laboratorios (Argentina)": "RICH.BA",
-    "Rigolleau S.A. (Argentina)": "RIGO.BA", "San Miguel S.A. (Argentina)": "SAMI.BA", "Telecom Argentina (Argentina)": "TECO2.BA",
-    "Ternium Argentina (Argentina)": "TXAR.BA", "Transportadora Gas del Norte (Argentina)": "TGNO4.BA",
-    "Transportadora Gas del Sur (Argentina)": "TGSU2.BA", "Transener (Argentina)": "TRAN.BA", "YPF S.A. (Argentina)": "YPFD.BA"
+    "Agrometal": "AGRO.BA", "Aluar": "ALUA.BA", "Autopistas del Sol": "AUSO.BA", 
+    "Banco Macro": "BMA.BA", "BBVA Banco Francés": "BBAR.BA", "Boldt S.A.": "BDL.BA",
+    "Bolsas y Mercados Argentinos": "BYMA.BA", "Capex S.A.": "CAPX.BA", "Carboclor": "CARC.BA",
+    "Carlos Casado": "CADO.BA", "Central Puerto": "CEPU.BA", "Celulosa Argentina": "CELU.BA",
+    "Cablevisión Holding": "CVH.BA", "Comercial del Plata": "COME.BA", "Consultatio": "CTIO.BA",
+    "Cresud": "CRES.BA", "Distribuidora Gas del Centro": "DGCE.BA", "Distribuidora Gas Cuyana": "DGCU2.BA",
+    "Domec": "DOME.BA", "Edenor S.A.": "EDN.BA", "Endesa Costanera": "CECO2.BA",
+    "Ferrum S.A.": "FERR.BA", "Fiplasto": "FIPL.BA", "Gas Natural Ban": "GBAN.BA",
+    "Grupo Clarín": "GCLA.BA", "Grupo Financiero Galicia": "GGAL.BA", "Grimoldi S.A.": "GRIM.BA",
+    "Havanna S.A.": "HAVA.BA", "Holcim Argentina": "HARG.BA", "Inversora Juramento": "INVJ.BA",
+    "IRSA": "IRSA.BA", "Ledesma S.A.": "LEDE.BA", "Loma Negra": "LOMA.BA",
+    "Longvie S.A.": "LONG.BA", "Metrogas": "METR.BA", "Mirgor S.A.": "MIRG.BA",
+    "Molinos Agro": "MOLA.BA", "Molinos Juan Semino": "SEMI.BA", "Molinos Río de la Plata": "MOLI.BA",
+    "Morixe Hermanos": "MORI.BA", "Pampa Energía": "PAMP.BA", "Richmond Laboratorios": "RICH.BA",
+    "Rigolleau S.A.": "RIGO.BA", "San Miguel S.A.": "SAMI.BA", "Telecom Argentina": "TECO2.BA",
+    "Ternium Argentina": "TXAR.BA", "Transportadora Gas del Norte": "TGNO4.BA",
+    "Transportadora Gas del Sur": "TGSU2.BA", "Transener": "TRAN.BA", "YPF S.A.": "YPFD.BA"
 }
 
-# CEDEARS DE ACCIONES INTERNACIONALES CON PAÍS DE ORIGEN (COMAFI)
+# CEDEARS DE ACCIONES INTERNACIONALES CON PAÍS DE ORIGEN Y SU DOBLE TICKER REAL (WALL STREET VS BYMA)
 MAPEO_CEDEARS_COMAFI = {
-    "Alibaba (China)": "BABA", "Amazon (Estados Unidos)": "AMZN", "Advanced Micro Devices (Estados Unidos)": "AMD", 
-    "Apple (Estados Unidos)": "AAPL", "Ambev (Brasil)": "ABEV", "Abbott Laboratories (Estados Unidos)": "ABT", 
-    "Adobe (Estados Unidos)": "ADBE", "Adecoagro (Argentina)": "AGRO", "Airbnb (Estados Unidos)": "ABNB", 
-    "Bank of America (Estados Unidos)": "BAC", "Barrick Gold (Canadá)": "B", "Bunge Global (Estados Unidos)": "BG", 
-    "Bioceres (Argentina)": "BIOX", "Bitfarms (Canadá)": "KEEL", "Caterpillar (Estados Unidos)": "CAT", 
-    "Citigroup (Estados Unidos)": "C", "Coca Cola (Estados Unidos)": "KO", "Chevron (Estados Unidos)": "CVX", 
-    "eBay (Estados Unidos)": "EBAY", "Electronic Arts (Estados Unidos)": "EA", "Eli Lilly (Estados Unidos)": "LLY", 
-    "Embraer (Brasil)": "EMBJ", "Ferrari (Italia)": "RACE", "FedEx (Estados Unidos)": "FDX", 
-    "Ford Motor Company (Estados Unidos)": "F", "General Electric (Estados Unidos)": "GE", 
-    "General Motors (Estados Unidos)": "GM", "Google (Estados Unidos)": "GOOGL", "Goldman Sachs (Estados Unidos)": "GS", 
-    "Hut 8 Mining (Canadá)": "HUT", "Intel (Estados Unidos)": "INTC", "IBM (Estados Unidos)": "IBM", 
-    "Itaú Unibanco (Brasil)": "ITUB", "J.P. Morgan (Estados Unidos)": "JPM", "Johnson & Johnson (Estados Unidos)": "JNJ", 
-    "Jumia Technologies (Alemania)": "JMIA", "Lockheed Martin (Estados Unidos)": "LMT", "Lojas Renner (Brasil)": "LREN3", 
-    "Mastercard (Estados Unidos)": "MA", "McDonald's (Estados Unidos)": "MCD", "Mercado Libre (Argentina)": "MELI", 
-    "Meta / Facebook (Estados Unidos)": "META", "Microsoft (Estados Unidos)": "MSFT", "Moderna (Estados Unidos)": "MRNA", 
-    "Microstrategy (Estados Unidos)": "MSTR", "Natura Cosméticos (Brasil)": "NATU3", "Nvidia (Estados Unidos)": "NVDA", 
-    "Occidental Petroleum (Estados Unidos)": "OXY", "Palo Alto Networks (Estados Unidos)": "PANW", "Petrobras (Brasil)": "PETR3", 
-    "Roblox Corp (Estados Unidos)": "RBLX", "Salesforce (Estados Unidos)": "CRM", "Satellogic (Argentina)": "SATL", 
-    "Tesla (Estados Unidos)": "TSLA", "The Walt Disney Co (Estados Unidos)": "DIS", "Uber Technologies (Estados Unidos)": "UBER", 
-    "United Airlines (Estados Unidos)": "UAL", "Vale S.A. (Brasil)": "VALE3", "Walmart (Estados Unidos)": "WMT"
+    "Alibaba (China)": {"orig": "BABA", "arg": "BABA"},
+    "Amazon (Estados Unidos)": {"orig": "AMZN", "arg": "AMZN"},
+    "Advanced Micro Devices (Estados Unidos)": {"orig": "AMD", "arg": "AMD"},
+    "Apple (Estados Unidos)": {"orig": "AAPL", "arg": "AAPL"},
+    "Ambev (Brasil)": {"orig": "ABEV", "arg": "ABEV"},
+    "Abbott Laboratories (Estados Unidos)": {"orig": "ABT", "arg": "ABT"},
+    "Adobe (Estados Unidos)": {"orig": "ADBE", "arg": "ADBE"},
+    "Adecoagro (Argentina)": {"orig": "AGRO", "arg": "AGRO"},
+    "Airbnb (Estados Unidos)": {"orig": "ABNB", "arg": "ABNB"},
+    "Bank of America (Estados Unidos)": {"orig": "BAC", "arg": "BAC"},
+    "Barrick Gold (Canadá)": {"orig": "GOLD", "arg": "B"},
+    "Bunge Global (Estados Unidos)": {"orig": "BG", "arg": "BG"},
+    "Bioceres (Argentina)": {"orig": "BIOX", "arg": "BIOX"},
+    "Bitfarms (Canadá)": {"orig": "BITF", "arg": "KEEL"},
+    "Caterpillar (Estados Unidos)": {"orig": "CAT", "arg": "CAT"},
+    "Citigroup (Estados Unidos)": {"orig": "C", "arg": "C"},
+    "Coca Cola (Estados Unidos)": {"orig": "KO", "arg": "KO"},
+    "Chevron (Estados Unidos)": {"orig": "CVX", "arg": "CVX"},
+    "eBay (Estados Unidos)": {"orig": "EBAY", "arg": "EBAY"},
+    "Electronic Arts (Estados Unidos)": {"orig": "EA", "arg": "EA"},
+    "Eli Lilly (Estados Unidos)": {"orig": "LLY", "arg": "LLY"},
+    "Embraer (Brasil)": {"orig": "ERJ", "arg": "EMBJ"},
+    "Ferrari (Italia)": {"orig": "RACE", "arg": "RACE"},
+    "FedEx (Estados Unidos)": {"orig": "FDX", "arg": "FDX"},
+    "Ford Motor Company (Estados Unidos)": {"orig": "F", "arg": "F"},
+    "General Electric (Estados Unidos)": {"orig": "GE", "arg": "GE"},
+    "General Motors (Estados Unidos)": {"orig": "GM", "arg": "GM"},
+    "Google (Estados Unidos)": {"orig": "GOOGL", "arg": "GOOGL"},
+    "Goldman Sachs (Estados Unidos)": {"orig": "GS", "arg": "GS"},
+    "Hut 8 Mining (Canadá)": {"orig": "HUT", "arg": "HUT"},
+    "Intel (Estados Unidos)": {"orig": "INTC", "arg": "INTC"},
+    "IBM (Estados Unidos)": {"orig": "IBM", "arg": "IBM"},
+    "Itaú Unibanco (Brasil)": {"orig": "ITUB", "arg": "ITUB"},
+    "J.P. Morgan (Estados Unidos)": {"orig": "JPM", "arg": "JPM"},
+    "Johnson & Johnson (Estados Unidos)": {"orig": "JNJ", "arg": "JNJ"},
+    "Jumia Technologies (Alemania)": {"orig": "JMIA", "arg": "JMIA"},
+    "Lockheed Martin (Estados Unidos)": {"orig": "LMT", "arg": "LMT"},
+    "Lojas Renner (Brasil)": {"orig": "LREN", "arg": "LREN3"},
+    "Mastercard (Estados Unidos)": {"orig": "MA", "arg": "MA"},
+    "McDonald's (Estados Unidos)": {"orig": "MCD", "arg": "MCD"},
+    "Mercado Libre (Argentina)": {"orig": "MELI", "arg": "MELI"},
+    "Meta / Facebook (Estados Unidos)": {"orig": "META", "arg": "META"},
+    "Microsoft (Estados Unidos)": {"orig": "MSFT", "arg": "MSFT"},
+    "Moderna (Estados Unidos)": {"orig": "MRNA", "arg": "MRNA"},
+    "Microstrategy (Estados Unidos)": {"orig": "MSTR", "arg": "MSTR"},
+    "Natura Cosméticos (Brasil)": {"orig": "NTCO", "arg": "NATU3"},
+    "Nvidia (Estados Unidos)": {"orig": "NVDA", "arg": "NVDA"},
+    "Occidental Petroleum (Estados Unidos)": {"orig": "OXY", "arg": "OXY"},
+    "Palo Alto Networks (Estados Unidos)": {"orig": "PANW", "arg": "PANW"},
+    "Petrobras (Brasil)": {"orig": "PBR", "arg": "PETR3"},
+    "Roblox Corp (Estados Unidos)": {"orig": "RBLX", "arg": "RBLX"},
+    "Salesforce (Estados Unidos)": {"orig": "CRM", "arg": "CRM"},
+    "Satellogic (Argentina)": {"orig": "SATL", "arg": "SATL"},
+    "Tesla (Estados Unidos)": {"orig": "TSLA", "arg": "TSLA"},
+    "The Walt Disney Co (Estados Unidos)": {"orig": "DIS", "arg": "DIS"},
+    "Uber Technologies (Estados Unidos)": {"orig": "UBER", "arg": "UBER"},
+    "United Airlines (Estados Unidos)": {"orig": "UAL", "arg": "UAL"},
+    "Vale S.A. (Brasil)": {"orig": "VALE", "arg": "VALE3"},
+    "Walmart (Estados Unidos)": {"orig": "WMT", "arg": "WMT"}
 }
 
-# CEDEARS DE ETFS CON PAÍS DE ORIGEN INDEXADO
+# CEDEARS DE ETFS CON SU DOBLE TICKER REAL
 MAPEO_ETFS_COMAFI = {
-    "SPDR S&P 500 ETF (Estados Unidos)": "SPY", "Invesco QQQ Trust (Estados Unidos)": "QQQ", 
-    "iShares Russell 2000 (Estados Unidos)": "IWM", "iShares MSCI Emerging Markets (Global)": "EEM", 
-    "Financial Select Sector SPDR (Estados Unidos)": "XLF", "Energy Select Sector SPDR (Estados Unidos)": "XLE", 
-    "SPDR Dow Jones Industrial (Estados Unidos)": "DIA", "iShares MSCI Brazil ETF (Brasil)": "EWZ", 
-    "Ark Innovation ETF (Estados Unidos)": "ARKK", "ProShares Short S&P500 (Estados Unidos)": "SH", 
-    "ETF SPDR Gold Trust (Estados Unidos)": "GLD", "iShares Ethereum Trust ETF (Global)": "ETHA", 
-    "Global X Uranium ETF (Global)": "URA", "VanEck Semiconductor ETF (Estados Unidos)": "SMH", 
-    "Direxion Daily S&P 500 Bull 3X (Estados Unidos)": "SPXL", "Utilities Select Sector SPDR (Estados Unidos)": "XLU", 
-    "First Trust Nasdaq Cybersecurity (Estados Unidos)": "CIBR", "ProShares UltraPro QQQ (Estados Unidos)": "TQQQ", 
-    "iPath Series B S&P 500 VIX (Estados Unidos)": "VXX", "iShares US Aerospace & Defense (Estados Unidos)": "ITA", 
-    "iShares Global Clean Energy (Global)": "ICLN", "iShares MSCI South Korea (Corea del Sur)": "EWY", 
-    "SPDR S&P Metals & Mining (Estados Unidos)": "XME", "Invesco S&P 500 Equal Weight (Estados Unidos)": "RSP"
+    "SPDR S&P 500 ETF (Estados Unidos)": {"orig": "SPY", "arg": "SPY"},
+    "Invesco QQQ Trust (Estados Unidos)": {"orig": "QQQ", "arg": "QQQ"},
+    "iShares Russell 2000 (Estados Unidos)": {"orig": "IWM", "arg": "IWM"},
+    "iShares MSCI Emerging Markets (Global)": {"orig": "EEM", "arg": "EEM"},
+    "Financial Select Sector SPDR (Estados Unidos)": {"orig": "XLF", "arg": "XLF"},
+    "Energy Select Sector SPDR (Estados Unidos)": {"orig": "XLE", "arg": "XLE"},
+    "SPDR Dow Jones Industrial (Estados Unidos)": {"orig": "DIA", "arg": "DIA"},
+    "iShares MSCI Brazil ETF (Brasil)": {"orig": "EWZ", "arg": "EWZ"},
+    "Ark Innovation ETF (Estados Unidos)": {"orig": "ARKK", "arg": "ARKK"},
+    "ProShares Short S&P500 (Estados Unidos)": {"orig": "SH", "arg": "SH"},
+    "ETF SPDR Gold Trust (Estados Unidos)": {"orig": "GLD", "arg": "GLD"},
+    "iShares Ethereum Trust ETF (Global)": {"orig": "ETHA", "arg": "ETHA"},
+    "Global X Uranium ETF (Global)": {"orig": "URA", "arg": "URA"},
+    "VanEck Semiconductor ETF (Estados Unidos)": {"orig": "SMH", "arg": "SMH"},
+    "Direxion Daily S&P 500 Bull 3X (Estados Unidos)": {"orig": "SPXL", "arg": "SPXL"},
+    "Utilities Select Sector SPDR (Estados Unidos)": {"orig": "XLU", "arg": "XLU"},
+    "First Trust Nasdaq Cybersecurity (Estados Unidos)": {"orig": "CIBR", "arg": "CIBR"},
+    "ProShares UltraPro QQQ (Estados Unidos)": {"orig": "TQQQ", "arg": "TQQQ"},
+    "iPath Series B S&P 500 VIX (Estados Unidos)": {"orig": "VXX", "arg": "VXX"},
+    "iShares US Aerospace & Defense (Estados Unidos)": {"orig": "ITA", "arg": "ITA"},
+    "iShares Global Clean Energy (Global)": {"orig": "ICLN", "arg": "ICLN"},
+    "iShares MSCI South Korea (Corea del Sur)": {"orig": "EWY", "arg": "EWY"},
+    "SPDR S&P Metals & Mining (Estados Unidos)": {"orig": "XME", "arg": "XME"},
+    "Invesco S&P 500 Equal Weight (Estados Unidos)": {"orig": "RSP", "arg": "RSP"}
 }
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
@@ -154,9 +204,10 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 # 5. COMPONENTE DEL AGENTE FINANCIERO: TRES SELECTORES EN FILA HORIZONTAL CON REINICIO EN CADENA
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Rápida Avanzada</h3>", unsafe_allow_html=True)
 
-# Creamos estados independientes en memoria para saber cuál fue el último clic real de Eduardo
 if 'ultimo_click' not in st.session_state:
     st.session_state.ultimo_click = None
+if 'ticker_activo_azul' not in st.session_state:
+    st.session_state.ticker_activo_azul = None
 
 col_acc, col_ced, col_etf = st.columns(3)
 
@@ -168,25 +219,25 @@ with col_acc:
         st.session_state.ticker_activo_azul = sel_acc.split("[Arg:")[-1].replace("]", "").strip() + ".BA"
 
 with col_ced:
-    # Muestra el nombre corporativo, el ticker de origen de Wall Street entre paréntesis y el código argentino en color
-    opciones_ced = [f"🔵 {n.split('(')[0].strip()} ({t}) [Arg: {t}]" for n, t in sorted(MAPEO_CEDEARS_COMAFI.items())]
+    # SE REORDENA EL TEXTO: Muestra Ticker de Wall Street (Origen) en azul y el Ticker de Argentina de forma separada
+    opciones_ced = [f"🔵 {n} (NYSE/NASDAQ: {d['orig']}) ➡️ [Arg: {d['arg']}]" for n, d in sorted(MAPEO_CEDEARS_COMAFI.items())]
     sel_ced = st.selectbox("🇺🇸 CEDEARs:", ["- Seleccionar -"] + opciones_ced, key="sel_prov_ced")
     if sel_ced != "- Seleccionar -" and st.session_state.ultimo_click != f"ced_{sel_ced}":
         st.session_state.ultimo_click = f"ced_{sel_ced}"
         st.session_state.ticker_activo_azul = sel_ced.split("[Arg:")[-1].replace("]", "").strip()
 
 with col_etf:
-    opciones_etf = [f"📊 {n.split('(')[0].strip()} ({t}) [Arg: {t}]" for n, t in sorted(MAPEO_ETFS_COMAFI.items())]
+    opciones_etf = [f"📊 {n} (Origen: {d['orig']}) ➡️ [Arg: {d['arg']}]" for n, d in sorted(MAPEO_ETFS_COMAFI.items())]
     sel_etf = st.selectbox("📈 Índices ETFs:", ["- Seleccionar -"] + opciones_etf, key="sel_prov_etf")
     if sel_etf != "- Seleccionar -" and st.session_state.ultimo_click != f"etf_{sel_etf}":
         st.session_state.ultimo_click = f"etf_{sel_etf}"
         st.session_state.ticker_activo_azul = sel_etf.split("[Arg:")[-1].replace("]", "").strip()
 
 # CARTEL EXPLICATIVO AZUL DINÁMICO: Sigue de forma quirúrgica a cada activo sucesivo que elijas
-if 'ticker_activo_azul' in st.session_state and st.session_state.ticker_activo_azul:
+if st.session_state.ticker_activo_azul:
     st.markdown(f"""
     <div style="background-color:#19222d; padding:10px; border-radius:6px; border-left:4px solid #2196f3; margin-bottom:12px; font-size:0.85rem; color:white;">
-        💡 <b>Activo Detectado en Pantalla:</b> <span style="color:#00e676; font-weight:bold;">{st.session_state.ticker_activo_azul}</span><br>
+        💡 <b>Activo Detectado para operar en Argentina:</b> <span style="color:#00e676; font-weight:bold;">{st.session_state.ticker_activo_azul}</span><br>
         Para fijarlo en tu portafolio, cópialo en la caja verde de abajo y dale Enter.
     </div>
     """, unsafe_allow_html=True)
@@ -194,7 +245,6 @@ if 'ticker_activo_azul' in st.session_state and st.session_state.ticker_activo_a
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
 nueva_empresa_raw = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker (ej: GGAL.BA, TSLA) y dale a enter...", key="buscador_agregar_final_v27").strip()
 
-# AUTOMATIZACIÓN TOTAL DE CAJA PARA EVITAR ERRORES DE MINÚSCULAS
 nueva_empresa = nueva_empresa_raw.upper()
 if nueva_empresa == "AGRO":
     nueva_empresa = "AGRO.BA"
@@ -203,7 +253,7 @@ if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
         st.session_state.montos_dis[nueva_empresa] = 5000.0
         st.success(f"¡Activo {nueva_empresa} fijado con éxito en el cuaderno!")
-        st.session_state.ticker_activo_azul = None  # Limpia el cartel informativo
+        st.session_state.ticker_activo_azul = None  # Limpia el cartel explicativo
         st.rerun()
 
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v27_unica")
@@ -283,7 +333,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+      # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -346,7 +396,7 @@ for tk in activos_actuales:
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-# 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
+  # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -433,3 +483,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
+    
