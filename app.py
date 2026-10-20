@@ -69,7 +69,7 @@ def agente_calcular_mep_bonos_real():
     except:
         pass
         
-    try:
+    
 VALOR_DOLAR_MEP = 1537.05
 origen_mep_txt = "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado)"  
 
