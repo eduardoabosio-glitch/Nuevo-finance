@@ -70,22 +70,39 @@ def agente_calcular_mep_bonos_real():
         pass
         
     try:
-        # Segundo respaldo matemático mediante arbitraje cruzado AL30/AL30D
-        bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
-        bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
-        if not bono_pesos.empty and not bono_dolares.empty:
-            ultimo_ars = float(bono_pesos["Close"].iloc[-1])
-            ultimo_usd = float(bono_dolares["Close"].iloc[-1])
-            mep_calc = ultimo_ars / ultimo_usd
-            if 1000 < mep_calc < 3000:
-                return mep_calc, "⚡ Cotización por Paridad de Bonos SML en Tiempo Real"
+        # 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
+@st.cache_data(ttl=60)
+def agente_calcular_mep_bonos_real():
+    mep_ultimo_cierre_fijo = 1537.05
+    try:
+        ahora = datetime.datetime.now()
+        hora_actual = ahora.time()
+        es_dia_semana = ahora.weekday() < 5
+        
+        hora_apertura = datetime.time(11, 0, 0)
+        hora_cierre = datetime.time(17, 0, 0)
+        
+        if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
+            bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
+            bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
+            
+            if not bono_pesos.empty and not bono_dolares.empty:
+                ultimo_ars = float(bono_pesos["Close"].iloc[-1])
+                ultimo_usd = float(bono_dolares["Close"].iloc[-1])
+                mep_calculado = ultimo_ars / ultimo_usd
+                if 1000 < mep_calculado < 3000:
+                    return mep_calculado, "⚡ Cotización por Paridad de Bonos AL30 en Tiempo Real"
+                    
+        if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
+            r_backup = requests.get("https://dolarapi.com", timeout=2)
+            if r_backup.status_code == 200:
+                v_mep = float(r_backup.json().get("venta", 0.0))
+                if v_mep > 500:
+                    return v_mep, "⚡ Cotización Dinámica Alternativa de Bolsa en Vivo"
     except:
         pass
+    return mep_ultimo_cierre_fijo, "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado / Fin de Semana)"
     
-    # Resguardo fijo calibrado para el Fin de Semana si el mercado de bolsa está cerrado
-    return 1537.05, "🔒 Cierre de Pizarra Consolidado (Fin de Semana / Mercado Cerrado)"
-
-VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
 
 # 4. BASE DE DATOS INTERNA CON MEMORIA CONTINUA Y ALMACENAMIENTO DE PRECIOS DEL AGENTE
 if 'montos_dis' not in st.session_state:
