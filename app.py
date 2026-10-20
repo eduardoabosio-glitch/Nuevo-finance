@@ -151,44 +151,50 @@ MAPEO_ETFS_COMAFI = {
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
-# 5. COMPONENTE DEL AGENTE FINANCIERO: TRES SELECTORES EN FILA HORIZONTAL CON DOBLE TICKER EN COLOR
+# 5. COMPONENTE DEL AGENTE FINANCIERO: TRES SELECTORES EN FILA HORIZONTAL CON REINICIO EN CADENA
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Rápida Avanzada</h3>", unsafe_allow_html=True)
+
+# Creamos estados independientes en memoria para saber cuál fue el último clic real de Eduardo
+if 'ultimo_click' not in st.session_state:
+    st.session_state.ultimo_click = None
 
 col_acc, col_ced, col_etf = st.columns(3)
 
 with col_acc:
     opciones_acc = [f"🟢 {n} [Arg: {t.replace('.BA', '')}]" for n, t in sorted(MAPEO_ACCIONES_RAVA.items())]
     sel_acc = st.selectbox("🇦🇷 Acciones BYMA:", ["- Seleccionar -"] + opciones_acc, key="sel_prov_acc")
+    if sel_acc != "- Seleccionar -" and st.session_state.ultimo_click != f"acc_{sel_acc}":
+        st.session_state.ultimo_click = f"acc_{sel_acc}"
+        st.session_state.ticker_activo_azul = sel_acc.split("[Arg:")[-1].replace("]", "").strip() + ".BA"
 
 with col_ced:
-    opciones_ced = [f"🔵 {n} [Arg: {t}]" for n, t in sorted(MAPEO_CEDEARS_COMAFI.items())]
+    # Muestra el nombre corporativo, el ticker de origen de Wall Street entre paréntesis y el código argentino en color
+    opciones_ced = [f"🔵 {n.split('(')[0].strip()} ({t}) [Arg: {t}]" for n, t in sorted(MAPEO_CEDEARS_COMAFI.items())]
     sel_ced = st.selectbox("🇺🇸 CEDEARs:", ["- Seleccionar -"] + opciones_ced, key="sel_prov_ced")
+    if sel_ced != "- Seleccionar -" and st.session_state.ultimo_click != f"ced_{sel_ced}":
+        st.session_state.ultimo_click = f"ced_{sel_ced}"
+        st.session_state.ticker_activo_azul = sel_ced.split("[Arg:")[-1].replace("]", "").strip()
 
 with col_etf:
-    opciones_etf = [f"📊 {n} [Arg: {t}]" for n, t in sorted(MAPEO_ETFS_COMAFI.items())]
+    opciones_etf = [f"📊 {n.split('(')[0].strip()} ({t}) [Arg: {t}]" for n, t in sorted(MAPEO_ETFS_COMAFI.items())]
     sel_etf = st.selectbox("📈 Índices ETFs:", ["- Seleccionar -"] + opciones_etf, key="sel_prov_etf")
+    if sel_etf != "- Seleccionar -" and st.session_state.ultimo_click != f"etf_{sel_etf}":
+        st.session_state.ultimo_click = f"etf_{sel_etf}"
+        st.session_state.ticker_activo_azul = sel_etf.split("[Arg:")[-1].replace("]", "").strip()
 
-# ACLARATORIO AZUL INTERACTIVO RECONFIGURADO
-ticker_final_detectado = None
-
-if sel_acc != "- Seleccionar -":
-    ticker_final_detectado = sel_acc.split("[Arg:")[-1].replace("]", "").strip() + ".BA"
-elif sel_ced != "- Seleccionar -":
-    ticker_final_detectado = sel_ced.split("[Arg:")[-1].replace("]", "").strip()
-elif sel_etf != "- Seleccionar -":
-    ticker_final_detectado = sel_etf.split("[Arg:")[-1].replace("]", "").strip()
-
-if ticker_final_detectado:
+# CARTEL EXPLICATIVO AZUL DINÁMICO: Sigue de forma quirúrgica a cada activo sucesivo que elijas
+if 'ticker_activo_azul' in st.session_state and st.session_state.ticker_activo_azul:
     st.markdown(f"""
     <div style="background-color:#19222d; padding:10px; border-radius:6px; border-left:4px solid #2196f3; margin-bottom:12px; font-size:0.85rem; color:white;">
-        💡 <b>Último Ticker Detectado para operar en Argentina:</b> <span style="color:#00e676; font-weight:bold;">{ticker_final_detectado}</span><br>
-        Para fijarlo en tu portafolio de abajo, escríbelo tal cual en la caja verde y dale Enter.
+        💡 <b>Activo Detectado en Pantalla:</b> <span style="color:#00e676; font-weight:bold;">{st.session_state.ticker_activo_azul}</span><br>
+        Para fijarlo en tu portafolio, cópialo en la caja verde de abajo y dale Enter.
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("<h3 style='color:#ffffff;'>🔍 Agregar Nueva Empresa al Portafolio</h3>", unsafe_allow_html=True)
 nueva_empresa_raw = st.text_input("Ingresá el símbolo:", placeholder="Escribí el ticker (ej: GGAL.BA, TSLA) y dale a enter...", key="buscador_agregar_final_v27").strip()
 
+# AUTOMATIZACIÓN TOTAL DE CAJA PARA EVITAR ERRORES DE MINÚSCULAS
 nueva_empresa = nueva_empresa_raw.upper()
 if nueva_empresa == "AGRO":
     nueva_empresa = "AGRO.BA"
@@ -197,6 +203,7 @@ if nueva_empresa:
     if nueva_empresa not in st.session_state.montos_dis:
         st.session_state.montos_dis[nueva_empresa] = 5000.0
         st.success(f"¡Activo {nueva_empresa} fijado con éxito en el cuaderno!")
+        st.session_state.ticker_activo_azul = None  # Limpia el cartel informativo
         st.rerun()
 
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v27_unica")
