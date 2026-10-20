@@ -379,22 +379,12 @@ for simbolo in activos_actuales:
         # Se define ruta universal para activos internacionales en Wall Street
         url_segura_final = f"https://google.com{simbolo_limpio}:NASDAQ"
 
-    st.markdown(f"""
+        st.markdown(f"""
     <div class="caja-noticia-link">
         <span style="color:#2196f3; font-weight:bold;">[{simbolo}]</span> <b>📍 Google Finance:</b> Cables macroeconómicos, balances contables e informes corporativos de última hora para {simbolo_limpio}
         <br>
-        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para leer completa en Google Finance</a>
+        <a href="{url_segura_final}" target="_self" class="enlace-noticia-azul">🔗 Tocar para leer completa en Google Finance</a>
     </div>
     """, unsafe_allow_html=True)
-
-st.markdown("<div style='padding-bottom: 60px;'></div>", unsafe_allow_html=True)
-
-st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
-    <div style="color:#888;">🏠<br>Inicio</div>
-    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
-    <div style="color:#888;">📊<br>Análisis</div>
-    <div style="color:#888;">💬<br>Chat</div>
-    <div style="color:#888;">👤<br>Perfil</div>
-</div>
+    
 ''', unsafe_allow_html=True)
