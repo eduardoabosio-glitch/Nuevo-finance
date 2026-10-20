@@ -70,10 +70,9 @@ def agente_calcular_mep_bonos_real():
         pass
         
     try:
-    VALOR_DOLAR_MEP = 1537.05
-origen_mep_txt = "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado / Fin de Semana)"
+VALOR_DOLAR_MEP = 1537.05
+origen_mep_txt = "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado)"  
 
-            
             if not bono_pesos.empty and not bono_dolares.empty:
                 ultimo_ars = float(
                 ultimo_usd = float(bono_dolares["Close"].iloc[-1])
