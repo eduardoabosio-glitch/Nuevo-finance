@@ -70,21 +70,9 @@ def agente_calcular_mep_bonos_real():
         pass
         
     try:
-    # 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
-@st.cache_data(ttl=60)
-def agente_calcular_mep_bonos_real():
-    mep_ultimo_cierre_fijo = 1537.05
-    try:
-        ahora = datetime.datetime.now()
-        hora_actual = ahora.time()
-        es_dia_semana = ahora.weekday() < 5
-        
-        hora_apertura = datetime.time(11, 0, 0)
-        hora_cierre = datetime.time(17, 0, 0)
-        
-        if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
-            bono_pesos = yf.Ticker("AL30.BA").history(period="1d")
-            bono_dolares = yf.Ticker("AL30D.BA").history(period="1d")
+    VALOR_DOLAR_MEP = 1537.05
+origen_mep_txt = "🔒 Cierre Consolidado de Pizarra (Mercado Cerrado / Fin de Semana)"
+
             
             if not bono_pesos.empty and not bono_dolares.empty:
                 ultimo_ars = float(
