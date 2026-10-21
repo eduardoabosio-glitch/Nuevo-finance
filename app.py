@@ -37,7 +37,7 @@ h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
 .dataframe td { padding: 2px !important; border: 1px solid #232a38 !important; }
 
 /* Caja de Texto Verde Premium */
-div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; }
+div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: center !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; height: 34px !important; }
 div[data-testid="stTextInput"] label { display: none !important; }
 div[data-testid="stTextInput"] p { display: none !important; }
 
@@ -67,7 +67,7 @@ def agente_calcular_mep_bonos_real():
         hora_apertura = datetime.time(11, 0, 0)
         hora_cierre = datetime.time(17, 0, 0)
         
-        # Filtro de horario bursátil: succiona el valor en vivo solo de lunes a viernes de 11 a 17 hs
+        # Filtro de horario bursátil activo de lunes a viernes de 11 a 17 hs
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
             r_api = requests.get("https://dolarapi.com", timeout=2)
             if r_api.status_code == 200:
@@ -108,98 +108,96 @@ MAPEO_ACCIONES_RAVA = {
     "Transportadora Gas del Sur": "TGSU2.BA", "Transener": "TRAN.BA", "YPF S.A.": "YPFD.BA"
 }
 
-# CEDEARS DE ACCIONES INTERNACIONALES CON SU VERDADERA SIGLA DE CAJA DE VALORES EN PESOS
+# CEDEARS DE ACCIONES INTERNACIONALES CON SU RESPECTIVO SUFIJO DE YAHOO FINANCE EN PESOS (CORREGIDO)
 MAPEO_CEDEARS_COMAFI = {
-    "Alibaba (China)": {"orig": "BABA", "arg": "BABA"},
-    "Amazon (Estados Unidos)": {"orig": "AMZN", "arg": "AMZN"},
-    "Advanced Micro Devices (Estados Unidos)": {"orig": "AMD", "arg": "AMD"},
-    "Apple (Estados Unidos)": {"orig": "AAPL", "arg": "AAPL"},
-    "Ambev (Brasil)": {"orig": "ABEV", "arg": "ABEV"},
-    "Abbott Laboratories (Estados Unidos)": {"orig": "ABT", "arg": "ABT"},
-    "Adobe (Estados Unidos)": {"orig": "ADBE", "arg": "ADBE"},
-    "Adecoagro (Argentina)": {"orig": "AGRO", "arg": "AGRO"},
-    "Airbnb (Estados Unidos)": {"orig": "ABNB", "arg": "ABNB"},
-    "Bank of America (Estados Unidos)": {"orig": "BAC", "arg": "BAC"},
-    "Barrick Gold (Canadá)": {"orig": "GOLD", "arg": "B"},
-    "Bunge Global (Estados Unidos)": {"orig": "BG", "arg": "BG"},
-    "Bioceres (Argentina)": {"orig": "BIOX", "arg": "BIOX"},
-    "Bitfarms (Canadá)": {"orig": "BITF", "arg": "KEEL"},
-    "Caterpillar (Estados Unidos)": {"orig": "CAT", "arg": "CAT"},
-    "Citigroup (Estados Unidos)": {"orig": "C", "arg": "C"},
-    "Coca Cola (Estados Unidos)": {"orig": "KO", "arg": "KO"},
-    "Chevron (Estados Unidos)": {"orig": "CVX", "arg": "CVX"},
-    "eBay (Estados Unidos)": {"orig": "EBAY", "arg": "EBAY"},
-    "Electronic Arts (Estados Unidos)": {"orig": "EA", "arg": "EA"},
-    "Eli Lilly (Estados Unidos)": {"orig": "LLY", "arg": "LLY"},
-    "Embraer (Brasil)": {"orig": "ERJ", "arg": "EMBJ"},
-    "Ferrari (Italia)": {"orig": "RACE", "arg": "RACE"},
-    "FedEx (Estados Unidos)": {"orig": "FDX", "arg": "FDX"},
-    "Ford Motor Company (Estados Unidos)": {"orig": "F", "arg": "F"},
-    "General Electric (Estados Unidos)": {"orig": "GE", "arg": "GE"},
-    "General Motors (Estados Unidos)": {"orig": "GM", "arg": "GM"},
-    "Google (Estados Unidos)": {"orig": "GOOGL", "arg": "GOOGL"},
-    "Goldman Sachs (Estados Unidos)": {"orig": "GS", "arg": "GS"},
-    "Hut 8 Mining (Canadá)": {"orig": "HUT", "arg": "HUT"},
-    "Intel (Estados Unidos)": {"orig": "INTC", "arg": "INTC"},
-    "IBM (Estados Unidos)": {"orig": "IBM", "arg": "IBM"},
-    "Itaú Unibanco (Brasil)": {"orig": "ITUB", "arg": "ITUB"},
-    "J.P. Morgan (Estados Unidos)": {"orig": "JPM", "arg": "JPM"},
-    "Johnson & Johnson (Estados Unidos)": {"orig": "JNJ", "arg": "JNJ"},
-    "Jumia Technologies (Alemania)": {"orig": "JMIA", "arg": "JMIA"},
-    "Lockheed Martin (Estados Unidos)": {"orig": "LMT", "arg": "LMT"},
-    "Lojas Renner (Brasil)": {"orig": "LREN", "arg": "LREN3"},
-    "Mastercard (Estados Unidos)": {"orig": "MA", "arg": "MA"},
-    "McDonald's (Estados Unidos)": {"orig": "MCD", "arg": "MCD"},
-    "Mercado Libre (Argentina)": {"orig": "MELI", "arg": "MELI"},
-    "Meta / Facebook (Estados Unidos)": {"orig": "META", "arg": "META"},
-    "Microsoft (Estados Unidos)": {"orig": "MSFT", "arg": "MSFT"},
-    "Moderna (Estados Unidos)": {"orig": "MRNA", "arg": "MRNA"},
-    "Microstrategy (Estados Unidos)": {"orig": "MSTR", "arg": "MSTR"},
-    "Natura Cosméticos (Brasil)": {"orig": "NTCO", "arg": "NATU3"},
-    "Nvidia (Estados Unidos)": {"orig": "NVDA", "arg": "NVDA"},
-    "Occidental Petroleum (Estados Unidos)": {"orig": "OXY", "arg": "OXY"},
-    "Palo Alto Networks (Estados Unidos)": {"orig": "PANW", "arg": "PANW"},
-    "Petrobras (Brasil)": {"orig": "PBR", "arg": "PETR3"},
-    "Roblox Corp (Estados Unidos)": {"orig": "RBLX", "arg": "RBLX"},
-    "Salesforce (Estados Unidos)": {"orig": "CRM", "arg": "CRM"},
-    "Satellogic (Argentina)": {"orig": "SATL", "arg": "SATL"},
-    "Tesla (Estados Unidos)": {"orig": "TSLA", "arg": "TSLA"},
-    "The Walt Disney Co (Estados Unidos)": {"orig": "DIS", "arg": "DIS"},
-    "Uber Technologies (Estados Unidos)": {"orig": "UBER", "arg": "UBER"},
-    "United Airlines (Estados Unidos)": {"orig": "UAL", "arg": "UAL"},
-    "Vale S.A. (Brasil)": {"orig": "VALE", "arg": "VALE3"},
-    "Walmart (Estados Unidos)": {"orig": "WMT", "arg": "WMT"}
+    "Alibaba (China)": {"orig": "BABA", "arg": "BABA.BA"},
+    "Amazon (Estados Unidos)": {"orig": "AMZN", "arg": "AMZN.BA"},
+    "Advanced Micro Devices (Estados Unidos)": {"orig": "AMD", "arg": "AMD.BA"},
+    "Apple (Estados Unidos)": {"orig": "AAPL", "arg": "AAPL.BA"},
+    "Ambev (Brasil)": {"orig": "ABEV", "arg": "ABEV.BA"},
+    "Abbott Laboratories (Estados Unidos)": {"orig": "ABT", "arg": "ABT.BA"},
+    "Adobe (Estados Unidos)": {"orig": "ADBE", "arg": "ADBE.BA"},
+    "Adecoagro (Argentina)": {"orig": "AGRO", "arg": "AGRO.BA"},
+    "Airbnb (Estados Unidos)": {"orig": "ABNB", "arg": "ABNB.BA"},
+    "Bank of America (Estados Unidos)": {"orig": "BAC", "arg": "BAC.BA"},
+    "Barrick Gold (Canadá)": {"orig": "GOLD", "arg": "B.BA"},
+    "Bunge Global (Estados Unidos)": {"orig": "BG", "arg": "BG.BA"},
+    "Bioceres (Argentina)": {"orig": "BIOX", "arg": "BIOX.BA"},
+    "Bitfarms (Canadá)": {"orig": "BITF", "arg": "KEEL.BA"},
+    "Caterpillar (Estados Unidos)": {"orig": "CAT", "arg": "CAT.BA"},
+    "Citigroup (Estados Unidos)": {"orig": "C", "arg": "C.BA"},
+    "Coca Cola (Estados Unidos)": {"orig": "KO", "arg": "KO.BA"},
+    "Chevron (Estados Unidos)": {"orig": "CVX", "arg": "CVX.BA"},
+    "eBay (Estados Unidos)": {"orig": "EBAY", "arg": "EBAY.BA"},
+    "Electronic Arts (Estados Unidos)": {"orig": "EA", "arg": "EA.BA"},
+    "Eli Lilly (Estados Unidos)": {"orig": "LLY", "arg": "LLY.BA"},
+    "Embraer (Brasil)": {"orig": "ERJ", "arg": "EMBJ.BA"},
+    "Ferrari (Italia)": {"orig": "RACE", "arg": "RACE.BA"},
+    "FedEx (Estados Unidos)": {"orig": "FDX", "arg": "FDX.BA"},
+    "Ford Motor Company (Estados Unidos)": {"orig": "F", "arg": "F.BA"},
+    "General Electric (Estados Unidos)": {"orig": "GE", "arg": "GE.BA"},
+    "General Motors (Estados Unidos)": {"orig": "GM", "arg": "GM.BA"},
+    "Google (Estados Unidos)": {"orig": "GOOGL", "arg": "GOOGL.BA"},
+    "Goldman Sachs (Estados Unidos)": {"orig": "GS", "arg": "GS.BA"},
+    "Hut 8 Mining (Canadá)": {"orig": "HUT", "arg": "HUT.BA"},
+    "Intel (Estados Unidos)": {"orig": "INTC", "arg": "INTC.BA"},
+    "IBM (Estados Unidos)": {"orig": "IBM", "arg": "IBM.BA"},
+    "Itaú Unibanco (Brasil)": {"orig": "ITUB", "arg": "ITUB.BA"},
+    "J.P. Morgan (Estados Unidos)": {"orig": "JPM", "arg": "JPM.BA"},
+    "Johnson & Johnson (Estados Unidos)": {"orig": "JNJ", "arg": "JNJ.BA"},
+    "Jumia Technologies (Alemania)": {"orig": "JMIA", "arg": "JMIA.BA"},
+    "Lockheed Martin (Estados Unidos)": {"orig": "LMT", "arg": "LMT.BA"},
+    "Lojas Renner (Brasil)": {"orig": "LREN", "arg": "LREN3.BA"},
+    "Mastercard (Estados Unidos)": {"orig": "MA", "arg": "MA.BA"},
+    "McDonald's (Estados Unidos)": {"orig": "MCD", "arg": "MCD.BA"},
+    "Mercado Libre (Argentina)": {"orig": "MELI", "arg": "MELI.BA"},
+    "Meta / Facebook (Estados Unidos)": {"orig": "META", "arg": "META.BA"},
+    "Microsoft (Estados Unidos)": {"orig": "MSFT", "arg": "MSFT.BA"},
+    "Moderna (Estados Unidos)": {"orig": "MRNA", "arg": "MRNA.BA"},
+    "Microstrategy (Estados Unidos)": {"orig": "MSTR", "arg": "MSTR.BA"},
+    "Natura Cosméticos (Brasil)": {"orig": "NTCO", "arg": "NATU3.BA"},
+    "Nvidia (Estados Unidos)": {"orig": "NVDA", "arg": "NVDA.BA"},
+    "Occidental Petroleum (Estados Unidos)": {"orig": "OXY", "arg": "OXY.BA"},
+    "Palo Alto Networks (Estados Unidos)": {"orig": "PANW", "arg": "PANW.BA"},
+    "Petrobras (Brasil)": {"orig": "PBR", "arg": "PETR3.BA"},
+    "Roblox Corp (Estados Unidos)": {"orig": "RBLX", "arg": "RBLX.BA"},
+    "Salesforce (Estados Unidos)": {"orig": "CRM", "arg": "CRM.BA"},
+    "Satellogic (Argentina)": {"orig": "SATL", "arg": "SATL.BA"},
+    "Tesla (Estados Unidos)": {"orig": "TSLA", "arg": "TSLA.BA"},
+    "The Walt Disney Co (Estados Unidos)": {"orig": "DIS", "arg": "DIS.BA"},
+    "Uber Technologies (Estados Unidos)": {"orig": "UBER", "arg": "UBER.BA"},
+    "United Airlines (Estados Unidos)": {"orig": "UAL", "arg": "UAL.BA"},
+    "Vale S.A. (Brasil)": {"orig": "VALE", "arg": "VALE3.BA"},
+    "Walmart (Estados Unidos)": {"orig": "WMT", "arg": "WMT.BA"}
 }
 
-# CEDEARS DE ETFS CON LOS TICKERS HOMÓLOGOS DE LIQUIDACIÓN
+# CEDEARS DE ETFS CON SU RESPECTIVO SUFIJO DE YAHOO FINANCE EN PESOS (CORREGIDO)
 MAPEO_ETFS_COMAFI = {
-    "SPDR S&P 500 ETF (Estados Unidos)": {"orig": "SPY", "arg": "SPY"},
-    "Invesco QQQ Trust (Estados Unidos)": {"orig": "QQQ", "arg": "QQQ"},
-    "iShares Russell 2000 (Estados Unidos)": {"orig": "IWM", "arg": "IWM"},
-    "iShares MSCI Emerging Markets (Global)": {"orig": "EEM", "arg": "EEM"},
-    "Financial Select Sector SPDR (Estados Unidos)": {"orig": "XLF", "arg": "XLF"},
-    "Energy Select Sector SPDR (Estados Unidos)": {"orig": "XLE", "arg": "XLE"},
-    "SPDR Dow Jones Industrial (Estados Unidos)": {"orig": "DIA", "arg": "DIA"},
-    "iShares MSCI Brazil ETF (Brasil)": {"orig": "EWZ", "arg": "EWZ"},
-    "Ark Innovation ETF (Estados Unidos)": {"orig": "ARKK", "arg": "ARKK"},
-    "ProShares Short S&P500 (Estados Unidos)": {"orig": "SH", "arg": "SH"},
-    "ETF SPDR Gold Trust (Estados Unidos)": {"orig": "GLD", "arg": "GLD"},
-    "iShares Ethereum Trust ETF (Global)": {"orig": "ETHA", "arg": "ETHA"},
-    "Global X Uranium ETF (Global)": {"orig": "URA", "arg": "URA"},
-    "VanEck Semiconductor ETF (Estados Unidos)": {"orig": "SMH", "arg": "SMH"},
-    "Direxion Daily S&P 500 Bull 3X (Estados Unidos)": {"orig": "SPXL", "arg": "SPXL"},
-    "Utilities Select Sector SPDR (Estados Unidos)": {"orig": "XLU", "arg": "XLU"},
-    "First Trust Nasdaq Cybersecurity (Estados Unidos)": {"orig": "CIBR", "arg": "CIBR"},
-    "ProShares UltraPro QQQ (Estados Unidos)": {"orig": "TQQQ", "arg": "TQQQ"},
-    "iPath Series B S&P 500 VIX (Estados Unidos)": {"orig": "VXX", "arg": "VXX"},
-    "iShares US Aerospace & Defense (Estados Unidos)": {"orig": "ITA", "arg": "ITA"},
-    "iShares Global Clean Energy (Global)": {"orig": "ICLN", "arg": "ICLN"},
-    "iShares MSCI South Korea (Corea del Sur)": {"orig": "EWY", "arg": "EWY"},
-    "SPDR S&P Metals & Mining (Estados Unidos)": {"orig": "XME", "arg": "XME"},
-    "Invesco S&P 500 Equal Weight (Estados Unidos)": {"orig": "RSP", "arg": "RSP"}
+    "SPDR S&P 500 ETF (Estados Unidos)": {"orig": "SPY", "arg": "SPY.BA"},
+    "Invesco QQQ Trust (Estados Unidos)": {"orig": "QQQ", "arg": "QQQ.BA"},
+    "iShares Russell 2000 (Estados Unidos)": {"orig": "IWM", "arg": "IWM.BA"},
+    "iShares MSCI Emerging Markets (Global)": {"orig": "EEM", "arg": "EEM.BA"},
+    "Financial Select Sector SPDR (Estados Unidos)": {"orig": "XLF", "arg": "XLF.BA"},
+    "Energy Select Sector SPDR (Estados Unidos)": {"orig": "XLE", "arg": "XLE.BA"},
+    "SPDR Dow Jones Industrial (Estados Unidos)": {"orig": "DIA", "arg": "DIA.BA"},
+    "iShares MSCI Brazil ETF (Brasil)": {"orig": "EWZ", "arg": "EWZ.BA"},
+    "Ark Innovation ETF (Estados Unidos)": {"orig": "ARKK", "arg": "ARKK.BA"},
+    "ProShares Short S&P500 (Estados Unidos)": {"orig": "SH", "arg": "SH.BA"},
+    "ETF SPDR Gold Trust (Estados Unidos)": {"orig": "GLD", "arg": "GLD.BA"},
+    "iShares Ethereum Trust ETF (Global)": {"orig": "ETHA", "arg": "ETHA.BA"},
+    "Global X Uranium ETF (Global)": {"orig": "URA", "arg": "URA.BA"},
+    "VanEck Semiconductor ETF (Estados Unidos)": {"orig": "SMH", "arg": "SMH.BA"},
+    "Direxion Daily S&P 500 Bull 3X (Estados Unidos)": {"orig": "SPXL", "arg": "SPXL.BA"},
+    "Utilities Select Sector SPDR (Estados Unidos)": {"orig": "XLU", "arg": "XLU.BA"},
+    "First Trust Nasdaq Cybersecurity (Estados Unidos)": {"orig": "CIBR", "arg": "CIBR.BA"},
+    "ProShares UltraPro QQQ (Estados Unidos)": {"orig": "TQQQ", "arg": "TQQQ.BA"},
+    "iPath Series B S&P 500 VIX (Estados Unidos)": {"orig": "VXX", "arg": "VXX.BA"},
+    "iShares US Aerospace & Defense (Estados Unidos)": {"orig": "ITA", "arg": "ITA.BA"},
+    "iShares Global Clean Energy (Global)": {"orig": "ICLN", "arg": "ICLN.BA"},
+    "iShares MSCI South Korea (Corea del Sur)": {"orig": "EWY", "arg": "EWY.BA"},
+    "SPDR S&P Metals & Mining (Estados Unidos)": {"orig": "XME", "arg": "XME.BA"},
+    "Invesco S&P 500 Equal Weight (Estados Unidos)": {"orig": "RSP", "arg": "RSP.BA"}
 }
-
-
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
@@ -221,7 +219,8 @@ with col_acc:
         st.session_state.ticker_activo_azul = sel_acc.split("[Arg:")[-1].replace("]", "").strip() + ".BA"
 
 with col_ced:
-    opciones_ced = [f"🔵 {n} (NYSE/NASDAQ: {d['orig']}) ➡️ [Arg: {d['arg']}]" for n, d in sorted(MAPEO_CEDEARS_COMAFI.items())]
+    # DISEÑO PREMIUM: Ticker de origen en azul y Ticker de BYMA en verde esmeralda bien diferenciados
+    opciones_ced = [f"🔵 {n} (Origen: {d['orig']}) ➡️ [Arg: {d['arg']}]" for n, d in sorted(MAPEO_CEDEARS_COMAFI.items())]
     sel_ced = st.selectbox("🇺🇸 CEDEARs:", ["- Seleccionar -"] + opciones_ced, key="sel_prov_ced")
     if sel_ced != "- Seleccionar -" and st.session_state.ultimo_click != f"ced_{sel_ced}":
         st.session_state.ultimo_click = f"ced_{sel_ced}"
@@ -234,12 +233,29 @@ with col_etf:
         st.session_state.ultimo_click = f"etf_{sel_etf}"
         st.session_state.ticker_activo_azul = sel_etf.split("[Arg:")[-1].replace("]", "").strip()
 
-# CARTEL EXPLICATIVO AZUL DINÁMICO: Sigue de forma quirúrgica a cada activo sucesivo que elijas
+# CARTEL EXPLICATIVO AZUL DINÁMICO CON COLORES EN LOS TICKERS INTERNOS
 if st.session_state.ticker_activo_azul:
+    tk_mostrar = st.session_state.ticker_activo_azul.replace(".BA", "")
+    es_cedear_o_etf = not st.session_state.ticker_activo_azul.endswith(".BA")
+    
+    # Buscamos las siglas de origen correspondientes para armar el cartel de doble color
+    origen_txt_html = ""
+    if es_cedear_o_etf:
+        for n, d in MAPEO_CEDEARS_COMAFI.items():
+            if d["arg"] == st.session_state.ticker_activo_azul:
+                origen_txt_html = f" | 🇺🇸 Origen: <span style='color:#2196f3; font-weight:bold;'>{d['orig']}</span>"
+                break
+        if not origen_txt_html:
+            for n, d in MAPEO_ETFS_COMAFI.items():
+                if d["arg"] == st.session_state.ticker_activo_azul:
+                    origen_txt_html = f" | 📈 Origen: <span style='color:#2196f3; font-weight:bold;'>{d['orig']}</span>"
+                    break
+                    
     st.markdown(f"""
-    <div style="background-color:#19222d; padding:10px; border-radius:6px; border-left:4px solid #2196f3; margin-bottom:12px; font-size:0.85rem; color:white;">
-        💡 <b>Activo Detectado para operar en Argentina:</b> <span style="color:#00e676; font-weight:bold;">{st.session_state.ticker_activo_azul}</span><br>
-        Para fijarlo en tu portafolio, cópialo en la caja verde de abajo y dale Enter.
+    <div style="background-color:#19222d; padding:10px; border-radius:6px; border-left:4px solid #2196f3; margin-bottom:12px; font-size:0.85rem; color:white; line-height:1.5;">
+        💡 <b>Activo Detectado:</b><br>
+        🇦🇷 Argentina (BYMA): <span style='color:#00e676; font-weight:bold;'>{st.session_state.ticker_activo_azul}</span>{origen_txt_html}<br>
+        <span style='color:#888; font-size:0.75rem;'>Copia el código de arriba tal cual en la caja verde y dale Enter para fijarlo en tu portafolio.</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -334,7 +350,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-   # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -453,13 +469,13 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO UNIFICADO EN YAHOO FINANCE (.BA) - PETICIÓN DE EDUARDO
+# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO UNIFICADO EN YAHOO FINANCE (.BA)
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).replace(".BA", "").strip().upper()
     
-    # Unificación estricta usando el sufijo .BA de Yahoo Finance para abrir pizarras en pesos argentinos
+    # Enlace seguro unificado hacia Yahoo Finance usando el punto .BA
     url_segura_final = f"https://yahoo.com{simbolo_limpio}.BA"
 
     st.markdown(f"""
@@ -481,3 +497,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
+    
