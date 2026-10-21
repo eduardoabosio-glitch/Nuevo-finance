@@ -67,7 +67,7 @@ def agente_calcular_mep_bonos_real():
         hora_apertura = datetime.time(11, 0, 0)
         hora_cierre = datetime.time(17, 0, 0)
         
-        # SI ESTÁ EN HORARIO DE BOLSA ABIERTA, SUCCIONA EL VALOR EN VIVO DE LA API
+        # Filtro de horario bursátil: succiona el valor en vivo solo de lunes a viernes de 11 a 17 hs
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
             r_api = requests.get("https://dolarapi.com", timeout=2)
             if r_api.status_code == 200:
@@ -76,7 +76,7 @@ def agente_calcular_mep_bonos_real():
                     return v_mep, "⚡ Cotización en Vivo del Mercado de Bolsa (MEP)"
     except:
         pass
-    return mep_ultimo_cierre_fijo, "🔒 Cierre de Pizarra Consolidado (Mercado Cerrado / Fin de Semana)"
+    return mep_ultimo_cierre_fijo, "🔒 Cierre de Pizarra Consolidado (Mercado Cerrado)"
 
 VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
 
@@ -108,7 +108,7 @@ MAPEO_ACCIONES_RAVA = {
     "Transportadora Gas del Sur": "TGSU2.BA", "Transener": "TRAN.BA", "YPF S.A.": "YPFD.BA"
 }
 
-# CEDEARS DE ACCIONES INTERNACIONALES CON PAÍS DE ORIGEN Y SU DOBLE TICKER REAL (WALL STREET VS BYMA)
+# CEDEARS DE ACCIONES INTERNACIONALES (COMAFI - MAPEO CON DOBLE TICKER REAL COMAFI VS ORIGEN)
 MAPEO_CEDEARS_COMAFI = {
     "Alibaba (China)": {"orig": "BABA", "arg": "BABA"},
     "Amazon (Estados Unidos)": {"orig": "AMZN", "arg": "AMZN"},
@@ -219,7 +219,6 @@ with col_acc:
         st.session_state.ticker_activo_azul = sel_acc.split("[Arg:")[-1].replace("]", "").strip() + ".BA"
 
 with col_ced:
-    # SE REORDENA EL TEXTO: Muestra Ticker de Wall Street (Origen) en azul y el Ticker de Argentina de forma separada
     opciones_ced = [f"🔵 {n} (NYSE/NASDAQ: {d['orig']}) ➡️ [Arg: {d['arg']}]" for n, d in sorted(MAPEO_CEDEARS_COMAFI.items())]
     sel_ced = st.selectbox("🇺🇸 CEDEARs:", ["- Seleccionar -"] + opciones_ced, key="sel_prov_ced")
     if sel_ced != "- Seleccionar -" and st.session_state.ultimo_click != f"ced_{sel_ced}":
@@ -333,7 +332,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-      # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+   # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -452,23 +451,20 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO DIRECTO EN GOOGLE FINANCE
+# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO UNIFICADO EN YAHOO FINANCE (.BA) - PETICIÓN DE EDUARDO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).replace(".BA", "").strip().upper()
-    es_local_pure = str(simbolo).endswith(".BA") or simbolo_limpio in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
     
-    if es_local_pure:
-        url_segura_final = f"https://google.com{simbolo_limpio}:BCBA"
-    else:
-        url_segura_final = f"https://google.com{simbolo_limpio}:NASDAQ"
+    # Unificación estricta usando el sufijo .BA de Yahoo Finance para abrir pizarras en pesos argentinos
+    url_segura_final = f"https://yahoo.com{simbolo_limpio}.BA"
 
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Google Finance:</b> Cables macroeconómicos, balances contables e informes corporativos de última hora para {simbolo_limpio}
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}.BA]</span> <b>📍 Yahoo Finance Local:</b> Pizarra oficial de cotizaciones, cables macro y balances corporativos en pesos para {simbolo_limpio} en BYMA.
         <br>
-        <a href="{url_segura_final}" target="_self" class="enlace-noticia-azul">🔗 Tocar para leer completa en Google Finance</a>
+        <a href="{url_segura_final}" target="_self" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
     </div>
     """, unsafe_allow_html=True)
 
@@ -483,4 +479,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
