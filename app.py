@@ -108,7 +108,7 @@ MAPEO_ACCIONES_RAVA = {
     "Transportadora Gas del Sur": "TGSU2.BA", "Transener": "TRAN.BA", "YPF S.A.": "YPFD.BA"
 }
 
-# CEDEARS DE ACCIONES INTERNACIONALES (COMAFI - MAPEO CON DOBLE TICKER REAL COMAFI VS ORIGEN)
+# CEDEARS DE ACCIONES INTERNACIONALES CON SU VERDADERA SIGLA DE CAJA DE VALORES EN PESOS
 MAPEO_CEDEARS_COMAFI = {
     "Alibaba (China)": {"orig": "BABA", "arg": "BABA"},
     "Amazon (Estados Unidos)": {"orig": "AMZN", "arg": "AMZN"},
@@ -171,7 +171,7 @@ MAPEO_CEDEARS_COMAFI = {
     "Walmart (Estados Unidos)": {"orig": "WMT", "arg": "WMT"}
 }
 
-# CEDEARS DE ETFS CON SU DOBLE TICKER REAL
+# CEDEARS DE ETFS CON LOS TICKERS HOMÓLOGOS DE LIQUIDACIÓN
 MAPEO_ETFS_COMAFI = {
     "SPDR S&P 500 ETF (Estados Unidos)": {"orig": "SPY", "arg": "SPY"},
     "Invesco QQQ Trust (Estados Unidos)": {"orig": "QQQ", "arg": "QQQ"},
@@ -198,6 +198,8 @@ MAPEO_ETFS_COMAFI = {
     "SPDR S&P Metals & Mining (Estados Unidos)": {"orig": "XME", "arg": "XME"},
     "Invesco S&P 500 Equal Weight (Estados Unidos)": {"orig": "RSP", "arg": "RSP"}
 }
+
+
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
