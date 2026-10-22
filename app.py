@@ -155,6 +155,7 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
+# 1. Armar lista integrada con nomenclatura estricta libre de espacios erróneos
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()):
     sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
@@ -170,18 +171,22 @@ seleccion_activo = st.selectbox(
     label_visibility="collapsed"
 )
 
+# 2. Extraer siglas dinámicas reales de forma exacta solucionando el split y strip
 ticker_origen_dinamico = ""
 ticker_byma_dinamico = ""
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
-        partes = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
-        ticker_origen_dinamico = partes.split("|").replace("USA:", "").strip()
-        ticker_byma_dinamico = partes.split("BYMA:")[-1].strip()
+        partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
+        partes_lista = partes_raw.split("|")
+        # CORRECCIÓN DE SINTAXIS: Se aplica strip individual a las cadenas de la lista
+        ticker_origen_dinamico = partes_lista[0].replace("USA:", "").strip()
+        ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
 
+# 3. Renderizar subtítulos y botonera forzada en paralelo horizontal real
 activo_a_cargar = None
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
@@ -225,7 +230,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-    # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
+# 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     
@@ -347,7 +352,7 @@ for tk in activos_actuales:
 
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    # MODIFICACIÓN ESTRICTA SOLICITADA: Bloquea el Target Price para que NUNCA aparezca en las fichas de BYMA (.BA o Locales)
+    # MODIFICACIÓN ESTRICTA SOLICITADA: Oculta el Target Price para que NUNCA aparezca en las fichas de BYMA (.BA o Locales)
     mostrar_target_valido = True
     if es_local_pure or es_cedear_local or tk_limpio_upper.endswith(".BA"):
         mostrar_target_valido = False
