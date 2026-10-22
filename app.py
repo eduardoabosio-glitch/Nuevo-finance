@@ -89,7 +89,6 @@ def agente_calcular_mep_bonos_real():
         hora_cierre = datetime.time(17, 0, 0)
         
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
-            # Endpoint oficial corregido para obtener la cotización real sin fallos de redirección
             r_api = requests.get("https://dolarapi.com", timeout=2)
             if r_api.status_code == 200:
                 v_mep = float(r_api.json().get("venta", 0.0))
@@ -156,14 +155,14 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
-# 1. Armar lista integrada con nomenclatura estricta libre de fallos de split
+# 1. Armar lista integrada con nomenclatura estricta libre de espacios erróneos
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()):
     sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
 for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()):
-    sugerencias_buscador.append(f"🔵 {n} [USA:{d['orig']} | BYMA:{d['arg']}]")
+    sugerencias_buscador.append(f"🔵 {n} [USA:{d['orig']}|BYMA:{d['arg']}]")
 for n, d in sorted(MAPEO_ETFS_COMAFI.items()):
-    sugerencias_buscador.append(f"📊 {n} [USA:{d['orig']} | BYMA:{d['arg']}]")
+    sugerencias_buscador.append(f"📊 {n} [USA:{d['orig']}|BYMA:{d['arg']}]")
 
 seleccion_activo = st.selectbox(
     "Buscador:", 
@@ -172,20 +171,20 @@ seleccion_activo = st.selectbox(
     label_visibility="collapsed"
 )
 
-# 2. Extraer siglas dinámicas reales para las etiquetas de los botones con filtros limpios
+# 2. Extraer siglas dinámicas reales de forma exacta reparando el split
 ticker_origen_dinamico = ""
 ticker_byma_dinamico = ""
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
-        partes = seleccion_activo.split("[USA:")[-1].replace("]", "")
+        partes = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = partes.split("|")[0].strip()
         ticker_byma_dinamico = partes.split("BYMA:")[-1].strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
 
-# 3. Renderizar títulos de correspondencia y botones obligados en paralelo horizontal
+# 3. Renderizar subtítulos y botonera forzada en paralelo horizontal real
 activo_a_cargar = None
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
@@ -195,9 +194,8 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     
     with col_izq_usa:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ Origen ]</p>", unsafe_allow_html=True)
-        # Fuerza color azul institucional e impide caídas de línea
         st.markdown("""<style>
-        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; font-size: 0.78rem !important; }
+        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; }
         </style>""", unsafe_allow_html=True)
         
         if ticker_origen_dinamico != "No Aplica":
@@ -208,15 +206,13 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
             
     with col_der_byma:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ BYMA ]</p>", unsafe_allow_html=True)
-        # Fuerza color verde esmeralda y texto oscuro para BYMA
         st.markdown("""<style>
-        div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; font-size: 0.78rem !important; }
+        div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; }
         </style>""", unsafe_allow_html=True)
         
         if st.button(f"{ticker_byma_dinamico}", key="btn_dinamico_byma_insertar"):
             activo_a_cargar = ticker_byma_dinamico
 
-# LÓGICA DE INSERCIÓN INSTANTÁNEA EN LA PARTE SUPERIOR DE LA LISTA
 if activo_a_cargar:
     copia_temporal_montos = st.session_state.montos_dis.copy()
     if activo_a_cargar in copia_temporal_montos:
@@ -250,7 +246,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         if not df_hist.empty and len(df_hist) > 15:
             precio_actual = float(df_hist["Close"].iloc[-1])
             
-            # FILTRO DE SEGURIDAD ULTRA ESTRICTO: Bloquea precios basura/rotos fuera de hora
             if not es_local_pure and ticker_yf in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and precio_actual < 1.0:
                 precio_actual = precio_memoria_compartida
 
@@ -286,7 +281,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual * 1.11)
                 
             return {
-                "precio": precio_actual, "target_usd": target_price_usd, "es_local": es_local_pure,
+                "precio": precio_actual, "target_usd": target_price_usd, "es_local": es_local_pure, "ticker_real_yf": ticker_yf,
                 "prob_sem": prob_sem, "prob_anu": prob_anu, "prob_fun": "85%",
                 "rsi": f"{rsi_val:.1f}", "macd": macd_txt, "stoch": f"{stoch_k:.0f}", "vol_rel": "1.05x", "emas_c": "▲ EMA9 OK",
                 "dist_sma": f"{distancia_sma:+.1f}%", "piso_a": f"{simbolo_moneda_piso_techo}{piso_historico:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{techo_historico:,.2f}",
@@ -297,7 +292,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 
     simbolo_moneda_piso_techo = "ARS $" if es_local_pure else "USD $"
     return {
-        "precio": precio_memoria_compartida, "target_usd": precio_memoria_compartida * 1.1, "es_local": es_local_pure, 
+        "precio": precio_memoria_compartida, "target_usd": precio_memoria_compartida * 1.1, "es_local": es_local_pure, "ticker_real_yf": ticker_yf,
         "prob_sem": "56%", "prob_anu": "82%", "prob_fun": "85%", "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "emas_c": "▲ EMA9 OK",
         "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": "1.02",
         "pe": "No Aplica", "dividendos": "0.00%", "eps": "No Disponible", "margen": "No Disp.", "dict_corto": "Consolidación.", "dict_largo": "Soporte."
@@ -306,13 +301,14 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-    # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
     p_base = datos_reales["precio"]
     p_target = datos_reales["target_usd"]
     es_local_nativa = datos_reales["es_local"]
+    tk_identificado_yf = datos_reales["ticker_real_yf"]
     
     monto_actual = st.session_state.montos_dis[tk]
     patrimonio_total_usd += monto_actual
@@ -343,9 +339,9 @@ for tk in activos_actuales:
 
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    # CORRECCIÓN EXCLUSIVA DE VALUACIÓN: Bloquea y oculta la línea si el precio base está roto fuera de hora (menor a un dólar para CEDEARs)
+    # CORRECCIÓN EXCLUSIVA DE NAMEERROR Y VALUACIÓN ROTAS JPMORGAN
     mostrar_target_valido = True
-    if not es_local_nativa and ticker_yf in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and p_mostrar_tarjeta < 1.0:
+    if not es_local_nativa and tk_identificado_yf in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and p_mostrar_tarjeta < 1.0:
         mostrar_target_valido = False
         
     if mostrar_target_valido:
@@ -432,13 +428,11 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON LINK OFICIAL REPARADO (CON /QUOTE/ INTEGRADO)
+# 9. CENTRAL DE NOTICIAS CON LINK OFICIAL REPARADO (SINTAXIS OFICIAL YAHOO)
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
-    
-    # RUTA OFICIAL REPARADA: Enlaza perfectamente insertando la sintaxis que tu navegador necesita
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
 
     st.markdown(f"""
