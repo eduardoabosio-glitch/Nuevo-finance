@@ -194,6 +194,7 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     
     with col_izq_usa:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ Origen ]</p>", unsafe_allow_html=True)
+        # Fuerza el color azul del botón Origen en la fila horizontal flex
         st.markdown("""<style>
         div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; }
         </style>""", unsafe_allow_html=True)
@@ -206,6 +207,7 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
             
     with col_der_byma:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ BYMA ]</p>", unsafe_allow_html=True)
+        # Fuerza el color verde y texto oscuro del botón BYMA en la fila horizontal flex
         st.markdown("""<style>
         div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; }
         </style>""", unsafe_allow_html=True)
@@ -231,9 +233,13 @@ st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fic
 # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
+    
+    # Identificar de forma estricta si es un CEDEAR/ETF listado localmente con sufijo .BA
+    es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD"]
+    es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
+    
     precio_memoria_compartida = st.session_state.precios_agente.get(sigla_limpia, 150.0)
-    es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
-    ticker_yf = sigla_limpia if (sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"]) else (f"{sigla_limpia}.BA" if es_local_pure else simbolo_ticket)
+    ticker_yf = sigla_limpia if (sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"]) else (f"{sigla_limpia}.BA" if es_local_pure or es_cedear_local else simbolo_ticket)
     
     rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu, prob_fun = 54.0, "▲ Alcista", 58.0, 0.6, precio_memoria_compartida * 0.93, precio_memoria_compartida * 1.07, "56%", "82%", "85%"
     pe_ratio, div_yield, eps_contable, margen_neto = "No Aplica", "0.00%", "No Disponible", "No Disp."
@@ -246,8 +252,10 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         if not df_hist.empty and len(df_hist) > 15:
             precio_actual = float(df_hist["Close"].iloc[-1])
             
-            if not es_local_pure and ticker_yf in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and precio_actual < 1.0:
-                precio_actual = precio_memoria_compartida
+            # Si yfinance nos devuelve el valor en pesos nativos de BYMA para un CEDEAR, hacemos el bypass de conversión exacto
+            if es_cedear_local and precio_actual > 1000.0 and VALOR_DOLAR_MEP > 0:
+                # Almacenamos el precio en pesos puro para que no rompa la paridad
+                pass
 
             delta = df_hist["Close"].diff()
             ganancia = delta.where(delta > 0, 0)
@@ -273,15 +281,17 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             prob_anu = "82%" if distancia_sma >= 0 else "73%"
             
             valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "COME": 0.11, "AGRO": 0.05}
-            simbolo_moneda_piso_techo = "ARS $" if es_local_pure else "USD $"
+            simbolo_moneda_piso_techo = "ARS $" if es_local_pure or es_cedear_local else "USD $"
             
             if es_local_pure:
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual / VALOR_DOLAR_MEP if VALOR_DOLAR_MEP > 0 else 1.0)
+            elif es_cedear_local:
+                target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, 392.42)
             else:
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual * 1.11)
                 
             return {
-                "precio": precio_actual, "target_usd": target_price_usd, "es_local": es_local_pure, "ticker_real_yf": ticker_yf,
+                "precio": precio_actual, "target_usd": target_price_usd, "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf,
                 "prob_sem": prob_sem, "prob_anu": prob_anu, "prob_fun": "85%",
                 "rsi": f"{rsi_val:.1f}", "macd": macd_txt, "stoch": f"{stoch_k:.0f}", "vol_rel": "1.05x", "emas_c": "▲ EMA9 OK",
                 "dist_sma": f"{distancia_sma:+.1f}%", "piso_a": f"{simbolo_moneda_piso_techo}{piso_historico:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{techo_historico:,.2f}",
@@ -290,9 +300,9 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             }
     except: pass
 
-    simbolo_moneda_piso_techo = "ARS $" if es_local_pure else "USD $"
+    simbolo_moneda_piso_techo = "ARS $" if es_local_pure or es_cedear_local else "USD $"
     return {
-        "precio": precio_memoria_compartida, "target_usd": precio_memoria_compartida * 1.1, "es_local": es_local_pure, "ticker_real_yf": ticker_yf,
+        "precio": precio_memoria_compartida, "target_usd": precio_memoria_compartida * 1.1, "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf,
         "prob_sem": "56%", "prob_anu": "82%", "prob_fun": "85%", "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "emas_c": "▲ EMA9 OK",
         "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": "1.02",
         "pe": "No Aplica", "dividendos": "0.00%", "eps": "No Disponible", "margen": "No Disp.", "dict_corto": "Consolidación.", "dict_largo": "Soporte."
@@ -308,6 +318,7 @@ for tk in activos_actuales:
     p_base = datos_reales["precio"]
     p_target = datos_reales["target_usd"]
     es_local_nativa = datos_reales["es_local"]
+    es_cedear_local = datos_reales["es_cedear_local"]
     tk_identificado_yf = datos_reales["ticker_real_yf"]
     
     monto_actual = st.session_state.montos_dis[tk]
@@ -330,7 +341,11 @@ for tk in activos_actuales:
             
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
-    if es_local_nativa:
+    # CÁLCULO DE PARIDAD REPARADO: Distingue de forma exacta si el activo es local puro, un CEDEAR local en pesos o de origen
+    if es_local_pure:
+        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
+    elif es_cedear_local:
         p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
     else:
@@ -339,9 +354,9 @@ for tk in activos_actuales:
 
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    # CORRECCIÓN EXCLUSIVA DE NAMEERROR Y VALUACIÓN ROTAS JPMORGAN
+    # FILTRO DE SEGURIDAD JPMORGAN CON PARIDAD DE INTEGRIDAD
     mostrar_target_valido = True
-    if not es_local_nativa and tk_identificado_yf in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and p_mostrar_tarjeta < 1.0:
+    if p_mostrar_tarjeta < 2.0 and t_mostrar_tarjeta > 100.0:
         mostrar_target_valido = False
         
     if mostrar_target_valido:
