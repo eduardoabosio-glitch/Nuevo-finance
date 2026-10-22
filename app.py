@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -67,7 +66,7 @@ div.stButton > button {
     color: white !important; 
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
-    overflow: hidden !hidden !important;
+    overflow: hidden !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -106,8 +105,7 @@ if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
 if 'precios_agente' not in st.session_state:
-    # Se inyecta el valor de contingencia real de mercado para Tesla y Tesla Cedears de 42500.0 ARS
-    st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "TSLA.BA": 42500.00, "AAPL": 343.46, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00, "AGRO": 72.00}
+    st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "TSLA.BA": 42500.00, "AAPL": 343.46, "AAPL.BA": 28180.00, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00, "AGRO": 72.00}
 
 MAPEO_ACCIONES_RAVA = {
     "Agrometal": "AGRO.BA", "Aluar": "ALUA.BA", "Autopistas del Sol": "AUSO.BA", "Banco Macro": "BMA.BA", "BBVA Banco Francés": "BBAR.BA", "Boldt S.A.": "BDL.BA",
@@ -157,7 +155,6 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
-# 1. Armar lista integrada con nomenclatura estricta libre de espacios erróneos
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()):
     sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
@@ -173,20 +170,18 @@ seleccion_activo = st.selectbox(
     label_visibility="collapsed"
 )
 
-# 2. Extraer siglas dinámicas reales de forma exacta reparando el split
 ticker_origen_dinamico = ""
 ticker_byma_dinamico = ""
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
-        ticker_origen_dinamico = partes.split("|")[0].replace("USA:", "").strip()
+        ticker_origen_dinamico = partes.split("|").replace("USA:", "").strip()
         ticker_byma_dinamico = partes.split("BYMA:")[-1].strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
 
-# 3. Renderizar subtítulos y botonera forzada en paralelo horizontal real
 activo_a_cargar = None
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
@@ -230,11 +225,10 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-# 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
+    # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     
-    # Identificar si es un CEDEAR local en pesos listado en BYMA
     es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD"]
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
     
@@ -252,9 +246,8 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         if not df_hist.empty and len(df_hist) > 15:
             precio_actual = float(df_hist["Close"].iloc[-1])
             
-            # FILTRO CRÍTICO CONTRA PRECIOS DE O.25 DÓLARES: Si yfinance de devuelve valores basura por mercado cerrado, recupera el respaldo real
             if es_cedear_local and precio_actual < 5.0:
-                precio_actual = 42500.00 if sigla_limpia == "TSLA" else precio_memoria_compartida
+                precio_actual = 42500.00 if sigla_limpia == "TSLA" else (28180.00 if sigla_limpia == "AAPL" else precio_memoria_compartida)
             elif not es_cedear_local and not es_local_pure and precio_actual < 5.0:
                 precio_actual = precio_memoria_compartida
 
@@ -287,7 +280,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             if es_local_pure:
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual / VALOR_DOLAR_MEP if VALOR_DOLAR_MEP > 0 else 1.0)
             elif es_cedear_local:
-                target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, 392.42)
+                target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, 392.42 if sigla_limpia == "TSLA" else 360.00)
             else:
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual * 1.11)
                 
@@ -342,24 +335,21 @@ for tk in activos_actuales:
             
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
-    # CÁLCULO ASILADO DE PRECIOS: Impide que los CEDEARs locales en pesos distorsionen la visualización cruzada
     if es_local_pure:
         p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
     elif es_cedear_local:
-        # Si viene en pesos y la app pide pesos, se muestra directo. Si pide dólares, se divide por el MEP
         p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
     else:
-        # Activos puros de origen USA
         p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
 
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    # FILTRO DE INTEGRIDAD DE PRECIOS OBJETIVOS JPMORGAN
+    # MODIFICACIÓN ESTRICTA SOLICITADA: Bloquea el Target Price para que NUNCA aparezca en las fichas de BYMA (.BA o Locales)
     mostrar_target_valido = True
-    if p_mostrar_tarjeta < 5.0 and t_mostrar_tarjeta > 100.0:
+    if es_local_pure or es_cedear_local or tk_limpio_upper.endswith(".BA"):
         mostrar_target_valido = False
         
     if mostrar_target_valido:
