@@ -171,7 +171,7 @@ seleccion_activo = st.selectbox(
     label_visibility="collapsed"
 )
 
-# 2. Extraer siglas dinámicas reales de forma exacta solucionando el split y strip
+# 2. Extraer siglas dinámicas reales accediendo correctamente a los elementos de la lista
 ticker_origen_dinamico = ""
 ticker_byma_dinamico = ""
 
@@ -179,8 +179,8 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         partes_lista = partes_raw.split("|")
-        # CORRECCIÓN DE SINTAXIS: Se aplica strip individual a las cadenas de la lista
-        ticker_origen_dinamico = partes_lista[0].replace("USA:", "").strip()
+        # SOLUCIÓN DEL BUG: Se extrae por posición [0] y [1] de la lista antes de limpiar el texto
+        ticker_origen_dinamico = partes_lista[0].strip()
         ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
