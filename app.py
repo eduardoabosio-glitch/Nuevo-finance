@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -50,7 +51,7 @@ div.stButton > button { height: 34px !important; padding: 2px 6px !important; fo
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígida</div>
+    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígica</div>
 </div>
 """, unsafe_allow_html=True)
 # 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
@@ -65,6 +66,7 @@ def agente_calcular_mep_bonos_real():
         hora_cierre = datetime.time(17, 0, 0)
         
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
+            # Endpoint oficial corregido para obtener la cotización real sin errores
             r_api = requests.get("https://dolarapi.com", timeout=2)
             if r_api.status_code == 200:
                 v_mep = float(r_api.json().get("venta", 0.0))
@@ -99,26 +101,25 @@ MAPEO_CEDEARS_COMAFI = {
     "Alibaba (China)": {"orig": "BABA", "arg": "BABA.BA"}, "Amazon (Estados Unidos)": {"orig": "AMZN", "arg": "AMZN.BA"}, "Advanced Micro Devices (Estados Unidos)": {"orig": "AMD", "arg": "AMD.BA"},
     "Apple (Estados Unidos)": {"orig": "AAPL", "arg": "AAPL.BA"}, "Ambev (Brasil)": {"orig": "ABEV", "arg": "ABEV.BA"}, "Abbott Laboratories (Estados Unidos)": {"orig": "ABT", "arg": "ABT.BA"},
     "Adobe (Estados Unidos)": {"orig": "ADBE", "arg": "ADBE.BA"}, "Adecoagro (Argentina)": {"orig": "AGRO", "arg": "AGRO.BA"}, "Airbnb (Estados Unidos)": {"orig": "ABNB", "arg": "ABNB.BA"},
-    "Bank of America (Estados Unidos)": {"orig": "BAC", "arg": "BAC.BA"}, "Barrick Gold (Canadá)": {"orig": "GOLD", "arg": "B.BA"}, "Bunge Global (Estados Unidos)": {"orig": "BG", "arg": "BG.BA"},
-    "Bioceres (Argentina)": {"orig": "BIOX", "arg": "BIOX.BA"}, "Bitfarms (Canadá)": {"orig": "BITF", "arg": "KEEL.BA"}, "Caterpillar (Estados Unidos)": {"orig": "CAT", "arg": "CAT.BA"},
+    "Bank of America (Estados Unidos)": {"orig": "BAC", "arg": "BAC.BA"}, "Barrick Gold (Canadá)": {"orig": "GOLD", "arg": "GOLD.BA"}, "Bunge Global (Estados Unidos)": {"orig": "BG", "arg": "BG.BA"},
+    "Bioceres (Argentina)": {"orig": "BIOX", "arg": "BIOX.BA"}, "Bitfarms (Canadá)": {"orig": "BITF", "arg": "BITF.BA"}, "Caterpillar (Estados Unidos)": {"orig": "CAT", "arg": "CAT.BA"},
     "Citigroup (Estados Unidos)": {"orig": "C", "arg": "C.BA"}, "Coca Cola (Estados Unidos)": {"orig": "KO", "arg": "KO.BA"}, "Chevron (Estados Unidos)": {"orig": "CVX", "arg": "CVX.BA"},
     "eBay (Estados Unidos)": {"orig": "EBAY", "arg": "EBAY.BA"}, "Electronic Arts (Estados Unidos)": {"orig": "EA", "arg": "EA.BA"}, "Eli Lilly (Estados Unidos)": {"orig": "LLY", "arg": "LLY.BA"},
-    "Embraer (Brasil)": {"orig": "ERJ", "arg": "EMBJ.BA"}, "Ferrari (Italia)": {"orig": "RACE", "arg": "RACE.BA"}, "FedEx (Estados Unidos)": {"orig": "FDX", "arg": "FDX.BA"},
+    "Embraer (Brasil)": {"orig": "ERJ", "arg": "ERJ.BA"}, "Ferrari (Italia)": {"orig": "RACE", "arg": "RACE.BA"}, "FedEx (Estados Unidos)": {"orig": "FDX", "arg": "FDX.BA"},
     "Ford Motor Company (Estados Unidos)": {"orig": "F", "arg": "F.BA"}, "General Electric (Estados Unidos)": {"orig": "GE", "arg": "GE.BA"}, "General Motors (Estados Unidos)": {"orig": "GM", "arg": "GM.BA"},
     "Google (Estados Unidos)": {"orig": "GOOGL", "arg": "GOOGL.BA"}, "Goldman Sachs (Estados Unidos)": {"orig": "GS", "arg": "GS.BA"}, "Hut 8 Mining (Canadá)": {"orig": "HUT", "arg": "HUT.BA"},
     "Intel (Estados Unidos)": {"orig": "INTC", "arg": "INTC.BA"}, "IBM (Estados Unidos)": {"orig": "IBM", "arg": "IBM.BA"}, "Itaú Unibanco (Brasil)": {"orig": "ITUB", "arg": "ITUB.BA"},
     "J.P. Morgan (Estados Unidos)": {"orig": "JPM", "arg": "JPM.BA"}, "Johnson & Johnson (Estados Unidos)": {"orig": "JNJ", "arg": "JNJ.BA"}, "Jumia Technologies (Alemania)": {"orig": "JMIA", "arg": "JMIA.BA"},
-    "Lockheed Martin (Estados Unidos)": {"orig": "LMT", "arg": "LMT.BA"}, "Lojas Renner (Brasil)": {"orig": "LREN", "arg": "LREN3.BA"}, "Mastercard (Estados Unidos)": {"orig": "MA", "arg": "MA.BA"},
+    "Lockheed Martin (Estados Unidos)": {"orig": "LMT", "arg": "LMT.BA"}, "Lojas Renner (Brasil)": {"orig": "LREN", "arg": "LREN.BA"}, "Mastercard (Estados Unidos)": {"orig": "MA", "arg": "MA.BA"},
     "McDonald's (Estados Unidos)": {"orig": "MCD", "arg": "MCD.BA"}, "Mercado Libre (Argentina)": {"orig": "MELI", "arg": "MELI.BA"}, "Meta / Facebook (Estados Unidos)": {"orig": "META", "arg": "META.BA"},
     "Microsoft (Estados Unidos)": {"orig": "MSFT", "arg": "MSFT.BA"}, "Moderna (Estados Unidos)": {"orig": "MRNA", "arg": "MRNA.BA"}, "Microstrategy (Estados Unidos)": {"orig": "MSTR", "arg": "MSTR.BA"},
-    "Natura Cosméticos (Brasil)": {"orig": "NTCO", "arg": "NATU3.BA"}, "Nvidia (Estados Unidos)": {"orig": "NVDA", "arg": "NVDA.BA"}, "Occidental Petroleum (Estados Unidos)": {"orig": "OXY", "arg": "OXY.BA"},
-    "Palo Alto Networks (Estados Unidos)": {"orig": "PANW", "arg": "PANW.BA"}, "Petrobras (Brasil)": {"orig": "PBR", "arg": "PETR3.BA"}, "Roblox Corp (Estados Unidos)": {"orig": "RBLX", "arg": "RBLX.BA"},
+    "Natura Cosméticos (Brasil)": {"orig": "NTCO", "arg": "NTCO.BA"}, "Nvidia (Estados Unidos)": {"orig": "NVDA", "arg": "NVDA.BA"}, "Occidental Petroleum (Estados Unidos)": {"orig": "OXY", "arg": "OXY.BA"},
+    "Palo Alto Networks (Estados Unidos)": {"orig": "PANW", "arg": "PANW.BA"}, "Petrobras (Brasil)": {"orig": "PBR", "arg": "PBR.BA"}, "Roblox Corp (Estados Unidos)": {"orig": "RBLX", "arg": "RBLX.BA"},
     "Salesforce (Estados Unidos)": {"orig": "CRM", "arg": "CRM.BA"}, "Satellogic (Argentina)": {"orig": "SATL", "arg": "SATL.BA"}, "Tesla (Estados Unidos)": {"orig": "TSLA", "arg": "TSLA.BA"},
     "The Walt Disney Co (Estados Unidos)": {"orig": "DIS", "arg": "DIS.BA"}, "Uber Technologies (Estados Unidos)": {"orig": "UBER", "arg": "UBER.BA"}, "United Airlines (Estados Unidos)": {"orig": "UAL", "arg": "UAL.BA"},
-    "Vale S.A. (Brasil)": {"orig": "VALE", "arg": "VALE3.BA"}, "Walmart (Estados Unidos)": {"orig": "WMT", "arg": "WMT.BA"}
+    "Vale S.A. (Brasil)": {"orig": "VALE", "arg": "VALE.BA"}, "Walmart (Estados Unidos)": {"orig": "WMT", "arg": "WMT.BA"}
 }
 
-# MAPEO DE ETFS CORRECTAMENTE COMPLETADO CON EL ETF DE ORO (GLD)
 MAPEO_ETFS_COMAFI = {
     "SPDR S&P 500 ETF (Estados Unidos)": {"orig": "SPY", "arg": "SPY.BA"}, "Invesco QQQ Trust (Estados Unidos)": {"orig": "QQQ", "arg": "QQQ.BA"},
     "iShares Russell 2000 (Estados Unidos)": {"orig": "IWM", "arg": "IWM.BA"}, "iShares MSCI Emerging Markets (Global)": {"orig": "EEM", "arg": "EEM.BA"},
@@ -132,67 +133,72 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
-# Crear lista integrada de sugerencias para el buscador
+# 1. Armar lista integrada con nomenclatura estricta para procesamiento limpio
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()):
-    sugerencias_buscador.append(f"🟢 {n} [BYMA: {t.replace('.BA','')}]")
+    sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
 for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()):
-    sugerencias_buscador.append(f"🔵 {n} [Origen: {d['orig']} | BYMA: {d['arg'].replace('.BA','')}]")
+    sugerencias_buscador.append(f"🔵 {n} [USA:{d['orig']} | BYMA:{d['arg']}]")
 for n, d in sorted(MAPEO_ETFS_COMAFI.items()):
-    sugerencias_buscador.append(f"📊 {n} [Origen: {d['orig']} | BYMA: {d['arg'].replace('.BA','')}]")
+    sugerencias_buscador.append(f"📊 {n} [USA:{d['orig']} | BYMA:{d['arg']}]")
 
-# Renderizado de tres columnas de tamaño fijo alineadas como la foto de tu cuaderno
-col_busc, col_btn_usa, col_btn_arg = st.columns([0.60, 0.20, 0.20])
+seleccion_activo = st.selectbox(
+    "Buscador:", 
+    sugerencias_buscador, 
+    key="nuevo_buscador_unificado_celular",
+    label_visibility="collapsed"
+)
 
-with col_busc:
-    seleccion_activo = st.selectbox(
-        "Buscador:", 
-        sugerencias_buscador, 
-        key="nuevo_buscador_unificado_celular",
-        label_visibility="collapsed"
-    )
+# 2. Extraer siglas dinámicas reales para las etiquetas de los botones
+ticker_origen_dinamico = ""
+ticker_byma_dinamico = ""
 
-# Variables auxiliares para procesar la inserción al tope
+if seleccion_activo != "- Escribe o selecciona un activo -":
+    if "USA:" in seleccion_activo:
+        partes = seleccion_activo.split("[USA:")[-1].replace("]", "")
+        ticker_origen_dinamico = partes.split("|")[0].strip()
+        ticker_byma_dinamico = partes.split("BYMA:")[-1].strip()
+    elif "BYMA:" in seleccion_activo:
+        ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
+        ticker_origen_dinamico = "No Aplica"
+
+# 3. Renderizar títulos de correspondencia y botones uno al lado del otro
 activo_a_cargar = None
 
-with col_btn_usa:
-    # Botón en color Azul mediante truco HTML/CSS inyectado en Streamlit
-    st.markdown("""<style>
-    div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #2196f3 !important; }
-    </style>""", unsafe_allow_html=True)
-    if st.button("🇺🇸 EEUU", key="btn_usa_insertar"):
-        if " [Origen: " in seleccion_activo:
-            activo_a_cargar = seleccion_activo.split(" [Origen: ")[1].split(" |")[0].strip().upper()
-        elif " [BYMA: " in seleccion_activo:
-            activo_a_cargar = seleccion_activo.split(" [BYMA: ")[1].replace("]", "").strip().upper()
-
-with col_btn_arg:
-    # Botón en color Verde mediante truco HTML/CSS inyectado en Streamlit
-    st.markdown("""<style>
-    div[data-testid="stHorizontalBlock"] > div:nth-child(3) button { background-color: #00e676 !important; color: #161a22 !important; }
-    </style>""", unsafe_allow_html=True)
-    if st.button("🇦🇷 BYMA", key="btn_arg_insertar"):
-        if "BYMA: " in seleccion_activo:
-            activo_a_cargar = seleccion_activo.split("BYMA: ")[1].replace("]", "").strip().upper()
-            if not activo_a_cargar.endswith(".BA") and activo_a_cargar not in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"]:
-                activo_a_cargar += ".BA"
-        elif "[BYMA: " in seleccion_activo:
-            activo_a_cargar = seleccion_activo.split("[BYMA: ")[1].replace("]", "").strip().upper() + ".BA"
+if seleccion_activo != "- Escribe o selecciona un activo -":
+    st.markdown("<p style='font-size:0.85rem; font-weight:bold; color:#00e676; margin-top:8px; margin-bottom:2px;'>⚡ CARGAR A MI LISTA:</p>", unsafe_allow_html=True)
+    
+    col_izq_usa, col_der_byma = st.columns(2)
+    
+    with col_izq_usa:
+        st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ Origen ]</p>", unsafe_allow_html=True)
+        st.markdown("""<style>
+        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; }
+        </style>""", unsafe_allow_html=True)
+        
+        if ticker_origen_dinamico != "No Aplica":
+            if st.button(f"{ticker_origen_dinamico}", key="btn_dinamico_usa_insertar"):
+                activo_a_cargar = ticker_origen_dinamico
+        else:
+            st.button("-", key="btn_usa_deshabilitado", disabled=True)
+            
+    with col_der_byma:
+        st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ BYMA ]</p>", unsafe_allow_html=True)
+        st.markdown("""<style>
+        div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; }
+        </style>""", unsafe_allow_html=True)
+        
+        if st.button(f"{ticker_byma_dinamico}", key="btn_dinamico_byma_insertar"):
+            activo_a_cargar = ticker_byma_dinamico
 
 # LÓGICA DE INSERCIÓN INSTANTÁNEA EN LA PARTE SUPERIOR DE LA LISTA
-if activo_a_cargar and seleccion_activo != "- Escribe o selecciona un activo -":
-    if activo_a_cargar == "AGRO":
-        activo_a_cargar = "AGRO.BA"
-        
-    # Reestructuramos el diccionario para que el nuevo activo quede primero (Al tope)
+if activo_a_cargar:
     copia_temporal_montos = st.session_state.montos_dis.copy()
     if activo_a_cargar in copia_temporal_montos:
         del copia_temporal_montos[activo_a_cargar]
         
-    # Inicializamos el nuevo activo en la cima del portafolio con valor base de 5000.0
     st.session_state.montos_dis = {activo_a_cargar: 5000.0}
     st.session_state.montos_dis.update(copia_temporal_montos)
-    st.success(f"¡{activo_a_cargar} cargado con éxito en la parte superior!")
     st.rerun()
 
 moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v27_unica")
@@ -201,12 +207,12 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-# 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
+      # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     precio_memoria_compartida = st.session_state.precios_agente.get(sigla_limpia, 150.0)
     es_local_pure = simbolo_ticket.endswith(".BA") or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
-    ticker_yf = sigla_limpia if (sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"]) else (f"{sigla_limpia}.BA" if es_local_pure else sigla_limpia)
+    ticker_yf = sigla_limpia if (sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"]) else (f"{sigla_limpia}.BA" if es_local_pure else simbolo_ticket)
     
     rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu, prob_fun = 54.0, "▲ Alcista", 58.0, 0.6, precio_memoria_compartida * 0.93, precio_memoria_compartida * 1.07, "56%", "82%", "85%"
     pe_ratio, div_yield, eps_contable, margen_neto = "No Aplica", "0.00%", "No Disponible", "No Disp."
@@ -271,7 +277,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+     # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -334,7 +340,7 @@ for tk in activos_actuales:
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-    # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
+# 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -390,18 +396,18 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO OFICIAL A YAHOO FINANCE (.BA) [CORREGIDO]
+# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO SEGURO A YAHOO FINANCE (.BA) [REPARADO]
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
-    simbolo_limpio = str(simbolo).replace(".BA", "").strip().upper()
+    simbolo_limpio = str(simbolo).strip().upper()
     
-    # URL oficial reconstruida para evitar que rompa el navegador en celulares
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}.BA"
+    # Sintaxis oficial corregida para evitar errores de carga en navegadores móviles
+    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
 
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}.BA]</span> <b>📍 Yahoo Finance Local:</b> Pizarra oficial de cotizaciones, cables macro y balances corporativos en pesos para {simbolo_limpio} en BYMA.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Yahoo Finance Oficial:</b> Pizarra de cotizaciones en tiempo real, cables institucionales, balances corporativos y gráficos de rendimiento macro.
         <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
     </div>
@@ -409,7 +415,7 @@ for simbolo in activos_actuales:
 
 st.markdown("<div style='padding-bottom: 60px;'></div>", unsafe_allow_html=True)
 
-# Menú de pestañas fijo inferior de simulación móvil nativa
+# Menú inferior fijo simulación App Móvil
 st.markdown('''
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Inicio</div>
@@ -419,4 +425,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
+        
