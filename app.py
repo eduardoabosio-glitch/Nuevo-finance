@@ -178,7 +178,7 @@ ticker_byma_dinamico = ""
 if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
-        ticker_origen_dinamico = partes.split("|")[0].strip()
+        ticker_origen_dinamico = partes.split("|")[0].replace("USA:", "").strip()
         ticker_byma_dinamico = partes.split("BYMA:")[-1].strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
@@ -194,7 +194,6 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     
     with col_izq_usa:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ Origen ]</p>", unsafe_allow_html=True)
-        # Fuerza el color azul del botón Origen en la fila horizontal flex
         st.markdown("""<style>
         div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; }
         </style>""", unsafe_allow_html=True)
@@ -207,7 +206,6 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
             
     with col_der_byma:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ BYMA ]</p>", unsafe_allow_html=True)
-        # Fuerza el color verde y texto oscuro del botón BYMA en la fila horizontal flex
         st.markdown("""<style>
         div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; }
         </style>""", unsafe_allow_html=True)
@@ -234,7 +232,7 @@ st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fic
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     
-    # Identificar de forma estricta si es un CEDEAR/ETF listado localmente con sufijo .BA
+    # Identificar si es un CEDEAR/ETF listado localmente con sufijo .BA
     es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD"]
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
     
@@ -252,10 +250,8 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         if not df_hist.empty and len(df_hist) > 15:
             precio_actual = float(df_hist["Close"].iloc[-1])
             
-            # Si yfinance nos devuelve el valor en pesos nativos de BYMA para un CEDEAR, hacemos el bypass de conversión exacto
-            if es_cedear_local and precio_actual > 1000.0 and VALOR_DOLAR_MEP > 0:
-                # Almacenamos el precio en pesos puro para que no rompa la paridad
-                pass
+            if not es_local_pure and ticker_yf in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and precio_actual < 1.0:
+                precio_actual = precio_memoria_compartida
 
             delta = df_hist["Close"].diff()
             ganancia = delta.where(delta > 0, 0)
@@ -317,7 +313,7 @@ for tk in activos_actuales:
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
     p_base = datos_reales["precio"]
     p_target = datos_reales["target_usd"]
-    es_local_nativa = datos_reales["es_local"]
+    es_local_pure = datos_reales["es_local"]
     es_cedear_local = datos_reales["es_cedear_local"]
     tk_identificado_yf = datos_reales["ticker_real_yf"]
     
@@ -341,7 +337,6 @@ for tk in activos_actuales:
             
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
-    # CÁLCULO DE PARIDAD REPARADO: Distingue de forma exacta si el activo es local puro, un CEDEAR local en pesos o de origen
     if es_local_pure:
         p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
@@ -354,7 +349,7 @@ for tk in activos_actuales:
 
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    # FILTRO DE SEGURIDAD JPMORGAN CON PARIDAD DE INTEGRIDAD
+    # CORRECCIÓN DEFINITIVA DE VARIABLES: Filtro de paridad e integridad contra cotizaciones rotas
     mostrar_target_valido = True
     if p_mostrar_tarjeta < 2.0 and t_mostrar_tarjeta > 100.0:
         mostrar_target_valido = False
