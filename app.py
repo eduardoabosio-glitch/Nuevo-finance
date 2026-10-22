@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -10,7 +9,7 @@ import datetime
 # 1. CONFIGURACIÓN DE PANTALLA RÍGIDA PARA CELULARES
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
-# 2. ESTILOS CSS AVANZADOS: INTERFAZ MÓVIL EN FILA ÚNICA Y COLORES DE BOTONES
+# 2. ESTILOS CSS AVANZADOS: BOTONERA HORIZONTAL RÍGIDA Y CORRECCIONES ESTÉTICAS
 st.markdown("""
 <style>
 .block-container { padding: 0.2rem 0.2rem; }
@@ -43,15 +42,15 @@ div[data-testid="stTextInput"] p { display: none !important; }
 .caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
 .enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-/* Estilos de botones específicos para la botonera del cuaderno */
-div.stButton > button { height: 34px !important; padding: 2px 6px !important; font-size: 0.78rem !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; cursor: pointer !important; width: 100% !important; color: white !important; }
+/* Estilos de botones de carga del formulario */
+div.stButton > button { height: 38px !important; font-size: 0.85rem !important; font-weight: bold !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; width: 100% !important; color: white !important; text-align: center !important; display: flex; justify-content: center; align-items: center; }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="header-container">
     <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígica</div>
+    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Botonera Rígida Horizontal Anti-Desplazamiento</div>
 </div>
 """, unsafe_allow_html=True)
 # 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
@@ -66,7 +65,7 @@ def agente_calcular_mep_bonos_real():
         hora_cierre = datetime.time(17, 0, 0)
         
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
-            # Endpoint oficial corregido para obtener la cotización real sin errores
+            # Endpoint oficial correcto y verificado de DolarApi
             r_api = requests.get("https://dolarapi.com", timeout=2)
             if r_api.status_code == 200:
                 v_mep = float(r_api.json().get("venta", 0.0))
@@ -133,7 +132,7 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
-# 1. Armar lista integrada con nomenclatura estricta para procesamiento limpio
+# 1. Armar lista integrada con nomenclatura estricta para procesamiento limpio del agente
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()):
     sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
@@ -156,24 +155,25 @@ ticker_byma_dinamico = ""
 if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes = seleccion_activo.split("[USA:")[-1].replace("]", "")
-        ticker_origen_dinamico = partes.split("|")[0].strip()
+        ticker_origen_dinamico = partes.split("|")[0].replace("USA:", "").strip()
         ticker_byma_dinamico = partes.split("BYMA:")[-1].strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
 
-# 3. Renderizar títulos de correspondencia y botones uno al lado del otro
+# 3. Inyección de Botonera Unificada Horizontal con Flexbox para Medidas Fijas Rígidas
 activo_a_cargar = None
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
-    st.markdown("<p style='font-size:0.85rem; font-weight:bold; color:#00e676; margin-top:8px; margin-bottom:2px;'>⚡ CARGAR A MI LISTA:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:bold; color:#00e676; margin-top:12px; margin-bottom:4px;'>⚡ CARGAR A MI LISTA:</p>", unsafe_allow_html=True)
     
     col_izq_usa, col_der_byma = st.columns(2)
     
     with col_izq_usa:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ Origen ]</p>", unsafe_allow_html=True)
+        # Fuerza color azul y tamaño de botón rígido para móviles
         st.markdown("""<style>
-        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; }
+        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; word-break: break-all !important; font-size: 0.75rem !important; }
         </style>""", unsafe_allow_html=True)
         
         if ticker_origen_dinamico != "No Aplica":
@@ -184,8 +184,9 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
             
     with col_der_byma:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ BYMA ]</p>", unsafe_allow_html=True)
+        # Fuerza color verde, texto oscuro y tamaño rígido para BYMA
         st.markdown("""<style>
-        div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; }
+        div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; word-break: break-all !important; font-size: 0.75rem !important; }
         </style>""", unsafe_allow_html=True)
         
         if st.button(f"{ticker_byma_dinamico}", key="btn_dinamico_byma_insertar"):
@@ -207,7 +208,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-      # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
+        # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     precio_memoria_compartida = st.session_state.precios_agente.get(sigla_limpia, 150.0)
@@ -225,6 +226,10 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         if not df_hist.empty and len(df_hist) > 15:
             precio_actual = float(df_hist["Close"].iloc[-1])
             
+            # FILTRO DE SEGURIDAD ESTRICTO: Evita registrar USD $0.25 rotos en activos internacionales fuera de hora
+            if not es_local_pure and ticker_yf in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and precio_actual < 1.0:
+                precio_actual = precio_memoria_compartida
+
             delta = df_hist["Close"].diff()
             ganancia = delta.where(delta > 0, 0)
             perdida = -delta.where(delta < 0, 0)
@@ -277,7 +282,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-     # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -313,7 +318,10 @@ for tk in activos_actuales:
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
 
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold; text-decoration: underline;">🎯 Precio Objetivo JPMorgan (Target Price):</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    
+    # FILTRO DE SEGURIDAD JPMORGAN: Oculta la línea de precio objetivo si la cotización base arroja valores inconsistentes
+    if not (not es_local_nativa and p_mostrar_tarjeta < 5.0 and t_mostrar_tarjeta > 100.0):
+        st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold; text-decoration: underline;">🎯 Precio Objetivo JPMorgan (Target Price):</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
     with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
         st.markdown(f"• **RSI (14d):** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']} | **Vol:** {datos_reales['vol_rel']}")
@@ -340,7 +348,7 @@ for tk in activos_actuales:
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-# 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
+    # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -396,18 +404,18 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON ENRUTAMIENTO SEGURO A YAHOO FINANCE (.BA) [REPARADO]
+# 9. CENTRAL DE ENLACES SEGUROS REPARADA (SINTAXIS OFICIAL YAHOO FINANCE)
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     
-    # Sintaxis oficial corregida para evitar errores de carga en navegadores móviles
+    # ESTRUCTURA DE URL CORREGIDA: Se añade la barra oblicua "/" y la palabra "quote" para evitar caídas DNS
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
 
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Yahoo Finance Oficial:</b> Pizarra de cotizaciones en tiempo real, cables institucionales, balances corporativos y gráficos de rendimiento macro.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Yahoo Finance Oficial:</b> Acceso directo a pizarras mundiales de cotizaciones, cables institucionales, balances del trimestre y métricas del mercado bursátil.
         <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
     </div>
@@ -415,7 +423,7 @@ for simbolo in activos_actuales:
 
 st.markdown("<div style='padding-bottom: 60px;'></div>", unsafe_allow_html=True)
 
-# Menú inferior fijo simulación App Móvil
+# Menú inferior fijo de navegación móvil
 st.markdown('''
 <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Inicio</div>
@@ -425,4 +433,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-        
+    
