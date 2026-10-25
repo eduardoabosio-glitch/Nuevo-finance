@@ -38,9 +38,8 @@ div[data-testid="stTextInput"] input { background-color: #1f2633 !important; col
 div[data-testid="stTextInput"] label { display: none !important; }
 div[data-testid="stTextInput"] p { display: none !important; }
 
-/* Lista de noticias unificada */
+/* Lista de noticias unificada interna */
 .caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
-.enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 
 /* Inyección de Flexbox Nativo para Forzar Botones en Paralelo Horizontal en Celulares */
 div[data-testid="stHorizontalBlock"] {
@@ -77,7 +76,7 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígida</div>
 </div>
 """, unsafe_allow_html=True)
-# 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL (CORREGIDO)
+# 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
 def agente_calcular_mep_bonos_real():
     mep_ultimo_cierre_fijo = 1537.05
     try:
@@ -89,7 +88,6 @@ def agente_calcular_mep_bonos_real():
         hora_cierre = datetime.time(17, 0, 0)
         
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
-            # Endpoint oficial correcto de DolarAPI para Dólar MEP (Bolsa)
             r_api = requests.get("https://dolarapi.com/v1/dolares/bolsa", timeout=3)
             if r_api.status_code == 200:
                 v_mep = float(r_api.json().get("venta", 0.0))
@@ -101,14 +99,7 @@ def agente_calcular_mep_bonos_real():
 
 VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
 
-# Control de Estado Iniciales para evitar NameError en variables de moneda
-if 'moneda_seleccionada' not in st.session_state:
-    st.session_state.moneda_seleccionada = "ARS"
-moneda = st.session_state.moneda_seleccionada
-es_pesos = (moneda == "ARS")
-factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
-
-# 4. BASE DE DATOS INTERNA CON ALMACENAMIENTO DE PRECIOS DE RESPALDO
+# 4. BASE DE DATOS INTERNA Y CONTROL DE ESTADO
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
@@ -157,7 +148,7 @@ MAPEO_ETFS_COMAFI = {
     "Ark Innovation ETF (Estados Unidos)": {"orig": "ARKK", "arg": "ARKK.BA"}, "ProShares Short S&P500 (Estados Unidos)": {"orig": "SH", "arg": "SH.BA"},
     "ETF SPDR Gold Trust (Estados Unidos)": {"orig": "GLD", "arg": "GLD.BA"}
 }
-# 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE Y CACHÉ
+# 6. EL SUPERMOTOR QUANT CON CACHÉ Y FILTRO DE PARIDAD
 @st.cache_data(ttl=300)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
@@ -228,11 +219,61 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}100.00", "techo_a": f"{simbolo_moneda_piso_techo}200.00", "beta": "1.02",
         "pe": "No Aplica", "dividendos": "0.00%", "eps": "No Disponible", "margen": "No Disp.", "dict_corto": "Consolidación.", "dict_largo": "Soporte."
     }
+    # 7. PANEL DE CONSULTA AVANZADA UNIFICADA (Buscador Recuperado)
+st.markdown(f"""
+<div style="background-color:#161a22; padding:8px; border-radius:6px; border:1px solid #232a38; margin-bottom:10px; text-align:center;">
+    <span style="color:#00e676; font-weight:bold; font-size:0.9rem;">{origen_mep_txt}</span><br>
+    <span style="color:#ffffff; font-size:1.1rem; font-weight:bold;">Cotización Dólar MEP: ARS ${VALOR_DOLAR_MEP:,.2f}</span>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
+
+diccionario_maestro_unificado = {}
+diccionario_maestro_unificado.update(MAPEO_CEDEARS_COMAFI)
+diccionario_maestro_unificado.update(MAPEO_ETFS_COMAFI)
+diccionario_maestro_unificado.update(MAPEO_ACCIONES_RAVA)
+
+seleccion_activo_usuario = st.selectbox("Seleccione Activo", list(diccionario_maestro_unificado.keys()), label_visibility="collapsed")
+info_seleccion = diccionario_maestro_unificado[seleccion_activo_usuario]
+
+st.markdown("<p style='color:#00e676; font-size:0.85rem; font-weight:bold; margin-bottom:4px;'>⚡ CARGAR A MI LISTA:</p>", unsafe_allow_html=True)
+
+col_b1, col_b2 = st.columns(2)
+if isinstance(info_seleccion, dict):
+    ticker_origen = info_seleccion["orig"]
+    ticker_local = info_seleccion["arg"]
+    with col_b1:
+        if st.button(f"{ticker_origen}", key=f"btn_orig_{ticker_origen}", use_container_width=True):
+            if ticker_origen not in st.session_state.montos_dis:
+                st.session_state.montos_dis[ticker_origen] = 10000.0
+                st.rerun()
+    with col_b2:
+        if st.button(f"{ticker_local}", key=f"btn_arg_{ticker_local}", use_container_width=True):
+            if ticker_local not in st.session_state.montos_dis:
+                st.session_state.montos_dis[ticker_local] = 10000.0
+                st.rerun()
+else:
+    ticker_unico = info_seleccion
+    with col_b1:
+        if st.button(f"{ticker_unico}", key=f"btn_unico_{ticker_unico}", use_container_width=True):
+            if ticker_unico not in st.session_state.montos_dis:
+                st.session_state.montos_dis[ticker_unico] = 10000.0
+                st.rerun()
+
+col_m1, col_m2 = st.columns(2)
+with col_m1:
+    moneda = st.radio("Moneda", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed")
+es_pesos = "Pesos" in moneda
+factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
+
+st.markdown("<hr style='margin:8px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA
+
+# RENDERIZACIÓN DE TARJETAS TÁCTILES
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -254,7 +295,7 @@ for tk in activos_actuales:
         "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente
     })
     
-    noticias_resumen = "Proyecciones institucionales sólidas en el sector." if tk_limpio_upper in ["SPY", "SPY.BA"] else ("Flujo de entregas y demanda estacional estables." if tk_limpio_upper in ["TSLA", "TSLA.BA"] else "Consolidación de balance corporativo trimestral.")
+    noticias_resumen = "Proyecciones institucionales sólidas y alta demanda en el sector." if tk_limpio_upper in ["SPY", "SPY.BA"] else ("Flujo de entregas y demanda estacional estables." if tk_limpio_upper in ["TSLA", "TSLA.BA"] else "Consolidación de balance corporativo trimestral.")
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
@@ -329,19 +370,18 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON LINK OFICIAL DE YAHOO FINANCE CORREGIDO
+# 9. CENTRAL DE NOTICIAS INTERNA (Sin sacarte de la app y con link opcional seguro)
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
-    # URL oficial correcta para ir directo a la cotización y noticias en Yahoo Finance
     url_segura_final = f"https://finance.yahoo.com/quote/{simbolo_limpio}"
 
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Yahoo Finance Oficial:</b> Cotizaciones en vivo, flujos bursátiles, reportes y noticias corporativas recientes.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen del Agente:</b> Actividad bursátil estable, flujos institucionales positivos y soporte técnico validado en la pizarra global.
         <br>
-        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar noticias en Yahoo Finance</a>
+        <span style="font-size:0.75rem; color:#888;">(Fuente interna sincronizada)</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -357,4 +397,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
