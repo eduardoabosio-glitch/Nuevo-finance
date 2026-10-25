@@ -77,9 +77,8 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígida</div>
 </div>
 """, unsafe_allow_html=True)
-# 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPE REAL
+# 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPO REAL
 def agente_calcular_mep_bonos_real():
-    # Precio oficial de cierre del viernes estipulado en tu estrategia de contingencia
     mep_ultimo_cierre_fijo = 1560.17
     try:
         ahora = datetime.datetime.now()
@@ -90,7 +89,6 @@ def agente_calcular_mep_bonos_real():
         hora_cierre = datetime.time(17, 0, 0)
         
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
-            # Endpoint oficial correcto y verificado de DolarApi para el Dolar Bolsa (MEP)
             r_api = requests.get("https://dolarapi.com", timeout=2)
             if r_api.status_code == 200:
                 v_mep = float(r_api.json().get("venta", 0.0))
@@ -146,10 +144,11 @@ MAPEO_CEDEARS_COMAFI = {
     "Vale S.A. (Brasil)": {"orig": "VALE", "arg": "VALE.BA"}, "Walmart (Estados Unidos)": {"orig": "WMT", "arg": "WMT.BA"}
 }
 
+# CORRECCIÓN DE CLAVE: Se repara "oracle" por "orig" en la sigla de Energy SPDR (XLE)
 MAPEO_ETFS_COMAFI = {
     "SPDR S&P 500 ETF (Estados Unidos)": {"orig": "SPY", "arg": "SPY.BA"}, "Invesco QQQ Trust (Estados Unidos)": {"orig": "QQQ", "arg": "QQQ.BA"},
     "iShares Russell 2000 (Estados Unidos)": {"orig": "IWM", "arg": "IWM.BA"}, "iShares MSCI Emerging Markets (Global)": {"orig": "EEM", "arg": "EEM.BA"},
-    "Financial Select Sector SPDR (Estados Unidos)": {"orig": "XLF", "arg": "XLF.BA"}, "Energy Select Sector SPDR (Estados Unidos)": {"oracle": "XLE", "arg": "XLE.BA"},
+    "Financial Select Sector SPDR (Estados Unidos)": {"orig": "XLF", "arg": "XLF.BA"}, "Energy Select Sector SPDR (Estados Unidos)": {"orig": "XLE", "arg": "XLE.BA"},
     "SPDR Dow Jones Industrial (Estados Unidos)": {"orig": "DIA", "arg": "DIA.BA"}, "iShares MSCI Brazil ETF (Brasil)": {"orig": "EWZ", "arg": "EWZ.BA"},
     "Ark Innovation ETF (Estados Unidos)": {"orig": "ARKK", "arg": "ARKK.BA"}, "ProShares Short S&P500 (Estados Unidos)": {"orig": "SH", "arg": "SH.BA"},
     "ETF SPDR Gold Trust (Estados Unidos)": {"orig": "GLD", "arg": "GLD.BA"}
@@ -159,13 +158,14 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
+# 1. Armar lista integrada con nomenclatura estricta y método .get de respaldo total para evitar KeyErrors
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()):
     sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
 for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()):
-    sugerencias_buscador.append(f"🔵 {n} [USA:{d['orig']}|BYMA:{d['arg']}]")
+    sugerencias_buscador.append(f"🔵 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
 for n, d in sorted(MAPEO_ETFS_COMAFI.items()):
-    sugerencias_buscador.append(f"📊 {n} [USA:{d['orig']}|BYMA:{d['arg']}]")
+    sugerencias_buscador.append(f"📊 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
 
 seleccion_activo = st.selectbox(
     "Buscador:", 
@@ -174,6 +174,7 @@ seleccion_activo = st.selectbox(
     label_visibility="collapsed"
 )
 
+# 2. Extraer siglas dinámicas reales accediendo de forma controlada a los textos
 ticker_origen_dinamico = ""
 ticker_byma_dinamico = ""
 
@@ -181,13 +182,13 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         partes_lista = partes_raw.split("|")
-        # Solución de índice de cadenas individual
         ticker_origen_dinamico = partes_lista[0].replace("USA:", "").strip()
         ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
 
+# 3. Renderizar subtítulos y botonera forzada en paralelo horizontal real
 activo_a_cargar = None
 
 if seleccion_activo != "- Escribe o selecciona un activo -":
@@ -231,7 +232,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-# 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
+    # 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     
@@ -311,7 +312,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-            # 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -353,7 +354,7 @@ for tk in activos_actuales:
 
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    # Oculta el Target Price para que NUNCA aparezca en las fichas de BYMA (.BA o locales de Rava)
+    # Oculta el Target Price para que NUNCA aparezca en las fichas de BYMA (.BA o locales)
     mostrar_target_valido = True
     if es_local_pure or es_cedear_local or tk_limpio_upper.endswith(".BA"):
         mostrar_target_valido = False
@@ -449,7 +450,6 @@ for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     
-    # Resumen estático limpio inyectado directo en pantalla para no abandonar la navegación
     st.markdown(f"""
     <div class="caja-noticia-link">
         <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen del Agente Financiero:</b> Monitoreo consolidado de estados contables, balances trimestrales y variaciones de flujos de capital institucionales.
@@ -462,7 +462,7 @@ st.markdown("<div style='padding-bottom: 60px;'></div>", unsafe_allow_html=True)
 
 # Menú inferior fijo de navegación adaptable móvil
 st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
     <div style="color:#888;">🏠<br>Inicio</div>
     <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
     <div style="color:#888;">📊<br>Análisis</div>
