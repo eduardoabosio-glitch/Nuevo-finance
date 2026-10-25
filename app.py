@@ -77,7 +77,7 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígida</div>
 </div>
 """, unsafe_allow_html=True)
-# 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL
+# 3. EL SUPERMOTOR QUANT DE DIVISAS: CONTROL DE RELOJ BURSÁTIL EN TIEMPO REAL (CORREGIDO)
 def agente_calcular_mep_bonos_real():
     mep_ultimo_cierre_fijo = 1537.05
     try:
@@ -89,25 +89,32 @@ def agente_calcular_mep_bonos_real():
         hora_cierre = datetime.time(17, 0, 0)
         
         if es_dia_semana and (hora_apertura <= hora_actual <= hora_cierre):
-            r_api = requests.get("https://dolarapi.com", timeout=2)
+            # Endpoint oficial correcto de DolarAPI para Dólar MEP (Bolsa)
+            r_api = requests.get("https://dolarapi.com/v1/dolares/bolsa", timeout=3)
             if r_api.status_code == 200:
                 v_mep = float(r_api.json().get("venta", 0.0))
                 if v_mep > 500:
-                    return v_mep, "⚡ Cotización en Vivo del Mercado de Bolsa (MEP)"
+                    return v_mep, "⚡ Cotización en Vivo DolarAPI (MEP)"
     except:
         pass
     return mep_ultimo_cierre_fijo, "🔒 Cierre de Pizarra Consolidado (Mercado Cerrado)"
 
 VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
 
-# 4. BASE DE DATOS INTERNA CON ALMACENAMIENTO DE PRECIOS DE RESPALDO DEL AGENTE
+# Control de Estado Iniciales para evitar NameError en variables de moneda
+if 'moneda_seleccionada' not in st.session_state:
+    st.session_state.moneda_seleccionada = "ARS"
+moneda = st.session_state.moneda_seleccionada
+es_pesos = (moneda == "ARS")
+factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
+
+# 4. BASE DE DATOS INTERNA CON ALMACENAMIENTO DE PRECIOS DE RESPALDO
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
 
 if 'precios_agente' not in st.session_state:
     st.session_state.precios_agente = {"SPY": 763.25, "TSLA": 382.70, "TSLA.BA": 42500.00, "AAPL": 343.46, "AAPL.BA": 28180.00, "KO": 93.90, "COME": 37.70, "HAVA": 4105.00, "SEMI": 2290.00, "MOLI": 3950.00, "AGRO": 72.00}
-
-MAPEO_ACCIONES_RAVA = {
+    MAPEO_ACCIONES_RAVA = {
     "Agrometal": "AGRO.BA", "Aluar": "ALUA.BA", "Autopistas del Sol": "AUSO.BA", "Banco Macro": "BMA.BA", "BBVA Banco Francés": "BBAR.BA", "Boldt S.A.": "BDL.BA",
     "Bolsas y Mercados Argentinos": "BYMA.BA", "Capex S.A.": "CAPX.BA", "Carboclor": "CARC.BA", "Carlos Casado": "CADO.BA", "Central Puerto": "CEPU.BA", "Celulosa Argentina": "CELU.BA",
     "Cablevisión Holding": "CVH.BA", "Comercial del Plata": "COME.BA", "Consultatio": "CTIO.BA", "Cresud": "CRES.BA", "Distribuidora Gas del Centro": "DGCE.BA", "Distribuidora Gas Cuyana": "DGCU2.BA",
@@ -150,97 +157,17 @@ MAPEO_ETFS_COMAFI = {
     "Ark Innovation ETF (Estados Unidos)": {"orig": "ARKK", "arg": "ARKK.BA"}, "ProShares Short S&P500 (Estados Unidos)": {"orig": "SH", "arg": "SH.BA"},
     "ETF SPDR Gold Trust (Estados Unidos)": {"orig": "GLD", "arg": "GLD.BA"}
 }
-if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
-    st.success("¡Estructura guardada en la memoria local con éxito!")
-
-st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
-
-# 1. Armar lista integrada con nomenclatura estricta libre de espacios erróneos
-sugerencias_buscador = ["- Escribe o selecciona un activo -"]
-for n, t in sorted(MAPEO_ACCIONES_RAVA.items()):
-    sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
-for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()):
-    sugerencias_buscador.append(f"🔵 {n} [USA:{d['orig']}|BYMA:{d['arg']}]")
-for n, d in sorted(MAPEO_ETFS_COMAFI.items()):
-    sugerencias_buscador.append(f"📊 {n} [USA:{d['orig']}|BYMA:{d['arg']}]")
-
-seleccion_activo = st.selectbox(
-    "Buscador:", 
-    sugerencias_buscador, 
-    key="nuevo_buscador_unificado_celular",
-    label_visibility="collapsed"
-)
-
-# 2. Extraer siglas dinámicas reales accediendo correctamente a los elementos de la lista
-ticker_origen_dinamico = ""
-ticker_byma_dinamico = ""
-
-if seleccion_activo != "- Escribe o selecciona un activo -":
-    if "USA:" in seleccion_activo:
-        partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
-        partes_lista = partes_raw.split("|")
-        # SOLUCIÓN DEL BUG: Se extrae por posición [0] y [1] de la lista antes de limpiar el texto
-        ticker_origen_dinamico = partes_lista[0].strip()
-        ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
-    elif "BYMA:" in seleccion_activo:
-        ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
-        ticker_origen_dinamico = "No Aplica"
-
-# 3. Renderizar subtítulos y botonera forzada en paralelo horizontal real
-activo_a_cargar = None
-
-if seleccion_activo != "- Escribe o selecciona un activo -":
-    st.markdown("<p style='font-size:0.85rem; font-weight:bold; color:#00e676; margin-top:12px; margin-bottom:4px;'>⚡ CARGAR A MI LISTA:</p>", unsafe_allow_html=True)
-    
-    col_izq_usa, col_der_byma = st.columns(2)
-    
-    with col_izq_usa:
-        st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ Origen ]</p>", unsafe_allow_html=True)
-        st.markdown("""<style>
-        div[data-testid="stHorizontalBlock"] > div:nth-child(1) button { background-color: #2196f3 !important; }
-        </style>""", unsafe_allow_html=True)
-        
-        if ticker_origen_dinamico != "No Aplica":
-            if st.button(f"{ticker_origen_dinamico}", key="btn_dinamico_usa_insertar"):
-                activo_a_cargar = ticker_origen_dinamico
-        else:
-            st.button("-", key="btn_usa_deshabilitado", disabled=True)
-            
-    with col_der_byma:
-        st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ BYMA ]</p>", unsafe_allow_html=True)
-        st.markdown("""<style>
-        div[data-testid="stHorizontalBlock"] > div:nth-child(2) button { background-color: #00e676 !important; color: #161a22 !important; }
-        </style>""", unsafe_allow_html=True)
-        
-        if st.button(f"{ticker_byma_dinamico}", key="btn_dinamico_byma_insertar"):
-            activo_a_cargar = ticker_byma_dinamico
-
-if activo_a_cargar:
-    copia_temporal_montos = st.session_state.montos_dis.copy()
-    if activo_a_cargar in copia_temporal_montos:
-        del copia_temporal_montos[activo_a_cargar]
-        
-    st.session_state.montos_dis = {activo_a_cargar: 5000.0}
-    st.session_state.montos_dis.update(copia_temporal_montos)
-    st.rerun()
-
-moneda = st.radio("M", ["Dólares (USD)", "Pesos (ARS)"], horizontal=True, label_visibility="collapsed", key="selector_moneda_v27_unica")
-es_pesos = moneda == "Pesos (ARS)"
-factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
-
-st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
-st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-# 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE MULTI-ACTIVOS
+# 6. EL SUPERMOTOR QUANT CON FILTRO DE PARIDAD INTELIGENTE Y CACHÉ
+@st.cache_data(ttl=300)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     
     es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD"]
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPF", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO"]
     
-    precio_memoria_compartida = st.session_state.precios_agente.get(simbolo_ticket, st.session_state.precios_agente.get(sigla_limpia, 150.0))
     ticker_yf = sigla_limpia if (sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA"] and not simbolo_ticket.endswith(".BA")) else simbolo_ticket
     
-    rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu, prob_fun = 54.0, "▲ Alcista", 58.0, 0.6, precio_memoria_compartida * 0.93, precio_memoria_compartida * 1.07, "56%", "82%", "85%"
+    rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu, prob_fun = 54.0, "▲ Alcista", 58.0, 0.6, 140.0, 160.0, "56%", "82%", "85%"
     pe_ratio, div_yield, eps_contable, margen_neto = "No Aplica", "0.00%", "No Disponible", "No Disp."
     beta_riesgo = 1.02
     
@@ -250,11 +177,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
         
         if not df_hist.empty and len(df_hist) > 15:
             precio_actual = float(df_hist["Close"].iloc[-1])
-            
-            if es_cedear_local and precio_actual < 5.0:
-                precio_actual = 42500.00 if sigla_limpia == "TSLA" else (28180.00 if sigla_limpia == "AAPL" else precio_memoria_compartida)
-            elif not es_cedear_local and not es_local_pure and precio_actual < 5.0:
-                precio_actual = precio_memoria_compartida
 
             delta = df_hist["Close"].diff()
             ganancia = delta.where(delta > 0, 0)
@@ -283,7 +205,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             simbolo_moneda_piso_techo = "ARS $" if es_local_pure or es_cedear_local else "USD $"
             
             if es_local_pure:
-                target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual / VALOR_DOLAR_MEP if VALOR_DOLAR_MEP > 0 else 1.0)
+                target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, precio_actual / 1500.0)
             elif es_cedear_local:
                 target_price_usd = valores_jpmorgan_reales.get(sigla_limpia, 392.42 if sigla_limpia == "TSLA" else 360.00)
             else:
@@ -301,16 +223,16 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 
     simbolo_moneda_piso_techo = "ARS $" if es_local_pure or es_cedear_local else "USD $"
     return {
-        "precio": precio_memoria_compartida, "target_usd": precio_memoria_compartida * 1.1, "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf,
+        "precio": 150.0, "target_usd": 165.0, "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf,
         "prob_sem": "56%", "prob_anu": "82%", "prob_fun": "85%", "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "emas_c": "▲ EMA9 OK",
-        "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": "1.02",
+        "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}100.00", "techo_a": f"{simbolo_moneda_piso_techo}200.00", "beta": "1.02",
         "pe": "No Aplica", "dividendos": "0.00%", "eps": "No Disponible", "margen": "No Disp.", "dict_corto": "Consolidación.", "dict_largo": "Soporte."
     }
 
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA DE MONEDA NATIVA
+# 7. RENDERIZACIÓN DE TARJETAS HORIZONTALES CON PARIDAD CONTROLADA
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -318,9 +240,8 @@ for tk in activos_actuales:
     p_target = datos_reales["target_usd"]
     es_local_pure = datos_reales["es_local"]
     es_cedear_local = datos_reales["es_cedear_local"]
-    tk_identificado_yf = datos_reales["ticker_real_yf"]
     
-    monto_actual = st.session_state.montos_dis[tk]
+    monto_actual = st.session_state.montos_dis.get(tk, 0.0)
     patrimonio_total_usd += monto_actual
     
     nota_txt = "Nota 9/10 Excelente" if tk_limpio_upper in ["SPY", "AAPL", "AAPL.BA"] else ("Nota 7/10 Favorable" if tk_limpio_upper in ["TSLA", "TSLA.BA"] else "Nota 8/10 Muy Buena")
@@ -333,41 +254,35 @@ for tk in activos_actuales:
         "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente
     })
     
-    noticias = "Nuevas proyecciones institucionales superan expectativas." if tk_limpio_upper in ["SPY", "SPY.BA"] else ("Tesla supera entregas de forma masiva." if tk_limpio_upper in ["TSLA", "TSLA.BA"] else ("Apple expande servicios con fuerza macro." if tk_limpio_upper in ["AAPL", "AAPL.BA"] else "Consolidación de balance corporativo."))
+    noticias_resumen = "Proyecciones institucionales sólidas en el sector." if tk_limpio_upper in ["SPY", "SPY.BA"] else ("Flujo de entregas y demanda estacional estables." if tk_limpio_upper in ["TSLA", "TSLA.BA"] else "Consolidación de balance corporativo trimestral.")
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
             
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
-    if es_local_pure:
-        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
-        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
-    elif es_cedear_local:
+    if es_local_pure or es_cedear_local:
         p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
     else:
         p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
         t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
 
-    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    # MODIFICACIÓN ESTRICTA SOLICITADA: Oculta el Target Price para que NUNCA aparezca en las fichas de BYMA (.BA o Locales)
-    mostrar_target_valido = True
-    if es_local_pure or es_cedear_local or tk_limpio_upper.endswith(".BA"):
-        mostrar_target_valido = False
+    mostrar_target_valido = not (es_local_pure or es_cedear_local or tk_limpio_upper.endswith(".BA"))
         
     if mostrar_target_valido:
-        st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold; text-decoration: underline;">🎯 Precio Objetivo JPMorgan (Target Price):</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold; text-decoration: underline;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
-        st.markdown(f"• **RSI (14d):** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']} | **Vol:** {datos_reales['vol_rel']}")
-    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
-        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']} | **Beta:** {datos_reales['beta']}")
-    with st.expander(f"🔍 Análisis Fundamental: {nota_txt} ({datos_reales['prob_fun']})", expanded=False):
-        st.markdown(f"• **P/E Ratio:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **EPS:** {datos_reales['eps']} | **Margen:** {datos_reales['margen']}")
+    with st.expander(f"📈 Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
+        st.markdown(f"• **RSI:** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']}")
+    with st.expander(f"📊 Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
+        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']}")
+    with st.expander(f"🔍 Fundamental: {nota_txt}", expanded=False):
+        st.markdown(f"• **P/E:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **EPS:** {datos_reales['eps']}")
         
-    st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias_resumen}</b></div>', unsafe_allow_html=True)
     
     if st.button("❌ Borrar", key=f"delete_btn_v25_{tk_limpio_upper}"):
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
@@ -385,7 +300,7 @@ for tk in activos_actuales:
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-    # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
+    # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -395,32 +310,6 @@ if activos_actuales:
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
     fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
     st.plotly_chart(fig, use_container_width=True, key="pie_gigante_v26")
-
-    monto_total = sum(st.session_state.montos_dis.values()) if sum(st.session_state.montos_dis.values()) > 0 else 1.0
-    peso_tsla = (st.session_state.montos_dis.get("TSLA", 0.0) / monto_total) * 100
-    peso_ko = (st.session_state.montos_dis.get("KO", 0.0) / monto_total) * 100
-
-    if peso_tsla > 35:
-        termometro_riesgo = "<span style='background-color:#b71c1c; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🔥 RIESGO ALTO</span>"
-        analisis_web_riesgo = "Tu portafolio refleja alta beta por sobreponderación en innovación tecnológica."
-        rec_operativa = "Sugerencia: Balancear utilidades hacia el búnker defensivo de Coca-Cola."
-    elif peso_ko > 40:
-        termometro_riesgo = "<span style='background-color:#1b5e20; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🛡️ PERFIL CONSERVADOR</span>"
-        analisis_web_riesgo = "Estructura ultra robusta anti-crisis."
-        rec_operativa = "Sugerencia: Mantener la reinversión constante de dividendos."
-    else:
-        termometro_riesgo = "<span style='background-color:#0d47a1; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>⚖️ PERFIL MODERADO</span>"
-        analisis_web_riesgo = "Composición balanceada entre índices, servicios y consumo masivo."
-        rec_operativa = "Sugerencia: Mantener la distribución macro actual."
-
-    st.markdown(f"""
-    <div style="background-color:#161a22; padding:10px; border-radius:6px; font-size:0.82rem; border:1px solid #232a38; color:white; margin-bottom: 15px; line-height:1.45;">
-        <b style="color:#2196f3; font-size:0.90rem;">📊 Análisis de Riesgo Profundo del Agente:</b><br><br>
-        • <b>Termómetro de Volatilidad:</b> {termometro_riesgo}<br><br>
-        • <b style="color:#00e676;">Perfil:</b> {analisis_web_riesgo}<br><br>
-        • <b style="color:#ffeb3b;">Dictamen Operativo:</b> {rec_operativa}
-    </div>
-    """, unsafe_allow_html=True)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
@@ -435,24 +324,24 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
-    st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control Compacta:</p>", unsafe_allow_html=True)
     st.table(df_matriz)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON LINK OFICIAL REPARADO (SINTAXIS OFICIAL YAHOO)
+# 9. CENTRAL DE NOTICIAS CON LINK OFICIAL DE YAHOO FINANCE CORREGIDO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
+    # URL oficial correcta para ir directo a la cotización y noticias en Yahoo Finance
+    url_segura_final = f"https://finance.yahoo.com/quote/{simbolo_limpio}"
 
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Yahoo Finance Oficial:</b> Pizarra oficial de cotizaciones históricas, cables macro, balances corporativos consolidados y gráficos de rendimiento en tiempo real.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Yahoo Finance Oficial:</b> Cotizaciones en vivo, flujos bursátiles, reportes y noticias corporativas recientes.
         <br>
-        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar en Yahoo Finance</a>
+        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para consultar noticias en Yahoo Finance</a>
     </div>
     """, unsafe_allow_html=True)
 
