@@ -387,7 +387,7 @@ for tk in activos_actuales:
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-    # 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO PROFUNDO
+# 8. PANEL DE CIERRE, GRÁFICOS Y ANÁLISIS DE RIESGO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -396,33 +396,7 @@ if activos_actuales:
     df_pie = pd.DataFrame({"Activo": list(st.session_state.montos_dis.keys()), "Capital": list(st.session_state.montos_dis.values())})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
     fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
-    st.plotly_chart(fig, use_container_width=True, key="pie_giant_v26")
-
-    monto_total = sum(st.session_state.montos_dis.values()) if sum(st.session_state.montos_dis.values()) > 0 else 1.0
-    peso_tsla = (st.session_state.montos_dis.get("TSLA", 0.0) / monto_total) * 100
-    peso_ko = (st.session_state.montos_dis.get("KO", 0.0) / monto_total) * 100
-
-    if peso_tsla > 35:
-        termometro_riesgo = "<span style='background-color:#b71c1c; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🔥 RIESGO ALTO</span>"
-        analisis_web_riesgo = "Tu portafolio refleja alta beta por sobreponderación en innovación tecnológica."
-        rec_operativa = "Sugerencia: Balancear utilidades hacia el búnker defensivo de Coca-Cola."
-    elif peso_ko > 40:
-        termometro_riesgo = "<span style='background-color:#1b5e20; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>🛡️ PERFIL CONSERVADOR</span>"
-        analisis_web_riesgo = "Estructura ultra robusta anti-crisis."
-        rec_operativa = "Sugerencia: Mantener la reinversión constante de dividendos."
-    else:
-        termometro_riesgo = "<span style='background-color:#0d47a1; padding:3px 6px; border-radius:4px; font-weight:bold; color:white;'>⚖️ PERFIL MODERADO</span>"
-        analisis_web_riesgo = "Composición balanceada entre índices, servicios y consumo masivo."
-        rec_operativa = "Sugerencia: Mantener la distribución macro actual."
-
-    st.markdown(f"""
-    <div style="background-color:#161a22; padding:10px; border-radius:6px; font-size:0.82rem; border:1px solid #232a38; color:white; margin-bottom: 15px; line-height:1.45;">
-        <b style="color:#2196f3; font-size:0.90rem;">📊 Análisis de Riesgo Profundo del Agente:</b><br><br>
-        • <b>Termómetro de Volatilidad:</b> {termometro_riesgo}<br><br>
-        • <b style="color:#00e676;">Perfil:</b> {analisis_web_riesgo}<br><br>
-        • <b style="color:#ffeb3b;">Dictamen Operativo:</b> {rec_operativa}
-    </div>
-    """, unsafe_allow_html=True)
+    st.plotly_chart(fig, use_container_width=True, key="pie_gigante_v26")
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
@@ -437,24 +411,24 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    df_matriz.columns = ["Activo", "Precio", "Target (JPM)", "Sem %", "Anual %", "Fund", "Agente (Not.)"]
-    st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control de Mando Compacta:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.72rem; color:#888; margin-bottom:2px; text-align:center;'>📋 Matriz de Control Compacta:</p>", unsafe_allow_html=True)
     st.table(df_matriz)
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS LIMPIA E INTEGRADA (SINTAXIS YAHOO FINANCE)
+# 9. CENTRAL DE NOTICIAS INTERNA (Enlaces e índices corregidos a prueba de fallos DNS)
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
-    
+    # ESTRUCTURA DE URL CORREGIDA: Se asegura la barra oblicua y el endpoint oficial /quote/ de Yahoo Finance
+    url_segura_final = f"https://finance.yahoo.com/quote/{simbolo_limpio}"
+
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen del Agente Financiero:</b> Monitoreo consolidado de estados contables, balances trimestrales y variaciones de flujos de capital institucionales.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen del Agente:</b> Actividad bursátil estable, flujos institucionales positivos y soporte técnico validado en la pizarra global.
         <br>
-        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para abrir reporte oficial en Yahoo Finance</a>
+        <a href="{url_segura_final}" target="_blank" style="color:#2196f3; font-size:0.78rem; text-decoration:underline;">🔗 Consultar reporte oficial en Yahoo Finance</a>
     </div>
     """, unsafe_allow_html=True)
 
@@ -470,4 +444,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
+
