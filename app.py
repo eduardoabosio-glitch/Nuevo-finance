@@ -205,7 +205,7 @@ MAPEO_CEDEARS_COMAFI = {
     "GE Vernova (Infraestructura Red)": {"orig": "GEV", "arg": "GEV.BA"},
     "Vale S.A. (Minería de Hierro)": {"orig": "VALE", "arg": "VALE.BA"},
     "Caterpillar Inc. (Maquinaria Pesada)": {"orig": "CAT", "arg": "CAT.BA"},
-    "Boeing Co. (Aeroespacial Comercial)": {"orig": "BA", "arg": "BA.BA"}
+    "Boeing Co. (Aeroespacial Commercial)": {"orig": "BA", "arg": "BA.BA"}
 }
 
 # MAPEO DE ACCIONES LOCALES DE RENTA VARIABLE ARGENTINA (BYMA COMPLETO)
@@ -285,7 +285,7 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         partes_lista = partes_raw.split("|")
-        # SE REPARAN LOS ÍNDICES DE EXTRACCIÓN DE TEXTO OBLIGATORIOS EN PYTHON
+        # SE REPARA EL EXTRAÍDO CON ÍNDICES DE ARREGLO RÍGIDOS
         ticker_origen_dinamico = partes_lista[0].replace("USA:", "").strip()
         ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
@@ -408,7 +408,7 @@ for tk in activos_actuales:
     elif tk_limpio_upper in ["AAPL", "AAPL.BA"]:
         noticias = f"Resumen del Agente: Apple opera firme con RSI en {datos_reales['rsi']}. Wall Street resalta la solidez contable frente a los costos globales de IA."
     elif tk_limpio_upper in ["KO", "KO.BA"]:
-        noticias = f"Resumen del Agente: Consumo masivo defensivo robusto. La paridad de Coca-Cola demuestra resiliencia operativa and un Beta de {datos_reales['beta']}."
+        noticias = f"Resumen del Agente: Consumo masivo defensivo robusto. La paridad de Coca-Cola demuestra resiliencia operativa y un Beta de {datos_reales['beta']}."
     elif "ALUA" in tk_limpio_upper:
         noticias = f"Resumen del Agente: Cotización de aluminio primario firme en ARS ${p_base:,.2f}. La demanda de cobertura local por cartera sostiene los pisos del canal."
     else:
