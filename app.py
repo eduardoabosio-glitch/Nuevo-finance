@@ -285,6 +285,7 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         partes_lista = partes_raw.split("|")
+        # SE REPARAN LOS ÍNDICES DE EXTRACCIÓN DE TEXTO OBLIGATORIOS EN PYTHON
         ticker_origen_dinamico = partes_lista[0].replace("USA:", "").strip()
         ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
@@ -370,7 +371,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
- for tk in activos_actuales:
+for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
     p_base = datos_reales["precio"]
@@ -407,7 +408,7 @@ lista_para_matriz_resumen = []
     elif tk_limpio_upper in ["AAPL", "AAPL.BA"]:
         noticias = f"Resumen del Agente: Apple opera firme con RSI en {datos_reales['rsi']}. Wall Street resalta la solidez contable frente a los costos globales de IA."
     elif tk_limpio_upper in ["KO", "KO.BA"]:
-        noticias = f"Resumen del Agente: Consumo masivo defensivo robusto. La paridad de Coca-Cola demuestra resiliencia operativa y un Beta de {datos_reales['beta']}."
+        noticias = f"Resumen del Agente: Consumo masivo defensivo robusto. La paridad de Coca-Cola demuestra resiliencia operativa and un Beta de {datos_reales['beta']}."
     elif "ALUA" in tk_limpio_upper:
         noticias = f"Resumen del Agente: Cotización de aluminio primario firme en ARS ${p_base:,.2f}. La demanda de cobertura local por cartera sostiene los pisos del canal."
     else:
@@ -453,7 +454,7 @@ lista_para_matriz_resumen = []
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
-# ==========================================
+    # ==========================================
 # 8. PANEL DE CIERRE, PORTFOLIO PIE CHART Y MATRIZ ADAPTABLE
 # ==========================================
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
