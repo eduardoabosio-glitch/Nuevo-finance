@@ -205,7 +205,7 @@ MAPEO_CEDEARS_COMAFI = {
     "GE Vernova (Infraestructura Red)": {"orig": "GEV", "arg": "GEV.BA"},
     "Vale S.A. (Minería de Hierro)": {"orig": "VALE", "arg": "VALE.BA"},
     "Caterpillar Inc. (Maquinaria Pesada)": {"orig": "CAT", "arg": "CAT.BA"},
-    "Boeing Co. (Aeroespacial Commercial)": {"orig": "BA", "arg": "BA.BA"}
+    "Boeing Co. (Aeroespacial Comercial)": {"orig": "BA", "arg": "BA.BA"}
 }
 
 # MAPEO DE ACCIONES LOCALES DE RENTA VARIABLE ARGENTINA (BYMA COMPLETO)
@@ -285,7 +285,7 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         partes_lista = partes_raw.split("|")
-        # SE REPARA EL EXTRAÍDO CON ÍNDICES DE ARREGLO RÍGIDOS
+        # SE REPARAN LOS ÍNDICES DE EXTRACCIÓN DE TEXTO PARA EXTRAER ELEMENTOS POR POSICIÓN
         ticker_origen_dinamico = partes_lista[0].replace("USA:", "").strip()
         ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
@@ -489,11 +489,15 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<hr style='margin:4px 0; border-color:#232a38;'>", unsafe_allow_html=True)
 
-# 9. CENTRAL DE NOTICIAS CON URLS TOTALMENTE REPARADAS
+# 9. CENTRAL DE NOTICIAS CON PARSEO DE URLS EXTRA SEGURO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 
 for simbolo in activos_actuales:
+    # SE AGREGA UNA PARSEADORA DE CADENA PARA SEPARAR EL TICKER SI QUEDÓ PEGADO A TEXTO EN LA CACHÉ
     simbolo_limpio = str(simbolo).strip().upper()
+    if "YAHOO.COM" in simbolo_limpio.lower():
+        simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
+    
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     
     if simbolo_limpio in ["SPY", "SPY.BA"]:
