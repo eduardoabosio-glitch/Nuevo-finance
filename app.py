@@ -49,9 +49,9 @@ div[data-testid="stHorizontalBlock"] > div { width: 50% !important; flex: 1 1 au
 
 div.stButton > button { height: 38px !important; font-size: 0.82rem !important; font-weight: bold !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; width: 100% !important; color: white !important; text-overflow: ellipsis !important; white-space: nowrap !important; overflow: hidden !important; }
 
-/* Forzado Estricto de Colores por ID para evitar grises de Streamlit */
-div.stButton > button[key*="insertar_usa"] { background-color: #2196f3 !important; color: white !important; font-weight: bold !important; }
-div.stButton > button[key*="insertar_byma"] { background-color: #00e676 !important; color: #161a22 !important; font-weight: bold !important; }
+/* Forzado Estricto de Colores usando selectores universales de Streamlit por posición */
+div[data-testid="stHorizontalBlock"] > div:nth-of-type(1) button { background-color: #2196f3 !important; color: white !important; font-weight: bold !important; }
+div[data-testid="stHorizontalBlock"] > div:nth-of-type(2) button { background-color: #00e676 !important; color: #161a22 !important; font-weight: bold !important; }
 div.stButton > button[key*="delete_btn"] { background-color: #f44336 !important; color: white !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -95,7 +95,7 @@ if 'precios_agente' not in st.session_state:
         "CEPU.BA": 1420.00, "GGAL.BA": 5200.00, "TXAR.BA": 920.00, "VIST": 52.30, "IBIT.BA": 7215.00
     }
 
-# MAPEO DE ETFs COMPLETOS CON SUS RESPECTIVOS TICKERS DE ARBITRAJE (ERROR 8)
+# MAPEO DE ETFs COMPLETOS CON SUS RESPECTIVOS TICKERS DE ARBITRAJE
 MAPEO_ETFS_COMAFI = {
     "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
     "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"},
@@ -155,7 +155,7 @@ MAPEO_ETFS_COMAFI = {
     "ProShares Short QQQ (Inverso QQQ)": {"orig": "PSQ", "arg": "PSQ.BA"},
     "iShares Barclays Capital VIX": {"orig": "VXX", "arg": "VXX.BA"}
 }
-# MAPEO COMPLETO DE ACCIONES CORPORATIVAS (CEDEARs COMPRENSIVOS - ERROR 8)
+# MAPEO COMPLETO DE ACCIONES CORPORATIVAS (CEDEARs COMPRENSIVOS)
 MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
@@ -299,14 +299,14 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     with col_izq_usa:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ Origen ]</p>", unsafe_allow_html=True)
         if ticker_origen_dinamico != "No Aplica":
-            if st.button(f"➕ {ticker_origen_dinamico}", key="btn_insertar_usa"):
+            if st.button(f"➕ {ticker_origen_dinamico}", key="insertar_usa"):
                 activo_a_cargar = ticker_origen_dinamico
         else:
             st.button("-", key="btn_usa_deshabilitado", disabled=True)
             
     with col_der_byma:
         st.markdown("<p style='font-size:0.75rem; color:#888; margin-bottom:2px; text-align:center;'>[ BYMA ]</p>", unsafe_allow_html=True)
-        if st.button(f"➕ {ticker_byma_dinamico}", key="btn_insertar_byma"):
+        if st.button(f"➕ {ticker_byma_dinamico}", key="insertar_byma"):
             activo_a_cargar = ticker_byma_dinamico
         
     if st.button("🧹 Limpiar Buscador [ + ]", key="btn_clear_buscador_top", use_container_width=True):
@@ -327,7 +327,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
+        def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA"]
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPFD", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO", "SUPV", "BYMA", "VALO", "LOMA", "MIRG", "CRES", "IRSA", "TECO2", "BHIP", "BOLT", "CADO", "CAPX", "CELU", "CGPA2", "CTIO", "CVH", "DGCU2", "FERR", "GCO", "HARG", "INVJ", "LEDE", "LONG", "MOLA", "MORI", "RIGO", "SAMU"]
@@ -358,7 +358,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             prob_sem = f"{int(50 + (rsi_val / 5))}%"
             prob_anu = "82%" if distancia_sma >= 0 else "73%"
             
-            # ─── LOGÍSTICA DE CONDICIÓN DE MONEDAS: Sincroniza los Targets de JPMorgan según origen de Yahoo ───
             valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 145.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "VIST": 60.00, "IBIT.BA": 7215.00, "IBIT": 46.00}
             target_price_base = valores_jpmorgan_reales.get(simbolo_ticket, valores_jpmorgan_reales.get(sigla_limpia, precio_actual * 1.1))
             simbolo_moneda_piso_techo = "ARS $" if (es_local_pure or es_cedear_local) else "USD $"
@@ -389,7 +388,6 @@ for tk in activos_actuales:
     nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
     op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
     
-    # ─── CORRECCIÓN DE LA PARIDAD MATEMÁTICA DE LA MATRIZ DE CONTROL ───
     if es_local_pure or es_cedear_local:
         precio_matriz_final = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         val_target_string = f"{p_target:,.2f}" if es_pesos else f"{p_target / VALOR_DOLAR_MEP:,.2f}"
@@ -420,7 +418,6 @@ for tk in activos_actuales:
             
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
-    # ─── CONVERSIÓN SIMÉTRICA SEGÚN ORIGEN DE VALOR EN YAHOO FINANCE ───
     if es_local_pure or es_cedear_local:
         p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
         t_mostrar_tarjeta = p_target if es_pesos else (p_target / VALOR_DOLAR_MEP)
@@ -431,7 +428,7 @@ for tk in activos_actuales:
     st.markdown(f'<div class="renglon-precio-unificado"><b>Precio de la Acción Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold; text-decoration: underline;">🎯 Precio Objetivo JPMorgan (Target Price):</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
     
-    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
+    with St.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
         st.markdown(f"• **RSI (14d):** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']} | **Vol:** {datos_reales['vol_rel']}")
     with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
         st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']} | **Beta:** {datos_reales['beta']}")
@@ -440,11 +437,9 @@ for tk in activos_actuales:
         
     st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias del Agente:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="btn-borrar">', unsafe_allow_html=True)
     if st.button("❌ Borrar", key=f"delete_btn_{tk_limpio_upper}"):
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
     
     monto_mostrar_box = monto_actual * factor_cambio if not (es_local_pure or es_cedear_local) or es_pesos else monto_actual
     texto_con_comillas = f'"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"'
@@ -499,8 +494,8 @@ st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     
-    # SOLUCIÓN COMPLETA DE LINKEO: Añade de manera limpia la barra y la ruta bursátil oficial de Yahoo
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
+    # CORRECCIÓN DE SINTAXIS: Se introduce ://yahoo.com de manera limpia y obligatoria
+    url_segura_final = f"https://://yahoo.com{simbolo_limpio}"
     
     if simbolo_limpio in ["SPY", "SPY.BA"]:
         dictamen_agente = "Tendencia de mercado sólida. Los flujos institucionales estables respaldan el canal técnico alcista."
