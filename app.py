@@ -447,6 +447,88 @@ patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
 
+activos_actuales = list(st.session_state.montos_dis.keys())
+patrimonio_total_usd = 0.0
+lista_para_matriz_resumen = []
+
+for tk in activos_actuales:
+    tk_limpio_upper = str(tk).strip().upper()
+    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
+    p_base = datos_reales["precio"]
+    p_target = datos_reales["target_usd"]
+    es_local_pure = datos_reales["es_local"]
+    es_cedear_local = datos_reales["es_cedear_local"]
+    monto_actual = st.session_state.montos_dis[tk]
+    
+    # SUMATORIA CORREGIDA DEL PATRIMONIO TOTAL USD/ARS
+    if es_local_pure or es_cedear_local: 
+        patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
+    else: 
+        patrimonio_total_usd += monto_actual
+    
+    nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
+    op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
+    
+    if es_local_pure or es_cedear_local:
+        precio_matriz_final = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        val_target_string = f"{p_target:,.2f}" if es_pesos else f"{p_target / VALOR_DOLAR_MEP:,.2f}"
+    else:
+        precio_matriz_final = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
+        val_target_string = f"{p_target * VALOR_DOLAR_MEP:,.2f}" if es_pesos else f"{p_target:,.2f}"
+
+    lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
+    
+    if tk_limpio_upper in ["SPY", "SPY.BA"]: noticias = f"Resumen: Tendencia macro stable sobre {p_base:,.2f} USD."
+    elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: noticias = f"Resumen: Oscilación {datos_reales['macd']} con volumen de {datos_reales['vol_rel']}."
+    elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: noticias = f"Resumen: Apple opera firme con RSI en {datos_reales['rsi']}."
+    elif tk_limpio_upper in ["KO", "KO.BA"]: noticias = f"Resumen: Consumo defensivo robusto con Beta de {datos_reales['beta']}."
+    else: noticias = f"Resumen: Consolidando en rango. Soporte localizado en {datos_reales['piso_a']}."
+
+    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
+    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
+    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
+    
+    if es_local_pure or es_cedear_local:
+        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        t_mostrar_tarjeta = p_target if es_pesos else (p_target / VALOR_DOLAR_MEP)
+    else:
+        p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
+        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
+
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    
+    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
+        st.markdown(f"• **RSI:** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']}")
+    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
+        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']}")
+    with st.expander(f"🔍 Análisis Fundamental: {nota_txt}", expanded=False):
+        st.markdown(f"• **P/E:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **Margen:** {datos_reales['margen']}")
+        
+    st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
+    
+    if st.button("❌ Borrar", key=f"delete_btn_{tk_limpio_upper}"):
+        if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
+        st.rerun()
+    
+    # CONTROL DE REGISTRO SEGURO CON FORMATO DE MILES PARA PANTALLAS MÓVILES
+    monto_mostrar_box = monto_actual * factor_cambio if not (es_local_pure or es_cedear_local) or es_pesos else monto_actual
+    texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
+    entrada_texto_usuario = st.text_input(f"Monto de Inversión ({tk_limpio_upper}):", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
+    
+    if entrada_texto_usuario != texto_con_comillas:
+        try:
+            limpio = entrada_texto_usuario.replace('"', '').replace('ARS', '').replace('USD', '').replace('$', '').replace(',', '').strip()
+            if limpio:
+                st.session_state.montos_dis[tk] = float(limpio) / factor_cambio if not (es_local_pure or es_cedear_local) or es_pesos else float(limpio)
+                st.rerun()
+        except: pass
+    st.markdown('</div>', unsafe_allow_html=True)
+
+patrimonio_mostrar = patrimonio_total_usd * factor_cambio
+texto_moneda_total = "ARS $" if es_pesos else "USD $"
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
+
 if activos_actuales:
     df_pie = pd.DataFrame({"Activo": [str(k).upper() for k in st.session_state.montos_dis.keys()], "Capital": [float(v) for v in st.session_state.montos_dis.values()]})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
@@ -472,4 +554,5 @@ for simbolo in activos_actuales:
     else: dictamen_agente = f"Análisis de portafolio en curso. Soporte técnico ubicado en {d_noticia['piso_a']}."
     
     st.markdown(f'<div class="caja-noticia-link">💡 <b>{simbolo_limpio}:</b> {dictamen_agente}</div>', unsafe_allow_html=True)
+
     
