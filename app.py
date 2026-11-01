@@ -273,9 +273,8 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         partes_lista = partes_raw.split("|")
-        ticker_origen_dinamico = partes_lista[0].strip()
-        ticker_byma_dinamico = partes_lista[1].strip()
-
+        ticker_origen_dinamico = partes_lista[0].replace("USA:", "").strip()
+        ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
@@ -310,7 +309,7 @@ st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fic
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "").strip().upper()
     
-    # 2. DETECCIÓN INTELIGENTE CORREGIDA (EVITA FALLAS EN LA MATRIZ DEL PATRIMONIO)
+    # DETECCIÓN AUTOMÁTICA FLUIDA QUE PREVIENE ERRORES DE SUMA EN LA MATRIZ
     es_cedear_local = simbolo_ticket.endswith(".BA") and any(sigla_limpia == d.get("orig") for d in MAPEO_CEDEARS_COMAFI.values())
     es_etf_local = simbolo_ticket.endswith(".BA") and any(sigla_limpia == d.get("orig") for d in MAPEO_ETFS_COMAFI.values())
     es_cedear_local = es_cedear_local or es_etf_local or (sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "NVDA"])
@@ -379,7 +378,7 @@ for tk in activos_actuales:
     es_cedear_local = datos_reales["es_cedear_local"]
     monto_actual = st.session_state.montos_dis[tk]
     
-    # 4. SUMATORIA RÍGIDA DE PATRIMONIO CONSOLIDADA
+    # SUMATORIA CORREGIDA DEL PATRIMONIO TOTAL USD/ARS
     if es_local_pure or es_cedear_local: 
         patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
     else: 
@@ -430,7 +429,7 @@ for tk in activos_actuales:
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
     
-    # 3. TEXT INPUT CON CONTROL DE MÁSCARA AUTOMÁTICA Y SOPORTE DE MILES PARA CELULAR
+    # CONTROL DE REGISTRO SEGURO CON FORMATO DE MILES PARA PANTALLAS MÓVILES
     monto_mostrar_box = monto_actual * factor_cambio if not (es_local_pure or es_cedear_local) or es_pesos else monto_actual
     texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
     entrada_texto_usuario = st.text_input(f"Monto de Inversión ({tk_limpio_upper}):", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
