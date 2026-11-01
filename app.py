@@ -498,7 +498,7 @@ for simbolo in activos_actuales:
     if "YAHOO.COM" in simbolo_limpio.lower():
         simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
     
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
+        url_segura_final = f"https://finance.yahoo.com/quote/{simbolo_limpio}"
     
     if simbolo_limpio in ["SPY", "SPY.BA"]:
         dictamen_agente = "Tendencia de mercado sólida. Los flujos institucionales estables respaldan el canal técnico alcista."
