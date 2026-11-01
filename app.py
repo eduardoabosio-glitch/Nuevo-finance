@@ -434,26 +434,33 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
+# 9. CENTRAL DE NOTICIAS CON GENERADOR DINÁMICO DE REPORTES
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
-    if "YAHOO.COM" in simbolo_limpio.lower(): simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
+    if "YAHOO.COM" in simbolo_limpio.lower(): 
+        simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
+    
+    # SE REPARTE EL COGNITIVO PARA CALCULAR LA DATA DENTRO DEL MENSAJE DEL LINK
+    d_noticia = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
+    
+    if simbolo_limpio in ["SPY", "SPY.BA"]:
+        dictamen_agente = f"Tendencia macro robusta sobre los {d_noticia['precio']:,.2f} USD. Los flujos institucionales estables sostienen la paridad."
+    elif simbolo_limpio in ["TSLA", "TSLA.BA"]:
+        dictamen_agente = f"Compresión y oscilación {d_noticia['macd']}. El volumen de operaciones acompaña la zona técnica actual de Tesla."
+    elif simbolo_limpio in ["AAPL", "AAPL.BA"]:
+        dictamen_agente = f"Apple opera firme con un RSI de {d_noticia['rsi']}. Wall Street resalta la solidez de sus balances frente al mercado."
+    elif simbolo_limpio in ["KO", "KO.BA"]:
+        dictamen_agente = f"Consumo masivo defensivo con Beta de {d_noticia['beta']}. Sostiene pisos de canal de manera óptima."
+    else:
+        dictamen_agente = f"Alerta de Agente: {simbolo_limpio} consolidando en rango. RSI técnico en {d_noticia['rsi']} y tendencia {d_noticia['dist_sma']}."
+
     url_segura_final = f"https://finance.yahoo.com/quote/{simbolo_limpio}"
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen Financiero:</b> Activo operando estable.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen del Agente Financiero:</b> {dictamen_agente}
         <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para abrir reporte oficial en Yahoo Finance</a>
     </div>
     """, unsafe_allow_html=True)
-
-st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
-    <div style="color:#888;">🏠<br>Inicio</div>
-    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
-    <div style="color:#888;">📊<br>Análisis</div>
-    <div style="color:#888;">💬<br>Chat</div>
-    <div style="color:#888;">👤<br>Perfil</div>
-</div>
-''', unsafe_allow_html=True)
     
