@@ -269,12 +269,13 @@ for n, d in sorted(MAPEO_ETFS_COMAFI.items()): sugerencias_buscador.append(f"ðŸ“
 seleccion_activo = st.selectbox("Buscador:", sugerencias_buscador, key=f"buscador_celular_v28_{st.session_state.reset_buscador}", label_visibility="collapsed")
 
 ticker_origen_dinamico, ticker_byma_dinamico = "", ""
+if seleccion_activo != "- Escribe o selecciona un activo -":
+    if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
         partes_lista = partes_raw.split("|")
         ticker_origen_dinamico = partes_lista[0].strip()
         ticker_byma_dinamico = partes_lista[1].strip()
 
-        ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
