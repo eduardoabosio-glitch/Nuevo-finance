@@ -222,7 +222,7 @@ if 'precios_agente' not in st.session_state:
     "Ternium Argentina (Siderurgia Acero)": "TXAR.BA",
     "Aluar (Aluminio Primario BYMA)": "ALUA.BA",
     "Loma Negra (Cemento y Cal)": "LOMA.BA",
-    "Mirgor S.A. (Componentes Retail)": "MIRG.BA",
+    "Mirgor S.A. Componentes Retail": "MIRG.BA",
     "Cresud S.A. (Negocio Agropecuario)": "CRES.BA",
     "IRSA Inversiones y Representaciones": "IRSA.BA",
     "Telecom Argentina (Conectividad)": "TECO2.BA",
