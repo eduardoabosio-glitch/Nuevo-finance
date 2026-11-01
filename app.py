@@ -438,7 +438,7 @@ st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     if "YAHOO.COM" in simbolo_limpio.lower(): simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
+    url_segura_final = f"https://finance.yahoo.com/quote/{simbolo_limpio}"
     st.markdown(f"""
     <div class="caja-noticia-link">
         <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen Financiero:</b> Activo operando estable.
