@@ -97,28 +97,6 @@ if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
-
-# --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
-st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
-for simbolo in activos_actuales:
-    simbolo_limpio = str(simbolo).strip().upper()
-    if "YAHOO.COM" in simbolo_limpio.lower(): 
-        simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
-    
-    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
-    datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
-    
-    st.markdown(f"""
-    <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Reporte Quant Real-Time:</b> Distancia a la Media Móvil (SMA) de {datos_tk['dist_sma']} bajo un rango de volatilidad {datos_tk['vol_rel']}.
-        <br>
-        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para abrir reporte oficial en Yahoo Finance</a>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center">
-''')
     # 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPO REAL
 def agente_calcular_mep_bonos_real():
     mep_ultimo_cierre_fijo = 1568.50
@@ -154,166 +132,136 @@ if 'precios_agente' not in st.session_state:
     }
 
 MAPEO_ETFS_COMAFI = {
-    "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
-    "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"},
-    "iShares Core S&P 500 (Bajo Costo)": {"orig": "IVV", "arg": "IVV.BA"},
-    "SPDR Dow Jones Industrial Average": {"orig": "DIA", "arg": "DIA.BA"},
-    "iShares Russell 2000 (Small Caps)": {"orig": "IWM", "arg": "IWM.BA"},
-    "Invesco S&P 500 Equal Weight": {"orig": "RSP", "arg": "RSP.BA"},
-    "iShares MSCI ACWI (Mundo Global)": {"orig": "ACWI", "arg": "ACWI.BA"},
-    "iShares Core MSCI World (Desarrollados)": {"orig": "IWDA", "arg": "IWDA.BA"},
-    "iShares MSCI EFA (Excluye EE.UU.)": {"orig": "EFA", "arg": "EFA.BA"},
-    "Vanguard FTSE Developed Markets": {"orig": "VEA", "arg": "VEA.BA"},
-    "iShares Core MSCI Europe (Europa)": {"orig": "IEUR", "arg": "IEUR.BA"},
-    "iShares Latin America 40 (Latam)": {"orig": "ILF", "arg": "ILF.BA"},
-    "iShares Core MSCI Emerging Markets": {"orig": "IEMG", "arg": "IEMG.BA"},
-    "iShares MSCI Emerging Markets": {"orig": "EEM", "arg": "EEM.BA"},
-    "iShares China Large-Cap (China)": {"orig": "FXI", "arg": "FXI.BA"},
-    "iShares MSCI Brazil (Bovespa)": {"orig": "EWZ", "arg": "EWZ.BA"},
-    "iShares MSCI Japan (Tokio)": {"orig": "EWJ", "arg": "EWJ.BA"},
-    "iShares MSCI South Korea (Corea)": {"orig": "EWY", "arg": "EWY.BA"},
-    "JPMorgan BetaBuilders Canada": {"orig": "BBCA", "arg": "BBCA.BA"},
-    "JPMorgan Developed ex-US": {"orig": "BBAX", "arg": "BBAX.BA"},
-    "Technology Select Sector SPDR": {"orig": "XLK", "arg": "XLK.BA"},
-    "Financial Select Sector SPDR": {"orig": "XLF", "arg": "XLF.BA"},
-    "Energy Select Sector SPDR": {"orig": "XLE", "arg": "XLE.BA"},
-    "Health Care Select Sector SPDR": {"orig": "XLV", "arg": "XLV.BA"},
-    "Consumer Discretionary SPDR": {"orig": "XLY", "arg": "XLY.BA"},
-    "Consumer Staples Select SPDR": {"orig": "XLP", "arg": "XLP.BA"},
-    "Industrial Select Sector SPDR": {"orig": "XLI", "arg": "XLI.BA"},
-    "Materials Select Sector SPDR": {"orig": "XLB", "arg": "XLB.BA"},
-    "Real Estate Select Sector SPDR": {"orig": "XLRE", "arg": "XLRE.BA"},
-    "Utilities Select Sector SPDR": {"orig": "XLU", "arg": "XLU.BA"},
-    "VanEck Semiconductor (Chips IA)": {"orig": "SMH", "arg": "SMH.BA"},
-    "First Trust Cybersecurity (Ciber)": {"orig": "CIBR", "arg": "CIBR.BA"},
-    "iShares U.S. Aerospace & Defense": {"orig": "ITA", "arg": "ITA.BA"},
-    "iShares Biotechnology (Biotech)": {"orig": "IBB", "arg": "IBB.BA"},
-    "Ark Innovation ETF (Cathie Wood)": {"orig": "ARKK", "arg": "ARKK.BA"},
-    "SPDR Gold Shares (Oro Físico)": {"orig": "GLD", "arg": "GLD.BA"},
-    "iShares Silver Trust (Plata Física)": {"orig": "SLV", "arg": "SLV.BA"},
-    "iShares Bitcoin Trust (Spot BTC)": {"orig": "IBIT", "arg": "IBIT.BA"},
-    "iShares Ethereum Trust (Spot ETH)": {"orig": "ETHA", "arg": "ETHA.BA"},
-    "United States Oil Fund (Petróleo)": {"orig": "USO", "arg": "USO.BA"},
-    "Global X Uranium (Uranio)": {"orig": "URA", "arg": "URA.BA"},
-    "Global X Copper Miners (Cobre)": {"orig": "COPX", "arg": "COPX.BA"},
-    "SPDR S&P Metals & Mining (Minería)": {"orig": "XME", "arg": "XME.BA"},
-    "iShares Global Clean Energy": {"orig": "ICLN", "arg": "ICLN.BA"},
-    "iShares S&P GSCI Commodity Trust": {"orig": "GSG", "arg": "GSG.BA"},
-    "Teucrium Corn Fund (Maíz)": {"orig": "CORN", "arg": "CORN.BA"},
-    "Teucrium Soybean Fund (Soja)": {"orig": "SOYB", "arg": "SOYB.BA"},
-    "Vanguard Dividend Appreciation": {"orig": "VIG", "arg": "VIG.BA"},
-    "Invesco S&P 500 Quality (Calidad)": {"orig": "SPHQ", "arg": "SPHQ.BA"},
-    "iShares S&P 500 Growth (Crecimiento)": {"orig": "IVW", "arg": "IVW.BA"},
-    "iShares S&P 500 Value (Valor)": {"orig": "IVE", "arg": "IVE.BA"},
-    "iShares MSCI USA ESG Aware": {"orig": "ESGU", "arg": "ESGU.BA"},
-    "Direxion Daily S&P 500 Bull 3X": {"orig": "SPXL", "arg": "SPXL.BA"},
-    "ProShares UltraPro QQQ 3X": {"orig": "TQQQ", "arg": "TQQQ.BA"},
-    "ProShares Short S&P 500 (Inverso)": {"orig": "SH", "arg": "SH.BA"},
-    "ProShares Short QQQ (Inverso QQQ)": {"orig": "PSQ", "arg": "PSQ.BA"},
-    "iShares Barclays Capital VIX": {"orig": "VXX", "arg": "VXX.BA"}
+    "SPDR S&P 500": {"orig": "SPY", "arg": "SPY.BA"},
+    "Invesco QQQ": {"orig": "QQQ", "arg": "QQQ.BA"},
+    "iShares Core S&P 500": {"orig": "IVV", "arg": "IVV.BA"},
+    "SPDR Dow Jones": {"orig": "DIA", "arg": "DIA.BA"},
+    "iShares Russell 2000": {"orig": "IWM", "arg": "IWM.BA"},
+    "Invesco S&P 500 Equal": {"orig": "RSP", "arg": "RSP.BA"},
+    "iShares MSCI ACWI": {"orig": "ACWI", "arg": "ACWI.BA"},
+    "iShares Core MSCI World": {"orig": "IWDA", "arg": "IWDA.BA"},
+    "iShares MSCI EFA": {"orig": "EFA", "arg": "EFA.BA"},
+    "Vanguard FTSE Dev": {"orig": "VEA", "arg": "VEA.BA"},
+    "iShares Core Europe": {"orig": "IEUR", "arg": "IEUR.BA"},
+    "iShares Latam 40": {"orig": "ILF", "arg": "ILF.BA"},
+    "iShares Core Emerging": {"orig": "IEMG", "arg": "IEMG.BA"},
+    "iShares MSCI Emerging": {"orig": "EEM", "arg": "EEM.BA"},
+    "iShares China Large": {"orig": "FXI", "arg": "FXI.BA"},
+    "iShares MSCI Brazil": {"orig": "EWZ", "arg": "EWZ.BA"},
+    "iShares MSCI Japan": {"orig": "EWJ", "arg": "EWJ.BA"},
+    "iShares South Korea": {"orig": "EWY", "arg": "EWY.BA"},
+    "JPMorgan Canada": {"orig": "BBCA", "arg": "BBCA.BA"},
+    "JPMorgan Dev ex-US": {"orig": "BBAX", "arg": "BBAX.BA"},
+    "Tech Sector SPDR": {"orig": "XLK", "arg": "XLK.BA"},
+    "Financial SPDR": {"orig": "XLF", "arg": "XLF.BA"},
+    "Energy SPDR": {"orig": "XLE", "arg": "XLE.BA"},
+    "Health Care SPDR": {"orig": "XLV", "arg": "XLV.BA"},
+    "Consumer Discr SPDR": {"orig": "XLY", "arg": "XLY.BA"},
+    "Consumer Staples SPDR": {"orig": "XLP", "arg": "XLP.BA"},
+    "Industrial SPDR": {"orig": "XLI", "arg": "XLI.BA"},
+    "Materials SPDR": {"orig": "XLB", "arg": "XLB.BA"},
+    "Real Estate SPDR": {"orig": "XLRE", "arg": "XLRE.BA"},
+    "Utilities SPDR": {"orig": "XLU", "arg": "XLU.BA"},
+    "VanEck Semiconductor": {"orig": "SMH", "arg": "SMH.BA"},
+    "First Trust Cyber": {"orig": "CIBR", "arg": "CIBR.BA"},
+    "iShares Aerospace": {"orig": "ITA", "arg": "ITA.BA"},
+    "iShares Biotech": {"orig": "IBB", "arg": "IBB.BA"},
+    "Ark Innovation": {"orig": "ARKK", "arg": "ARKK.BA"},
+    "SPDR Gold Shares": {"orig": "GLD", "arg": "GLD.BA"},
+    "iShares Silver Trust": {"orig": "SLV", "arg": "SLV.BA"},
+    "iShares Bitcoin Trust": {"orig": "IBIT", "arg": "IBIT.BA"},
+    "iShares Ethereum Trust": {"orig": "ETHA", "arg": "ETHA.BA"},
+    "US Oil Fund": {"orig": "USO", "arg": "USO.BA"},
+    "Global X Uranium": {"orig": "URA", "arg": "URA.BA"},
+    "Global X Copper": {"orig": "COPX", "arg": "COPX.BA"},
+    "SPDR Metals & Mining": {"orig": "XME", "arg": "XME.BA"},
+    "iShares Clean Energy": {"orig": "ICLN", "arg": "ICLN.BA"},
+    "iShares Commodity": {"orig": "GSG", "arg": "GSG.BA"},
+    "Teucrium Corn Fund": {"orig": "CORN", "arg": "CORN.BA"},
+    "Teucrium Soybean": {"orig": "SOYB", "arg": "SOYB.BA"},
+    "Vanguard Dividend": {"orig": "VIG", "arg": "VIG.BA"},
+    "Invesco S&P Quality": {"orig": "SPHQ", "arg": "SPHQ.BA"},
+    "iShares S&P Growth": {"orig": "IVW", "arg": "IVW.BA"},
+    "iShares S&P Value": {"orig": "IVE", "arg": "IVE.BA"},
+    "iShares USA ESG": {"orig": "ESGU", "arg": "ESGU.BA"},
+    "Direxion S&P Bull 3X": {"orig": "SPXL", "arg": "SPXL.BA"},
+    "ProShares QQQ 3X": {"orig": "TQQQ", "arg": "TQQQ.BA"},
+    "ProShares Short S&P": {"orig": "SH", "arg": "SH.BA"},
+    "ProShares Short QQQ": {"orig": "PSQ", "arg": "PSQ.BA"},
+    "iShares Barclays VIX": {"orig": "VXX", "arg": "VXX.BA"}
 }
-    MAPEO_CEDEARS_COMAFI = {
-    "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
-    "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
-    "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
-    "Alphabet Inc. (Google Search)": {"orig": "GOOGL", "arg": "GOOGL.BA"},
-    "Meta Platforms (Facebook/Instagram)": {"orig": "META", "arg": "META.BA"},
-    "Advanced Micro Devices (AMD)": {"orig": "AMD", "arg": "AMD.BA"},
-    "Broadcom Inc. (Conectividad)": {"orig": "AVGO", "arg": "AVGO.BA"},
-    "Taiwan Semiconductor Manufacturing": {"orig": "TSM", "arg": "TSM.BA"},
-    "ASML Holding (Fotolitografía)": {"orig": "ASML", "arg": "ASML.BA"},
-    "Salesforce Inc. (CRM Cloud)": {"orig": "CRM", "arg": "CRM.BA"},
-    "Dell Technologies (Servidores IA)": {"orig": "DELL", "arg": "DELL.BA"},
-    "KLA Corporation (Metrología Chips)": {"orig": "KLAC", "arg": "KLAC.BA"},
-    "Amazon Com (Comercio Electrónico)": {"orig": "AMZN", "arg": "AMZN.BA"},
-    "MercadoLibre Inc. (E-Commerce Latam)": {"orig": "MELI", "arg": "MELI.BA"},
-    "Alibaba Group (E-Commerce China)": {"orig": "BABA", "arg": "BABA.BA"},
-    "Netflix Inc. (Streaming Global)": {"orig": "NFLX", "arg": "NFLX.BA"},
-    "The Walt Disney Company": {"orig": "DIS", "arg": "DIS.BA"},
-    "Tesla Inc. (Autos Eléctricos)": {"orig": "TSLA", "arg": "TSLA.BA"},
-    "Nike Inc. (Indumentaria)": {"orig": "NKE", "arg": "NKE.BA"},
-    "Starbucks Corp. (Cafeterías)": {"orig": "SBUX", "arg": "SBUX.BA"},
-    "Booking Holdings (Turismo Online)": {"orig": "BKNG", "arg": "BKNG.BA"},
-    "Visa Inc. (Procesamiento Pagos)": {"orig": "V", "arg": "V.BA"},
-    "Mastercard Inc. (Pagos Globales)": {"orig": "MA", "arg": "MA.BA"},
-    "JPMorgan Chase & Co. (Banca)": {"orig": "JPM", "arg": "JPM.BA"},
-    "Bank of America (Corporativo)": {"orig": "BAC", "arg": "BAC.BA"},
-    "Morgan Stanley (Banca Inversión)": {"orig": "MS", "arg": "MS.BA"},
-    "Nu Holdings / Nubank (Fintech)": {"orig": "NU", "arg": "NU.BA"},
-    "Interactive Brokers (Corretaje)": {"orig": "IBKR", "arg": "IBKR.BA"},
-    "Berkshire Hathaway (Warren Buffett)": {"orig": "BRK.B", "arg": "BRK.B.BA"},
-    "PayPal Holdings (Pagos Digitales)": {"orig": "PYPL", "arg": "PYPL.BA"},
-    "Coca-Cola Co. (Consumo Defensivo)": {"orig": "KO", "arg": "KO.BA"},
-    "PepsiCo Inc. (Alimentos y Bebidas)": {"orig": "PEP", "arg": "PEP.BA"},
-    "Walmart Inc. (Retail Supermercados)": {"orig": "WMT", "arg": "WMT.BA"},
-    "Procter & Gamble (Higiene Masiva)": {"orig": "PG", "arg": "PG.BA"},
-    "Philip Morris International": {"orig": "PM", "arg": "PM.BA"},
-    "Ambev S.A. (Bebidas Cervecería)": {"orig": "ABEV", "arg": "ABEV.BA"},
-    "Pfizer Inc. (Farmacéutica Vacunas)": {"orig": "PFE", "arg": "PFE.BA"},
-    "Johnson & Johnson (Salud Humana)": {"orig": "JNJ", "arg": "JNJ.BA"},
-    "Eli Lilly & Co. (Soluciones Médicas)": {"orig": "LLY", "arg": "LLY.BA"},
-    "AbbVie Inc. (Inmunología Médica)": {"orig": "ABBV", "arg": "ABBV.BA"},
-    "Merck & Co. (Tratamientos Clínicos)": {"orig": "MRK", "arg": "MRK.BA"},
-    "Amgen Inc. (Biotecnología)": {"orig": "AMGN", "arg": "AMGN.BA"},
-    "Exxon Mobil Corp. (Petróleo Gas)": {"orig": "XOM", "arg": "XOM.BA"},
-    "Chevron Corp. (Energía Integrada)": {"orig": "CVX", "arg": "CVX.BA"},
-    "Vista Energy (Vaca Muerta ADR)": {"orig": "VIST", "arg": "VIST.BA"},
-    "GE Vernova (Infraestructura Red)": {"orig": "GEV", "arg": "GEV.BA"},
-    "Vale S.A. (Minería de Hierro)": {"orig": "VALE", "arg": "VALE.BA"},
-    "Caterpillar Inc. (Maquinaria Pesada)": {"orig": "CAT", "arg": "CAT.BA"},
-    "Boeing Co. (Aeroespacial Comercial)": {"orig": "BA", "arg": "BA.BA"},
-    "Arcos Dorados (McDonald's Latam)": {"orig": "ARCO", "arg": "ARCO.BA"},
-    "Ferrari N.V. (Superdeportivos)": {"orig": "RACE", "arg": "RACE.BA"},
-    "LVMH Moët Hennessy Louis Vuitton": {"orig": "MC.PA", "arg": "LVMH.BA"}
+MAPEO_CEDEARS_COMAFI = {
+    "Nvidia": {"orig": "NVDA", "arg": "NVDA.BA"},
+    "Apple": {"orig": "AAPL", "arg": "AAPL.BA"},
+    "Microsoft": {"orig": "MSFT", "arg": "MSFT.BA"},
+    "Alphabet": {"orig": "GOOGL", "arg": "GOOGL.BA"},
+    "Meta": {"orig": "META", "arg": "META.BA"},
+    "AMD": {"orig": "AMD", "arg": "AMD.BA"},
+    "Broadcom": {"orig": "AVGO", "arg": "AVGO.BA"},
+    "TSMC": {"orig": "TSM", "arg": "TSM.BA"},
+    "ASML": {"orig": "ASML", "arg": "ASML.BA"},
+    "Salesforce": {"orig": "CRM", "arg": "CRM.BA"},
+    "Dell": {"orig": "DELL", "arg": "DELL.BA"},
+    "KLA Corp": {"orig": "KLAC", "arg": "KLAC.BA"},
+    "Amazon": {"orig": "AMZN", "arg": "AMZN.BA"},
+    "MercadoLibre": {"orig": "MELI", "arg": "MELI.BA"},
+    "Alibaba": {"orig": "BABA", "arg": "BABA.BA"},
+    "Netflix": {"orig": "NFLX", "arg": "NFLX.BA"},
+    "Disney": {"orig": "DIS", "arg": "DIS.BA"},
+    "Tesla": {"orig": "TSLA", "arg": "TSLA.BA"},
+    "Nike": {"orig": "NKE", "arg": "NKE.BA"},
+    "Starbucks": {"orig": "SBUX", "arg": "SBUX.BA"},
+    "Booking": {"orig": "BKNG", "arg": "BKNG.BA"},
+    "Visa": {"orig": "V", "arg": "V.BA"},
+    "Mastercard": {"orig": "MA", "arg": "MA.BA"},
+    "JPMorgan Chase": {"orig": "JPM", "arg": "JPM.BA"},
+    "Bank of America": {"orig": "BAC", "arg": "BAC.BA"},
+    "Morgan Stanley": {"orig": "MS", "arg": "MS.BA"},
+    "Nubank": {"orig": "NU", "arg": "NU.BA"},
+    "Interactive Brokers": {"orig": "IBKR", "arg": "IBKR.BA"},
+    "Berkshire Hathaway": {"orig": "BRK.B", "arg": "BRK.B.BA"},
+    "PayPal": {"orig": "PYPL", "arg": "PYPL.BA"},
+    "Coca-Cola": {"orig": "KO", "arg": "KO.BA"},
+    "PepsiCo": {"orig": "PEP", "arg": "PEP.BA"},
+    "Walmart": {"orig": "WMT", "arg": "WMT.BA"},
+    "Procter & Gamble": {"orig": "PG", "arg": "PG.BA"},
+    "Philip Morris": {"orig": "PM", "arg": "PM.BA"},
+    "Ambev": {"orig": "ABEV", "arg": "ABEV.BA"},
+    "Pfizer": {"orig": "PFE", "arg": "PFE.BA"},
+    "Johnson & Johnson": {"orig": "JNJ", "arg": "JNJ.BA"},
+    "Eli Lilly": {"orig": "LLY", "arg": "LLY.BA"},
+    "AbbVie": {"orig": "ABBV", "arg": "ABBV.BA"},
+    "Merck": {"orig": "MRK", "arg": "MRK.BA"},
+    "Amgen": {"orig": "AMGN", "arg": "AMGN.BA"},
+    "Exxon Mobil": {"orig": "XOM", "arg": "XOM.BA"},
+    "Chevron": {"orig": "CVX", "arg": "CVX.BA"},
+    "Vista Energy": {"orig": "VIST", "arg": "VIST.BA"},
+    "GE Vernova": {"orig": "GEV", "arg": "GEV.BA"},
+    "Vale": {"orig": "VALE", "arg": "VALE.BA"},
+    "Caterpillar": {"orig": "CAT", "arg": "CAT.BA"},
+    "Boeing": {"orig": "BA", "arg": "BA.BA"},
+    "Arcos Dorados": {"orig": "ARCO", "arg": "ARCO.BA"},
+    "Ferrari": {"orig": "RACE", "arg": "RACE.BA"},
+    "LVMH": {"orig": "MC.PA", "arg": "LVMH.BA"}
 }
-    MAPEO_ACCIONES_RAVA = {
-    "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
-    "Pampa Energía (Líder Energético)": "PAMP.BA",
-    "Central Puerto (Generación Eléctrica)": "CEPU.BA",
-    "Transportadora Gas del Sur (TGS)": "TGSU2.BA",
-    "Transportadora Gas del Norte (TGN)": "TGNO4.BA",
-    "Edenor S.A. (Distribución Eléctrica)": "EDN.BA",
-    "Transener (Líder de Alta Tensión)": "TRAN.BA",
-    "Grupo Financiero Galicia (Banca)": "GGAL.BA",
-    "Banco Macro (Entidad Interior)": "BMA.BA",
-    "BBVA Banco Francés S.A.": "BBAR.BA",
-    "Grupo Supervielle (Servicios)": "SUPV.BA",
-    "Bolsas y Mercados Argentinos": "BYMA.BA",
-    "Banco de Valores (Fideicomisos)": "VALO.BA",
-    "Ternium Argentina (Siderurgia Acero)": "TXAR.BA",
-    "Aluar (Aluminio Primario BYMA)": "ALUA.BA",
-    "Loma Negra (Cemento y Cal)": "LOMA.BA",
-    "Mirgor S.A. (Componentes Retail)": "MIRG.BA",
-    "Cresud S.A. (Negocio Agropecuario)": "CRES.BA",
-    "IRSA Inversiones y Representaciones": "IRSA.BA",
-    "Telecom Argentina (Conectividad)": "TECO2.BA",
-    "Agrometal (Maquinaria Sembradoras)": "AGRO.BA",
-    "Autopistas del Sol (Concesión Vial)": "AUSO.BA",
-    "Banco Hipotecario S.A.": "BHIP.BA",
-    "Boldt S.A. (Sistemas Entretenimiento)": "BOLT.BA",
-    "Carlos Casado S.A. (Agro Histórico)": "CADO.BA",
-    "Capex (Hidrocarburos y Renovables)": "CAPX.BA",
-    "Celulosa Argentina (Papel Forestal)": "CELU.BA",
-    "Camuzzi Gas Pampeana (Distribución)": "CGPA2.BA",
-    "Sociedad Comercial del Plata (Holding)": "COME.BA",
-    "Consultatio (Desarrollos Premium)": "CTIO.BA",
-    "Cablevisión Holding": "CVH.BA",
-    "Distribuidora de Gas Cuyana": "DGCU2.BA",
-    "Ferrum S.A. (Sanitarios Cerámica)": "FERR.BA",
-    "Grupo Concesionario del Oeste": "GCO.BA",
-    "Havanna S.A. (Cafeterías Alfajores)": "HAVA.BA",
-    "Holcim Argentina (Cemento Hormigón)": "HARG.BA",
-    "Inversora Juramento (Ganadería)": "INVJ.BA",
-    "Ledesma S.A. (Azúcar Agroindustria)": "LEDE.BA",
-    "Longvie S.A. (Electrodomésticos)": "LONG.BA",
-    "Molinos Agro (Exportación Cereales)": "MOLA.BA",
-    "Molinos Río de la Plata (Alimentos)": "MOLI.BA",
-    "Morixe Hermanos (Harinas Derivados)": "MORI.BA",
-    "Rigolleau S.A. (Envases Vidrio)": "RIGO.BA",
-    "San Miguel S.A. (Citricola Export)": "SAMU.BA",
-    "Molinos Juan Semino (Almidones)": "SEMI.BA"
+MAPEO_ACCIONES_RAVA = {
+    "YPF": "YPFD.BA", "Pampa Energia": "PAMP.BA", "Central Puerto": "CEPU.BA",
+    "TGS": "TGSU2.BA", "TGN": "TGNO4.BA", "Edenor": "EDN.BA", "Transener": "TRAN.BA",
+    "Galicia": "GGAL.BA", "Banco Macro": "BMA.BA", "BBVA Frances": "BBAR.BA",
+    "Supervielle": "SUPV.BA", "BYMA": "BYMA.BA", "Banco Valores": "VALO.BA",
+    "Ternium": "TXAR.BA", "Aluar": "ALUA.BA", "Loma Negra": "LOMA.BA",
+    "Mirgor": "MIRG.BA", "Cresud": "CRES.BA", "IRSA": "IRSA.BA",
+    "Telecom": "TECO2.BA", "Agrometal": "AGRO.BA", "Autopistas del Sol": "AUSO.BA",
+    "Banco Hipotecario": "BHIP.BA", "Boldt": "BOLT.BA", "Carlos Casado": "CADO.BA",
+    "Capex": "CAPX.BA", "Celulosa": "CELU.BA", "Camuzzi Pampeana": "CGPA2.BA",
+    "Comercial del Plata": "COME.BA", "Consultatio": "CTIO.BA", "Cablevision": "CVH.BA",
+    "Gas Cuyana": "DGCU2.BA", "Ferrum": "FERR.BA", "Concesionario Oeste": "GCO.BA",
+    "Havanna": "HAVA.BA", "Holcim": "HARG.BA", "Inversora Juramento": "INVJ.BA",
+    "Ledesma": "LEDE.BA", "Longvie": "LONG.BA", "Molinos Agro": "MOLA.BA",
+    "Molinos Rio Plata": "MOLI.BA", "Morixe": "MORI.BA", "Rigolleau": "RIGO.BA",
+    "San Miguel": "SAMU.BA", "Juan Semino": "SEMI.BA"
 }
-    if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
+if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
@@ -366,10 +314,10 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-    def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
+def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "").strip().upper()
     
-    # LISTA DE RESPALDO QUE INCLUYE NVDA EXPLÍCITAMENTE
+    # LISTA DE RESPALDO ACTUALIZADA CON LOS NUEVOS TICKERS INTERNACIONALES
     lista_cedears_validos = ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA", "AUSO", "ARCO", "RACE", "MC.PA"]
     
     es_cedear_local = (simbolo_ticket.endswith(".BA") and sigla_limpia in lista_cedears_validos) or (sigla_limpia in ["NVDA.BA", "AAPL.BA", "TSLA.BA", "SPY.BA", "KO.BA", "ARCO.BA", "RACE.BA", "LVMH.BA"])
@@ -424,13 +372,14 @@ st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fic
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-    # --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
+# --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     if "YAHOO.COM" in simbolo_limpio.lower(): 
         simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
     
+    # URL Corregida nativa para evitar fallas o redirecciones
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
     
