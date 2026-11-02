@@ -97,7 +97,29 @@ if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
-  # 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPO REAL
+
+# --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
+st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
+for simbolo in activos_actuales:
+    simbolo_limpio = str(simbolo).strip().upper()
+    if "YAHOO.COM" in simbolo_limpio.lower(): 
+        simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
+    
+    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
+    datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
+    
+    st.markdown(f"""
+    <div class="caja-noticia-link">
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Reporte Quant Real-Time:</b> Distancia a la Media Móvil (SMA) de {datos_tk['dist_sma']} bajo un rango de volatilidad {datos_tk['vol_rel']}.
+        <br>
+        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para abrir reporte oficial en Yahoo Finance</a>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown('''
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center">
+''')
+    # 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPO REAL
 def agente_calcular_mep_bonos_real():
     mep_ultimo_cierre_fijo = 1568.50
     try:
@@ -189,8 +211,8 @@ MAPEO_ETFS_COMAFI = {
     "ProShares Short S&P 500 (Inverso)": {"orig": "SH", "arg": "SH.BA"},
     "ProShares Short QQQ (Inverso QQQ)": {"orig": "PSQ", "arg": "PSQ.BA"},
     "iShares Barclays Capital VIX": {"orig": "VXX", "arg": "VXX.BA"}
-    }
-MAPEO_CEDEARS_COMAFI = {
+}
+    MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
     "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
@@ -244,7 +266,7 @@ MAPEO_CEDEARS_COMAFI = {
     "Ferrari N.V. (Superdeportivos)": {"orig": "RACE", "arg": "RACE.BA"},
     "LVMH Moët Hennessy Louis Vuitton": {"orig": "MC.PA", "arg": "LVMH.BA"}
 }
-MAPEO_ACCIONES_RAVA = {
+    MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
     "Pampa Energía (Líder Energético)": "PAMP.BA",
     "Central Puerto (Generación Eléctrica)": "CEPU.BA",
@@ -291,7 +313,7 @@ MAPEO_ACCIONES_RAVA = {
     "San Miguel S.A. (Citricola Export)": "SAMU.BA",
     "Molinos Juan Semino (Almidones)": "SEMI.BA"
 }
-if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
+    if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
@@ -344,7 +366,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
+    def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "").strip().upper()
     
     # LISTA DE RESPALDO QUE INCLUYE NVDA EXPLÍCITAMENTE
@@ -402,14 +424,13 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-# --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
+    # --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     if "YAHOO.COM" in simbolo_limpio.lower(): 
         simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
     
-    # URL Corregida nativa para evitar fallas o redirecciones
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
     
