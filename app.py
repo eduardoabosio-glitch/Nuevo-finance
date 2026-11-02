@@ -1,68 +1,103 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import requests
-import yfinance as yf
-import numpy as np
-import datetime
+for tk in activos_actuales:
+    tk_limpio_upper = str(tk).strip().upper()
+    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
+    p_base = datos_reales["precio"]
+    p_target = datos_reales["target_usd"]
+    es_local_base_ars = datos_reales["es_local"]
+    monto_actual = float(st.session_state.montos_dis[tk])
+    
+    # HOMOGENEIZACIÓN DE CAPITAL DE LA TORTA RESPECTO A DIVISA BASE
+    if es_local_base_ars: 
+        patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
+    else: 
+        patrimonio_total_usd += monto_actual
+    
+    nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
+    op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
+    
+    if es_local_base_ars:
+        precio_matriz_final = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        val_target_string = f"{p_target:,.2f}" if es_pesos else f"{p_target / VALOR_DOLAR_MEP:,.2f}"
+    else:
+        precio_matriz_final = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
+        val_target_string = f"{p_target * VALOR_DOLAR_MEP:,.2f}" if es_pesos else f"{p_target:,.2f}"
 
-# 1. CONFIGURACIÓN DE PANTALLA RÍGIDA PARA CELULARES
-st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
+    lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
+    
+    # --- AGENTE DE NOTICIAS TOTALMENTE DINÁMICO POR ACTIVO ---
+    if tk_limpio_upper in ["SPY", "SPY.BA"]: 
+        noticias = f"Macro: S&P 500 mantiene resiliencia sobre soporte técnico base. RSI en {datos_reales['rsi']}."
+    elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: 
+        noticias = f"Tech: Flujos de capital muestran alta volatilidad con perfil {datos_reales['macd']}."
+    elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: 
+        noticias = f"Ecosistema: Demanda corporativa firme impulsa el canal anual hacia {datos_reales['techo_a']}."
+    elif tk_limpio_upper in ["NVDA", "NVDA.BA"]: 
+        noticias = f"IA Quants: Procesamiento de métricas reporta un margen defensivo del {datos_reales['margen']}."
+    else: 
+        noticias = f"Alerta Local: Consolidando rango estructural. Soporte localizado en {datos_reales['piso_a']}."
 
-# 2. ESTILOS CSS AVANZADOS: INTERFAZ MÓVIL OPTIMIZADA Y CONTROL DE FILAS
-st.markdown("""
-<style>
-.block-container { padding: 0.2rem 0.2rem; }
-h3 { font-size: 1.05rem !important; margin: 0.3rem 0 0.1rem 0; }
-.header-container { background-color: #1f2633; padding: 6px; border-radius: 4px; text-align: center; margin-top: 30px !important; margin-bottom: 8px; border: 1px solid #232a38; }
+    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
+    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
+    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
+    
+    if es_local_base_ars:
+        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        t_mostrar_tarjeta = p_target if es_pesos else (p_target / VALOR_DOLAR_MEP)
+    else:
+        p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
+        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
 
-/* Fichas Rectangulares Rígidas */
-.tarjeta-activo { background-color: #161a22; padding: 12px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 10px; }
-.cabecera-cuaderno { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; width: 100%; }
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    
+    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
+        st.markdown(f"• **RSI:** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']}")
+    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
+        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']}")
+    with st.expander(f"🔍 Análisis Fundamental: {nota_txt}", expanded=False):
+        st.markdown(f"• **P/E:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **Margen:** {datos_reales['margen']}")
+        
+    st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
+    
+    if st.button("❌ Borrar", key=f"delete_btn_{tk_limpio_upper}"):
+        if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
+        st.rerun()
+    
+    monto_mostrar_box = monto_actual * factor_cambio if not es_local_base_ars or es_pesos else monto_actual
+    texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
+    
+    # --- FORMATEADOR FLUIDO DE TEXTO CON LIMPIEZA DE ENTRADA MANUAL MÓVIL ---
+    if entrada_texto_usuario != texto_con_comillas:
+        try:
+            limpio = entrada_texto_usuario.replace('"', '').replace('ARS', '').replace('USD', '').replace('$', '').replace(',', '').strip()
+            if limpio:
+                val_float = float(limpio)
+                st.session_state.montos_dis[tk] = val_float / factor_cambio if not es_local_base_ars or es_pesos else val_float
+                st.rerun()
+        except: pass
+    st.markdown('</div>', unsafe_allow_html=True)
 
-/* Títulos Subrayados Estéticos Unificados */
-.titulo-subrayado { font-weight: bold; color: #2196f3; font-size: 0.88rem; }
-.renglon-precio-unificado { font-size: 0.88rem; color: #ffffff; margin-bottom: 5px; line-height: 1.3; }
+# FORMATO DE PATRIMONIO GENERAL CON PUNTOS DE MILES Y MILLONES CORRECTOS
+patrimonio_mostrar = patrimonio_total_usd * factor_cambio
+texto_moneda_total = "ARS $" if es_pesos else "USD $"
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
 
-/* Elimina bordes y leyendas grises de los expanders */
-.stDetails { border: none !important; background-color: transparent !important; box-shadow: none !important; margin-bottom: 4px !important; padding: 0 !important; }
-.stDetails > summary { padding: 4px 0 !important; color: #ffffff !important; font-size: 0.88rem !important; font-weight: bold !important; }
+if activos_actuales:
+    df_pie = pd.DataFrame({"Activo": [str(k).upper() for k in st.session_state.montos_dis.keys()], "Capital": [float(v) for v in st.session_state.montos_dis.values()]})
+    fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
+    fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
+    st.plotly_chart(fig, use_container_width=True, key="pie_giant_v28", config={'displayModeBar': False})
 
-/* Cuadrícula o Matriz Resumen OPTIMIZADA PARA MÓVILES */
-div[data-testid="stDataFrame"] > div { width: 100% !important; overflow-x: auto !important; }
-.dataframe { width: 100% !important; font-size: 0.72rem !important; color: white !important; background-color: #161a22 !important; border: 1px solid #232a38 !important; text-align: center !important; }
-.dataframe th { background-color: #1f2633 !important; color: #2196f3 !important; font-weight: bold !important; padding: 2px !important; }
-.dataframe td { padding: 2px !important; border: 1px solid #232a38 !important; }
+if "ver_cuadricula_resumen" not in st.session_state: st.session_state.ver_cuadricula_resumen = False
+if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_def", use_container_width=True):
+    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
+    st.rerun()
 
-/* Caja de Texto Verde Premium y Buscador de Medida Rígida Horizontal */
-div[data-testid="stTextInput"] input { background-color: #1f2633 !important; color: #00e676 !important; font-weight: bold !important; text-align: left !important; font-size: 0.95rem !important; border-radius: 6px !important; border: 1px solid #232a38 !important; height: 34px !important; overflow-x: auto !important; white-space: nowrap !important; }
-div[data-testid="stTextInput"] label { display: none !important; }
-div[data-testid="stTextInput"] p { display: none !important; }
-
-/* Lista de noticias unificada */
-.caja-noticia-link { background-color: #161a22; padding: 10px; border-radius: 6px; border: 1px solid #232a38; margin-bottom: 8px; font-size: 0.84rem; color: #ffffff; line-height: 1.4; }
-.enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
-
-/* Inyección de Flexbox Nativo para Forzar Botones en Paralelo Horizontal en Celulares */
-div[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }
-div[data-testid="stHorizontalBlock"] > div { width: 50% !important; flex: 1 1 auto !important; min-width: 0 !important; }
-
-div.stButton > button { height: 38px !important; font-size: 0.82rem !important; font-weight: bold !important; border-radius: 6px !important; border: none !important; cursor: pointer !important; width: 100% !important; color: white !important; text-overflow: ellipsis !important; white-space: nowrap !important; overflow: hidden !important; }
-
-/* Forzado Estricto de Colores usando selectores universales de Streamlit por posición */
-div[data-testid="stHorizontalBlock"] > div:nth-of-type(1) button { background-color: #2196f3 !important; color: white !important; font-weight: bold !important; }
-div[data-testid="stHorizontalBlock"] > div:nth-of-type(2) button { background-color: #00e676 !important; color: #161a22 !important; font-weight: bold !important; }
-div.stButton > button[key*="delete_btn"] { background-color: #f44336 !important; color: white !important; }
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="header-container">
-    <h2 style="margin:0; font-size:1.2rem; color:#00e676; font-weight:bold;">📊 Nuevo Finance Pro</h2>
-    <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígida</div>
-</div>
-""", unsafe_allow_html=True)
-# 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPO REAL
+if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
+    df_matriz = pd.DataFrame(lista_para_matriz_resumen)
+    st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
+  # 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPO REAL
 def agente_calcular_mep_bonos_real():
     mep_ultimo_cierre_fijo = 1568.50
     try:
@@ -91,7 +126,9 @@ if 'precios_agente' not in st.session_state:
     st.session_state.precios_agente = {
         "SPY": 769.73, "TSLA": 406.59, "AAPL": 349.08, "KO": 92.12, "NVDA": 204.64,
         "ALUA.BA": 836.50, "KO.BA": 30560.00, "YPFD.BA": 28500.00, "PAMP.BA": 3100.00,
-        "CEPU.BA": 1420.00, "GGAL.BA": 5200.00, "TXAR.BA": 920.00, "VIST": 52.30, "IBIT.BA": 7215.00
+        "CEPU.BA": 1420.00, "GGAL.BA": 5200.00, "TXAR.BA": 920.00, "VIST": 52.30, "IBIT.BA": 7215.00,
+        "ARCO": 11.20, "RACE": 435.50, "SBUX": 98.40, "NKE": 76.80, "DIS": 96.10, 
+        "NFLX": 795.00, "AMZN": 197.80, "MELI": 1820.00, "MC.PA": 615.00
     }
 
 MAPEO_ETFS_COMAFI = {
@@ -152,7 +189,7 @@ MAPEO_ETFS_COMAFI = {
     "ProShares Short S&P 500 (Inverso)": {"orig": "SH", "arg": "SH.BA"},
     "ProShares Short QQQ (Inverso QQQ)": {"orig": "PSQ", "arg": "PSQ.BA"},
     "iShares Barclays Capital VIX": {"orig": "VXX", "arg": "VXX.BA"}
-}
+    }
 MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
@@ -202,7 +239,10 @@ MAPEO_CEDEARS_COMAFI = {
     "GE Vernova (Infraestructura Red)": {"orig": "GEV", "arg": "GEV.BA"},
     "Vale S.A. (Minería de Hierro)": {"orig": "VALE", "arg": "VALE.BA"},
     "Caterpillar Inc. (Maquinaria Pesada)": {"orig": "CAT", "arg": "CAT.BA"},
-    "Boeing Co. (Aeroespacial Comercial)": {"orig": "BA", "arg": "BA.BA"}
+    "Boeing Co. (Aeroespacial Comercial)": {"orig": "BA", "arg": "BA.BA"},
+    "Arcos Dorados (McDonald's Latam)": {"orig": "ARCO", "arg": "ARCO.BA"},
+    "Ferrari N.V. (Superdeportivos)": {"orig": "RACE", "arg": "RACE.BA"},
+    "LVMH Moët Hennessy Louis Vuitton": {"orig": "MC.PA", "arg": "LVMH.BA"}
 }
 MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
@@ -308,9 +348,9 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "").strip().upper()
     
     # LISTA DE RESPALDO QUE INCLUYE NVDA EXPLÍCITAMENTE
-    lista_cedears_validos = ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA", "AUSO"]
+    lista_cedears_validos = ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA", "AUSO", "ARCO", "RACE", "MC.PA"]
     
-    es_cedear_local = (simbolo_ticket.endswith(".BA") and sigla_limpia in lista_cedears_validos) or (sigla_limpia in ["NVDA.BA", "AAPL.BA", "TSLA.BA", "SPY.BA", "KO.BA"])
+    es_cedear_local = (simbolo_ticket.endswith(".BA") and sigla_limpia in lista_cedears_validos) or (sigla_limpia in ["NVDA.BA", "AAPL.BA", "TSLA.BA", "SPY.BA", "KO.BA", "ARCO.BA", "RACE.BA", "LVMH.BA"])
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPFD", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO", "SUPV", "BYMA", "VALO", "LOMA", "MIRG", "CRES", "IRSA", "TECO2", "BHIP", "BOLT", "CADO", "CAPX", "CELU", "CGPA2", "CTIO", "CVH", "DGCU2", "FERR", "GCO", "HARG", "INVJ", "LEDE", "LONG", "MOLA", "MORI", "RIGO", "SAMU"]
     
     # CORRECCIÓN DE MONEDA BASE DE LA EMPRESA INTERNA
@@ -362,106 +402,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-for tk in activos_actuales:
-    tk_limpio_upper = str(tk).strip().upper()
-    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
-    p_base = datos_reales["precio"]
-    p_target = datos_reales["target_usd"]
-    es_local_base_ars = datos_reales["es_local"]
-    monto_actual = float(st.session_state.montos_dis[tk])
-    
-    # HOMOGENEIZACIÓN DE CAPITAL DE LA TORTA RESPECTO A DIVISA BASE
-    if es_local_base_ars: 
-        patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
-    else: 
-        patrimonio_total_usd += monto_actual
-    
-    nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
-    op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
-    
-    if es_local_base_ars:
-        precio_matriz_final = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
-        val_target_string = f"{p_target:,.2f}" if es_pesos else f"{p_target / VALOR_DOLAR_MEP:,.2f}"
-    else:
-        precio_matriz_final = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
-        val_target_string = f"{p_target * VALOR_DOLAR_MEP:,.2f}" if es_pesos else f"{p_target:,.2f}"
-
-    lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
-    
-    # --- AGENTE DE NOTICIAS TOTALMENTE DINÁMICO POR ACTIVO ---
-    if tk_limpio_upper in ["SPY", "SPY.BA"]: 
-        noticias = f"Macro: S&P 500 mantiene resiliencia sobre soporte técnico base. RSI en {datos_reales['rsi']}."
-    elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: 
-        noticias = f"Tech: Flujos de capital muestran alta volatilidad con perfil {datos_reales['macd']}."
-    elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: 
-        noticias = f"Ecosistema: Demanda corporativa firme impulsa el canal anual hacia {datos_reales['techo_a']}."
-    elif tk_limpio_upper in ["NVDA", "NVDA.BA"]: 
-        noticias = f"IA Quants: Procesamiento de métricas reporta un margen defensivo del {datos_reales['margen']}."
-    else: 
-        noticias = f"Alerta Local: Consolidando rango estructural. Soporte localizado en {datos_reales['piso_a']}."
-
-    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
-    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
-    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
-    
-    if es_local_base_ars:
-        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
-        t_mostrar_tarjeta = p_target if es_pesos else (p_target / VALOR_DOLAR_MEP)
-    else:
-        p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
-        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
-
-    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
-    
-    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
-        st.markdown(f"• **RSI:** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']}")
-    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
-        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']}")
-    with st.expander(f"🔍 Análisis Fundamental: {nota_txt}", expanded=False):
-        st.markdown(f"• **P/E:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **Margen:** {datos_reales['margen']}")
-        
-    st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
-    
-    if st.button("❌ Borrar", key=f"delete_btn_{tk_limpio_upper}"):
-        if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
-        st.rerun()
-    
-    monto_mostrar_box = monto_actual * factor_cambio if not es_local_base_ars or es_pesos else monto_actual
-    texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
-    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
-    
-    # --- FORMATEADOR FLUIDO DE TEXTO CON LIMPIEZA DE ENTRADA MANUAL MÓVIL ---
-    if entrada_texto_usuario != texto_con_comillas:
-        try:
-            limpio = entrada_texto_usuario.replace('"', '').replace('ARS', '').replace('USD', '').replace('$', '').replace(',', '').strip()
-            if limpio:
-                val_float = float(limpio)
-                st.session_state.montos_dis[tk] = val_float / factor_cambio if not es_local_base_ars or es_pesos else val_float
-                st.rerun()
-        except: pass
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# FORMATO DE PATRIMONIO GENERAL CON PUNTOS DE MILES Y MILLONES CORRECTOS
-patrimonio_mostrar = patrimonio_total_usd * factor_cambio
-texto_moneda_total = "ARS $" if es_pesos else "USD $"
-st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
-
-if activos_actuales:
-    df_pie = pd.DataFrame({"Activo": [str(k).upper() for k in st.session_state.montos_dis.keys()], "Capital": [float(v) for v in st.session_state.montos_dis.values()]})
-    fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
-    fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
-    st.plotly_chart(fig, use_container_width=True, key="pie_giant_v28", config={'displayModeBar': False})
-
-if "ver_cuadricula_resumen" not in st.session_state: st.session_state.ver_cuadricula_resumen = False
-if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_def", use_container_width=True):
-    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
-    st.rerun()
-
-if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
-    df_matriz = pd.DataFrame(lista_para_matriz_resumen)
-    st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
-
 # --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
@@ -469,7 +409,8 @@ for simbolo in activos_actuales:
     if "YAHOO.COM" in simbolo_limpio.lower(): 
         simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
     
-    url_segura_final = f"https://yahoo.com/finance/quote/{simbolo_limpio}"
+    # URL Corregida nativa para evitar fallas o redirecciones
+    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
     
     st.markdown(f"""
@@ -481,12 +422,6 @@ for simbolo in activos_actuales:
     """, unsafe_allow_html=True)
 
 st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
-    <div style="color:#888;">🏠<br>Inicio</div>
-    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
-    <div style="color:#888;">📊<br>Análisis</div>
-    <div style="color:#888;">💬<br>Chat</div>
-    <div style="color:#888;">👤<br>Perfil</div>
-</div>
-''', unsafe_allow_html=True)
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center">
+''')
     
