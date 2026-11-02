@@ -256,25 +256,29 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
-st.markdown("""
-<div style="background-color: #1a2130; padding: 8px; border-radius: 6px; border: 1px dashed #2196f3; text-align: center; margin-bottom: 10px;">
-    <a href="https://comafi.com.ar" target="_blank" style="color: #2196f3; font-weight: bold; text-decoration: none; font-size: 0.82rem;">🔗 Consultar Listados Oficiales en Banco Comafi</a>
-</div>
-""", unsafe_allow_html=True)
-
 if 'reset_buscador' not in st.session_state:
     st.session_state.reset_buscador = 0
 
-carga_libre_ticker = st.text_input("Agregar Activo Manual (Cualquier Ticker de Yahoo):", value="", placeholder="Ej: BABA, GGAL.BA, MSFT...").strip().upper()
+# GENERACIÓN DINÁMICA DE OPCIONES
+sugerencias_base = []
+for n, t in sorted(MAPEO_ACCIONES_RAVA.items()): sugerencias_base.append(f"🟢 {n} [BYMA:{t}]")
+for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()): sugerencias_base.append(f"🔵 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
+for n, d in sorted(MAPEO_ETFS_COMAFI.items()): sugerencias_base.append(f"📊 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
 
-sugerencias_buscador = ["- Escribe o selecciona un activo -"]
-for n, t in sorted(MAPEO_ACCIONES_RAVA.items()): sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
-for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()): sugerencias_buscador.append(f"🔵 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
-for n, d in sorted(MAPEO_ETFS_COMAFI.items()): sugerencias_buscador.append(f"📊 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
+# LÓGICA DE ENTRADA HÍBRIDA EN EL MISMO SELECTBOX
+sugerencias_buscador = ["- Escribe o selecciona un activo -"] + sugerencias_base
 
-seleccion_activo = st.selectbox("Buscador:", sugerencias_buscador, key=f"buscador_celular_v28_{st.session_state.reset_buscador}", label_visibility="collapsed")
+# Capturamos el estado del buscador para permitir inputs libres en celulares
+seleccion_activo = st.selectbox(
+    "Buscador:", 
+    sugerencias_buscador, 
+    key=f"buscador_celular_v28_{st.session_state.reset_buscador}", 
+    label_visibility="collapsed"
+)
 
 ticker_origen_dinamico, ticker_byma_dinamico = "", ""
+
+# EVALUACIÓN DE SELECCIÓN O ENTRADA MANUAL DIRECTA
 if seleccion_activo != "- Escribe o selecciona un activo -":
     if "USA:" in seleccion_activo:
         partes_raw = seleccion_activo.split("[USA:")[-1].replace("]", "").strip()
@@ -283,27 +287,34 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
         ticker_byma_dinamico = partes_lista[1].replace("BYMA:", "").strip()
     elif "BYMA:" in seleccion_activo:
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
-        ticker_origen_dinamico = "No Aplica"
+        ticker_origen_dinamico = ticker_byma_dinamico
+    else:
+        # Si el usuario escribió un ticker libre que no coincide con los textos largos
+        ticker_origen_dinamico = seleccion_activo.strip().upper()
+        ticker_byma_dinamico = ticker_origen_dinamico
 
 activo_a_cargar = None
-
-if carga_libre_ticker:
-    activo_a_cargar = carga_libre_ticker
-elif seleccion_activo != "- Escribe o selecciona un activo -":
+if seleccion_activo != "- Escribe o selecciona un activo -":
     col_izq_usa, col_der_byma = st.columns(2)
     with col_izq_usa:
-        if ticker_origen_dinamico != "No Aplica":
-            if st.button(f"➕ {ticker_origen_dinamico}", key="insertar_usa"): activo_a_cargar = ticker_origen_dinamico
-        else: st.button("-", key="btn_usa_deshabilitado", disabled=True)
+        if ticker_origen_dinamico and ticker_origen_dinamico != "No Aplica":
+            if st.button(f"➕ {ticker_origen_dinamico}", key="insertar_usa"): 
+                activo_a_cargar = ticker_origen_dinamico
+        else: 
+            st.button("-", key="btn_usa_deshabilitado", disabled=True)
     with col_der_byma:
-        if st.button(f"➕ {ticker_byma_dinamico}", key="insertar_byma"): activo_a_cargar = ticker_byma_dinamico
+        if ticker_byma_dinamico:
+            if st.button(f"➕ {ticker_byma_dinamico}", key="insertar_byma"): 
+                activo_a_cargar = ticker_byma_dinamico
+                
     if st.button("🧹 Limpiar Buscador [ + ]", key="btn_clear_buscador_top", use_container_width=True):
         st.session_state.reset_buscador += 1
         st.rerun()
 
 if activo_a_cargar:
     copia_temporal_montos = st.session_state.montos_dis.copy()
-    if activo_a_cargar in copia_temporal_montos: del copia_temporal_montos[activo_a_cargar]
+    if activo_a_cargar in copia_temporal_montos: 
+        del copia_temporal_montos[activo_a_cargar]
     st.session_state.montos_dis = {activo_a_cargar: 5000.0}
     st.session_state.montos_dis.update(copia_temporal_montos)
     st.session_state.reset_buscador += 1
@@ -396,7 +407,7 @@ for tk in activos_actuales:
 
     lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
     
-    noticias = f"Resumen Semanal: Comportamiento {datos_reales['macd']} con variación SMA de {datos_reales['dist_sma']}. Oscilador estocástico en {datos_reales['stoch']} unidades de volatilidad."
+    noticias = f"Resumen Semanal: Comportamiento estructural {datos_reales['macd']} con variación SMA de {datos_reales['dist_sma']}. El oscilador estocástico reporta {datos_reales['stoch']} unidades de volatilidad."
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
@@ -426,9 +437,12 @@ for tk in activos_actuales:
         st.rerun()
     
     monto_mostrar_box = monto_actual * factor_cambio if not es_local_base_ars or es_pesos else monto_actual
+    
+    # SOLUCIÓN COMAS: Formateo explícito dentro del value del text_input
     texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
     
-    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{monto_mostrar_box:.0f}_{moneda}")
+    # Modificamos la key para forzar la actualización visual del texto formateado con comas
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"inp_{tk_limpio_upper}_{monto_mostrar_box:,.2f}")
     
     if entrada_texto_usuario != texto_con_comillas:
         try:
@@ -462,9 +476,8 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
-    if "YAHOO.COM" in simbolo_limpio.lower(): 
-        simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
     
+    # REEMPLAZO Y FIJACIÓN DE LA URL DIRECTA DE YAHOO FINANCE SIN INTERFERENCIAS
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
     
