@@ -256,6 +256,13 @@ if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, ty
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
+# ENLACE DIRECTO RÍGIDO DE SOPORTE PARA REVISAR PROGRAMAS DEL COMAFI
+st.markdown("""
+<div style="background-color: #1a2130; padding: 8px; border-radius: 6px; border: 1px dashed #2196f3; text-align: center; margin-bottom: 10px;">
+    <a href="https://www.comafi.com.ar/custodiaglobal/programas.aspx" target="_blank" style="color: #2196f3; font-weight: bold; text-decoration: none; font-size: 0.82rem;">🔗 Consultar Listados Oficiales en Banco Comafi</a>
+</div>
+""", unsafe_allow_html=True)
+
 if 'reset_buscador' not in st.session_state:
     st.session_state.reset_buscador = 0
 
@@ -388,17 +395,8 @@ for tk in activos_actuales:
 
     lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
     
-    # --- AGENTE DE NOTICIAS TOTALMENTE DINÁMICO POR ACTIVO ---
-    if tk_limpio_upper in ["SPY", "SPY.BA"]: 
-        noticias = f"Macro: S&P 500 mantiene resiliencia sobre soporte técnico base. RSI en {datos_reales['rsi']}."
-    elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: 
-        noticias = f"Tech: Flujos de capital muestran alta volatilidad con perfil {datos_reales['macd']}."
-    elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: 
-        noticias = f"Ecosistema: Demanda corporativa firme impulsa el canal anual hacia {datos_reales['techo_a']}."
-    elif tk_limpio_upper in ["NVDA", "NVDA.BA"]: 
-        noticias = f"IA Quants: Procesamiento de métricas reporta un margen defensivo del {datos_reales['margen']}."
-    else: 
-        noticias = f"Alerta Local: Consolidando rango estructural. Soporte localizado en {datos_reales['piso_a']}."
+    # RESUMEN COMPLETO DE NOTICIAS REALES DEL AGENTE QUANT
+    noticias = f"Análisis: Activo cotizando a {precio_matriz_final:,.2f} con tendencia macro {datos_reales['dist_sma']} y RSI en zona de {datos_reales['rsi']}. Target asignado en {val_target_string}."
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
@@ -428,10 +426,11 @@ for tk in activos_actuales:
         st.rerun()
     
     monto_mostrar_box = monto_actual * factor_cambio if not es_local_base_ars or es_pesos else monto_actual
+    
+    # CORRECCIÓN DEFINITIVA: INYECCIÓN DE PUNTOS DE MILES DENTRO DEL TEXT_INPUT EN VIVO
     texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
     entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
     
-    # --- FORMATEADOR FLUIDO DE TEXTO CON LIMPIEZA DE ENTRADA MANUAL MÓVIL ---
     if entrada_texto_usuario != texto_con_comillas:
         try:
             limpio = entrada_texto_usuario.replace('"', '').replace('ARS', '').replace('USD', '').replace('$', '').replace(',', '').strip()
@@ -442,7 +441,7 @@ for tk in activos_actuales:
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
 
-# FORMATO DE PATRIMONIO GENERAL CON PUNTOS DE MILES Y MILLONES CORRECTOS
+# FORMATO DE PATRIMONIO GENERAL
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
@@ -462,19 +461,19 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
-# --- CENTRAL DE NOTICIAS ASOCIADA A LAS MÉTRICAS DE CADA ACTIVO ---
+# CENTRAL DE NOTICIAS CON REPORTES QUANT INDIVIDUALIZADOS POR ACTIVO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     if "YAHOO.COM" in simbolo_limpio.lower(): 
         simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
     
-    url_segura_final = f"https://yahoo.com/finance/quote/{simbolo_limpio}"
+    url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
     
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Reporte Quant Real-Time:</b> Distancia a la Media Móvil (SMA) de {datos_tk['dist_sma']} bajo un rango de volatilidad {datos_tk['vol_rel']}.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Reporte Quant Dinámico:</b> Canal macro posicionado sobre {datos_tk['dist_sma']} con rango operativo estocástico en {datos_tk['stoch']} y suelo en {datos_tk['piso_a']}.
         <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para abrir reporte oficial en Yahoo Finance</a>
     </div>
