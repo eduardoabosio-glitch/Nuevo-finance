@@ -254,9 +254,8 @@ MAPEO_ACCIONES_RAVA = {
 if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
-st.markdown("<h3 style='not-align:center; color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
-# ENLACE DIRECTO RÍGIDO DE SOPORTE PARA REVISAR PROGRAMAS DEL COMAFI
 st.markdown("""
 <div style="background-color: #1a2130; padding: 8px; border-radius: 6px; border: 1px dashed #2196f3; text-align: center; margin-bottom: 10px;">
     <a href="https://comafi.com.ar" target="_blank" style="color: #2196f3; font-weight: bold; text-decoration: none; font-size: 0.82rem;">🔗 Consultar Listados Oficiales en Banco Comafi</a>
@@ -265,6 +264,8 @@ st.markdown("""
 
 if 'reset_buscador' not in st.session_state:
     st.session_state.reset_buscador = 0
+
+carga_libre_ticker = st.text_input("Agregar Activo Manual (Cualquier Ticker de Yahoo):", value="", placeholder="Ej: BABA, GGAL.BA, MSFT...").strip().upper()
 
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()): sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
@@ -284,14 +285,11 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
         ticker_byma_dinamico = seleccion_activo.split("BYMA:")[-1].replace("]", "").strip()
         ticker_origen_dinamico = "No Aplica"
 
-# CARGA MANUAL COMPATIBLE CON CUALQUIER TICKER ADICIONAL DE YAHOO FINANCE
-# Si el usuario escribe directamente en el selectbox un ticker no listado
-if seleccion_activo != "- Escribe o selecciona un activo -" and "[" not in seleccion_activo:
-    ticker_origen_dinamico = seleccion_activo.strip().upper()
-    ticker_byma_dinamico = ticker_origen_dinamico
-
 activo_a_cargar = None
-if seleccion_activo != "- Escribe o selecciona un activo -":
+
+if carga_libre_ticker:
+    activo_a_cargar = carga_libre_ticker
+elif seleccion_activo != "- Escribe o selecciona un activo -":
     col_izq_usa, col_der_byma = st.columns(2)
     with col_izq_usa:
         if ticker_origen_dinamico != "No Aplica":
@@ -325,7 +323,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     es_cedear_local = (simbolo_ticket.endswith(".BA") and sigla_limpia in lista_cedears_validos) or (sigla_limpia in ["NVDA.BA", "AAPL.BA", "TSLA.BA", "SPY.BA", "KO.BA"])
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPFD", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO", "SUPV", "BYMA", "VALO", "LOMA", "MIRG", "CRES", "IRSA", "TECO2", "BHIP", "BOLT", "CADO", "CAPX", "CELU", "CGPA2", "CTIO", "CVH", "DGCU2", "FERR", "GCO", "HARG", "INVJ", "LEDE", "LONG", "MOLA", "MORI", "RIGO", "SAMU"]
     
-    # COMPATIBILIDAD UNIVERSAL: Si termina en .BA o se detecta puro ARS se interpreta local
+    # COMPATIBILIDAD UNIVERSAL AUTOMÁTICA
     es_realmente_local_ars = es_local_pure or simbolo_ticket.endswith(".BA")
     
     precio_memoria_compartida = st.session_state.precios_agente.get(simbolo_ticket, st.session_state.precios_agente.get(sigla_limpia, 150.0))
@@ -381,7 +379,6 @@ for tk in activos_actuales:
     es_local_base_ars = datos_reales["es_local"]
     monto_actual = float(st.session_state.montos_dis[tk])
     
-    # HOMOGENEIZACIÓN DE CAPITAL DE LA TORTA RESPECTO A DIVISA BASE
     if es_local_base_ars: 
         patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
     else: 
@@ -399,8 +396,7 @@ for tk in activos_actuales:
 
     lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
     
-    # RESUMEN ANALÍTICO REAL DE LA ÚLTIMA SEMANA GENERADO POR EL AGENTE CON MARCADORES VIVOS
-    noticias = f"Resumen Semanal: Comportamiento estructural {datos_reales['macd']} con una variación SMA acumulada de {datos_reales['dist_sma']}. El oscilador estocástico lateraliza en {datos_reales['stoch']} unidades de volatilidad."
+    noticias = f"Resumen Semanal: Comportamiento {datos_reales['macd']} con variación SMA de {datos_reales['dist_sma']}. Oscilador estocástico en {datos_reales['stoch']} unidades de volatilidad."
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
@@ -430,10 +426,9 @@ for tk in activos_actuales:
         st.rerun()
     
     monto_mostrar_box = monto_actual * factor_cambio if not es_local_base_ars or es_pesos else monto_actual
-    
-    # CORRECCIÓN DE CAJAS DE ENTRADA CON DIVISIONES DE COMAS PARA MILES Y MILLONES
     texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
-    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
+    
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{monto_mostrar_box:.0f}_{moneda}")
     
     if entrada_texto_usuario != texto_con_comillas:
         try:
@@ -445,7 +440,6 @@ for tk in activos_actuales:
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
 
-# FORMATO DE PATRIMONIO GENERAL
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
@@ -465,7 +459,6 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
-# CENTRAL DE NOTICIAS CON REPORTES YAHOO FINANCE COMPLETAMENTE CORREGIDOS (/finance/quote/)
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
@@ -477,7 +470,7 @@ for simbolo in activos_actuales:
     
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Reporte Semanal Completo:</b> Tendencia histórica posicionada en {datos_tk['dist_sma']} con rango operativo estocástico de {datos_tk['stoch']} y soporte en {datos_tk['piso_a']}.
+        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Reporte Quant Dinámico:</b> Canal macro sobre {datos_tk['dist_sma']} con rango estocástico en {datos_tk['stoch']} y suelo en {datos_tk['piso_a']}.
         <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para abrir reporte oficial en Yahoo Finance</a>
     </div>
