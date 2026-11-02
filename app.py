@@ -474,10 +474,103 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
+for tk in activos_actuales:
+    tk_limpio_upper = str(tk).strip().upper()
+    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
+    p_base = datos_reales["precio"]
+    p_target = datos_reales["target_usd"]
+    es_local_base_ars = datos_reales["es_local"]
+    monto_actual = float(st.session_state.montos_dis[tk])
+    
+    if es_local_base_ars: 
+        patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
+    else: 
+        patrimonio_total_usd += monto_actual
+    
+    nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
+    op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
+    
+    if es_local_base_ars:
+        precio_matriz_final = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        val_target_string = f"{p_target:,.2f}" if es_pesos else f"{p_target / VALOR_DOLAR_MEP:,.2f}"
+    else:
+        precio_matriz_final = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
+        val_target_string = f"{p_target * VALOR_DOLAR_MEP:,.2f}" if es_pesos else f"{p_target:,.2f}"
+
+    lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
+    
+    noticias = f"Resumen Semanal: Comportamiento estructural {datos_reales['macd']} con variación SMA de {datos_reales['dist_sma']}. El oscilador estocástico reporta {datos_reales['stoch']} unidades de volatilidad."
+
+    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
+    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
+    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
+    
+    if es_local_base_ars:
+        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
+        t_mostrar_tarjeta = p_target if es_pesos else (p_target / VALOR_DOLAR_MEP)
+    else:
+        p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
+        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
+
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    
+    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
+        st.markdown(f"• **RSI:** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']}")
+    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
+        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']}")
+    with st.expander(f"🔍 Análisis Fundamental: {nota_txt}", expanded=False):
+        st.markdown(f"• **P/E:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **Margen:** {datos_reales['margen']}")
+        
+    st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
+    
+    if st.button("❌ Borrar", key=f"delete_btn_{tk_limpio_upper}"):
+        if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
+        st.rerun()
+    
+    monto_mostrar_box = monto_actual * factor_cambio if not es_local_base_ars or es_pesos else monto_actual
+    
+    # SOLUCIÓN DE COMAS: Formateo explícito con comas en el value string
+    texto_con_comillas = f"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"
+    
+    # Se fuerza la actualización usando el valor formateado dentro del key del text_input
+    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"inp_box_{tk_limpio_upper}_{monto_mostrar_box:,.2f}")
+    
+    if entrada_texto_usuario != texto_con_comillas:
+        try:
+            limpio = entrada_texto_usuario.replace('"', '').replace('ARS', '').replace('USD', '').replace('$', '').replace(',', '').strip()
+            if limpio:
+                val_float = float(limpio)
+                st.session_state.montos_dis[tk] = val_float / factor_cambio if not es_local_base_ars or es_pesos else val_float
+                st.rerun()
+        except: pass
+    st.markdown('</div>', unsafe_allow_html=True)
+
+patrimonio_mostrar = patrimonio_total_usd * factor_cambio
+texto_moneda_total = "ARS $" if es_pesos else "USD $"
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
+
+if activos_actuales:
+    df_pie = pd.DataFrame({"Activo": [str(k).upper() for k in st.session_state.montos_dis.keys()], "Capital": [float(v) for v in st.session_state.montos_dis.values()]})
+    fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
+    fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
+    st.plotly_chart(fig, use_container_width=True, key="pie_giant_v28", config={'displayModeBar': False})
+
+if "ver_cuadricula_resumen" not in st.session_state: st.session_state.ver_cuadricula_resumen = False
+if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_def", use_container_width=True):
+    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
+    st.rerun()
+
+if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
+    df_matriz = pd.DataFrame(lista_para_matriz_resumen)
+    st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
+
+# CENTRAL DE NOTICIAS CON FIJACIÓN DE LA URL DIRECTA DE YAHOO FINANCE SIN INTERFERENCIAS DE CÓDIGO
+st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     simbolo_limpio = str(simbolo).strip().upper()
     
-    # REEMPLAZO Y FIJACIÓN DE LA URL DIRECTA DE YAHOO FINANCE SIN INTERFERENCIAS
+    # URL FIJA ASIGNADA DE FORMA DIRECTA SIN REEMPLAZOS DEFECTUOSOS
     url_segura_final = f"https://yahoo.com{simbolo_limpio}"
     datos_tk = calcular_probabilidades_y_todas_las_metricas_v24(simbolo_limpio)
     
@@ -498,4 +591,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
