@@ -152,6 +152,7 @@ if 'precios_agente' not in st.session_state:
         "ARCO": 11.20, "RACE": 435.50, "SBUX": 98.40, "NKE": 76.80, "DIS": 96.10, 
         "NFLX": 795.00, "AMZN": 197.80, "MELI": 1820.00, "MC.PA": 615.00
     }
+
 MAPEO_ETFS_COMAFI = {
     "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
     "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"},
