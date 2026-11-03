@@ -314,7 +314,7 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
-    def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
+def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "").strip().upper()
     
     # LISTA DE RESPALDO ACTUALIZADA CON LOS NUEVOS TICKERS INTERNACIONALES
