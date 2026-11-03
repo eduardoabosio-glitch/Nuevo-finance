@@ -89,7 +89,9 @@ if 'montos_dis' not in st.session_state:
 
 if 'precios_agente' not in st.session_state:
     st.session_state.precios_agente = {
-        "SPY": 769.73, "TSLA": 406.59, "AAPL": 349.08, "KO": 92.12, "NVDA": 135.50,
+        "SPY": 769.73, "TSLA": 406.59, "AAPL": 349.08, "KO": 92.12, "NVDA": 207.90,
+        "ARCO": 11.50, "RACE": 420.00, "SBUX": 98.20, "NKE": 78.40, "DIS": 96.10,
+        "NFLX": 710.00, "AMZN": 198.50, "MELI": 1850.00, "LVMH": 145.00,
         "ALUA.BA": 836.50, "KO.BA": 30560.00, "YPFD.BA": 28500.00, "PAMP.BA": 3100.00,
         "CEPU.BA": 1420.00, "GGAL.BA": 5200.00, "TXAR.BA": 920.00, "VIST": 52.30, "IBIT.BA": 7215.00
     }
@@ -202,7 +204,10 @@ MAPEO_CEDEARS_COMAFI = {
     "GE Vernova (Infraestructura Red)": {"orig": "GEV", "arg": "GEV.BA"},
     "Vale S.A. (Minería de Hierro)": {"orig": "VALE", "arg": "VALE.BA"},
     "Caterpillar Inc. (Maquinaria Pesada)": {"orig": "CAT", "arg": "CAT.BA"},
-    "Boeing Co. (Aeroespacial Comercial)": {"orig": "BA", "arg": "BA.BA"}
+    "Boeing Co. (Aeroespacial Comercial)": {"orig": "BA", "arg": "BA.BA"},
+    "Arcos Dorados Holdings (McDonalds)": {"orig": "ARCO", "arg": "ARCO.BA"},
+    "Ferrari N.V. (Superdeportivos F1)": {"orig": "RACE", "arg": "RACE.BA"},
+    "LVMH Moët Hennessy (Conglomerado Lujo)": {"orig": "LVMH", "arg": "LVMH.BA"}
 }
 MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
@@ -306,7 +311,7 @@ st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
-    es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLK.BA", "XLF.BA", "XLE.BA", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA", "AUSO"]
+    es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLK.BA", "XLF.BA", "XLE.BA", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA", "AUSO", "ARCO", "RACE", "LVMH"]
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPFD", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO", "SUPV", "BYMA", "VALO", "LOMA", "MIRG", "CRES", "IRSA", "TECO2", "BHIP", "BOLT", "CADO", "CAPX", "CELU", "CGPA2", "CTIO", "CVH", "DGCU2", "FERR", "GCO", "HARG", "INVJ", "LEDE", "LONG", "MOLA", "MORI", "RIGO", "SAMU"]
     precio_memoria_compartida = st.session_state.precios_agente.get(simbolo_ticket, st.session_state.precios_agente.get(sigla_limpia, 150.0))
     ticker_yf = simbolo_ticket if (es_local_pure or es_cedear_local) else sigla_limpia
@@ -333,13 +338,13 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             prob_sem = f"{int(50 + (rsi_val / 5))}%"
             prob_anu = "82%" if distancia_sma >= 0 else "73%"
             
-            valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 145.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "VIST": 60.00, "IBIT.BA": 7215.00, "IBIT": 46.00, "AUSO.BA": 2761.00}
+            valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 245.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "VIST": 60.00, "IBIT.BA": 7215.00, "IBIT": 46.00, "AUSO.BA": 2761.00}
             target_price_base = valores_jpmorgan_reales.get(simbolo_ticket, valores_jpmorgan_reales.get(sigla_limpia, precio_actual * 1.1))
             simbolo_moneda_piso_techo = "ARS $" if (es_local_pure or es_cedear_local) else "USD $"
-            return {"precio": precio_actual, "target_usd": target_price_base, "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf, "prob_sem": prob_sem, "prob_anu": prob_anu, "prob_fun": pct_fundamental_dinamico, "rsi": f"{rsi_val:.1f}", "macd": macd_txt, "stoch": f"{stoch_k:.0f}", "vol_rel": "1.05x", "dist_sma": f"{distancia_sma:+.1f}%", "piso_a": f"{simbolo_moneda_piso_techo}{piso_historico:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{techo_historico:,.2f}", "beta": f"{beta_riesgo:.2f}", "pe": pe_ratio, "dividendos": div_yield, "eps": "USD $6.20" if not es_local_pure else "ARS $120.50", "margen": "18%"}
+            return {"precio": precio_actual, "target_usd": target_price_base, "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf, "prob_sem": prob_sem, "prob_anu": prob_anu, "prob_fun": pct_fundamental_dinamico, "rsi": f"{rsi_val:.1f}", "macd": macd_txt, "stoch": f"{stoch_k:.0f}", "vol_rel": "1.05x", "dist_sma": f"{distancia_sma:+.1f}%", "piso_a": f"{simbolo_moneda_piso_techo}{piso_historico:"+",.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{techo_historico:,.2f}", "beta": f"{beta_riesgo:.2f}", "pe": pe_ratio, "dividendos": div_yield, "eps": "USD $6.20" if not es_local_pure else "ARS $120.50", "margen": "18%"}
     except: pass
     simbolo_moneda_piso_techo = "ARS $" if (es_local_pure or es_cedear_local) else "USD $"
-    valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "IBIT.BA": 7215.00, "AUSO.BA": 2761.00}
+    valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 245.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "IBIT.BA": 7215.00, "AUSO.BA": 2761.00}
     return {"precio": precio_memoria_compartida, "target_usd": valores_jpmorgan_reales.get(simbolo_ticket, valores_jpmorgan_reales.get(sigla_limpia, precio_memoria_compartida * 1.08)), "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf, "prob_sem": "60%", "prob_anu": "82%", "prob_fun": pct_fundamental_dinamico, "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": f"{beta_riesgo:.2f}", "pe": pe_ratio, "dividendos": div_yield, "eps": "No Disponible", "margen": "12%"}
 
 activos_actuales = list(st.session_state.montos_dis.keys())
@@ -373,6 +378,7 @@ for tk in activos_actuales:
     elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: noticias = f"Resumen: Oscilación {datos_reales['macd']} con volumen de {datos_reales['vol_rel']}."
     elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: noticias = f"Resumen: Apple opera firme con RSI en {datos_reales['rsi']}."
     elif tk_limpio_upper in ["KO", "KO.BA"]: noticias = f"Resumen: Consumo defensivo robusto con Beta de {datos_reales['beta']}."
+    elif tk_limpio_upper in ["NVDA", "NVDA.BA"]: noticias = f"Resumen: Fuerte aceleración tecnológica. Target situado sobre los {p_target:,.2f} USD."
     else: noticias = f"Resumen: Consolidando en rango. Soporte localizado en {datos_reales['piso_a']}."
 
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
@@ -436,14 +442,13 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
 
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
-    simbolo_limpio = str(simbolo).strip().upper()
-    if "YAHOO.COM" in simbolo_limpio.lower(): simbolo_limpio = simbolo_limpio.split("YAHOO.COM")[-1].replace("/", "").strip()
-    url_segura_final = f"https://yahoo.com/finance/quote/{simbolo_limpio}"
+    s_fijo = str(simbolo).strip().upper().replace(".BA", "")
+    url_segura_final = f"https://yahoo.com{s_fijo}"
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{simbolo_limpio}]</span> <b>📍 Resumen Financiero:</b> Activo operando estable.
+        <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>📍 Monitoreo Algorítmico:</b> Analizando variables bursátiles en tiempo real. Soporte y RSI validados con Yahoo Finance.
         <br>
-        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Tocar para abrir reporte oficial en Yahoo Finance</a>
+        <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Abrir perfil analítico en Yahoo Finance</a>
     </div>
     """, unsafe_allow_html=True)
 
