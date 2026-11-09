@@ -96,66 +96,25 @@ if 'precios_agente' not in st.session_state:
         "CEPU.BA": 1420.00, "GGAL.BA": 5200.00, "TXAR.BA": 920.00, "VIST": 52.30, "IBIT.BA": 7215.00
     }
 
-MAPEO_ETFS_COMAFI = {
-    "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
-    "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"},
-    "iShares Core S&P 500 (Bajo Costo)": {"orig": "IVV", "arg": "IVV.BA"},
-    "SPDR Dow Jones Industrial Average": {"orig": "DIA", "arg": "DIA.BA"},
-    "iShares Russell 2000 (Small Caps)": {"orig": "IWM", "arg": "IWM.BA"},
-    "Invesco S&P 500 Equal Weight": {"orig": "RSP", "arg": "RSP.BA"},
-    "iShares MSCI ACWI (Mundo Global)": {"orig": "ACWI", "arg": "ACWI.BA"},
-    "iShares Core MSCI World (Desarrollados)": {"orig": "IWDA", "arg": "IWDA.BA"},
-    "iShares MSCI EFA (Excluye EE.UU.)": {"orig": "EFA", "arg": "EFA.BA"},
-    "Vanguard FTSE Developed Markets": {"orig": "VEA", "arg": "VEA.BA"},
-    "iShares Core MSCI Europe (Europa)": {"orig": "IEUR", "arg": "IEUR.BA"},
-    "iShares Latin America 40 (Latam)": {"orig": "ILF", "arg": "ILF.BA"},
-    "iShares Core MSCI Emerging Markets": {"orig": "IEMG", "arg": "IEMG.BA"},
-    "iShares MSCI Emerging Markets": {"orig": "EEM", "arg": "EEM.BA"},
-    "iShares China Large-Cap (China)": {"orig": "FXI", "arg": "FXI.BA"},
-    "iShares MSCI Brazil (Bovespa)": {"orig": "EWZ", "arg": "EWZ.BA"},
-    "iShares MSCI Japan (Tokio)": {"orig": "EWJ", "arg": "EWJ.BA"},
-    "iShares MSCI South Korea (Corea)": {"orig": "EWY", "arg": "EWY.BA"},
-    "JPMorgan BetaBuilders Canada": {"orig": "BBCA", "arg": "BBCA.BA"},
-    "JPMorgan Developed ex-US": {"orig": "BBAX", "arg": "BBAX.BA"},
-    "Technology Select Sector SPDR": {"orig": "XLK", "arg": "XLK.BA"},
-    "Financial Select Sector SPDR": {"orig": "XLF", "arg": "XLF.BA"},
-    "Energy Select Sector SPDR": {"orig": "XLE", "arg": "XLE.BA"},
-    "Health Care Select Sector SPDR": {"orig": "XLV", "arg": "XLV.BA"},
-    "Consumer Discretionary SPDR": {"orig": "XLY", "arg": "XLY.BA"},
-    "Consumer Staples Select SPDR": {"orig": "XLP", "arg": "XLP.BA"},
-    "Industrial Select Sector SPDR": {"orig": "XLI", "arg": "XLI.BA"},
-    "Materials Select Sector SPDR": {"orig": "XLB", "arg": "XLB.BA"},
-    "Real Estate Select Sector SPDR": {"orig": "XLRE", "arg": "XLRE.BA"},
-    "Utilities Select Sector SPDR": {"orig": "XLU", "arg": "XLU.BA"},
-    "VanEck Semiconductor (Chips IA)": {"orig": "SMH", "arg": "SMH.BA"},
-    "First Trust Cybersecurity (Ciber)": {"orig": "CIBR", "arg": "CIBR.BA"},
-    "iShares U.S. Aerospace & Defense": {"orig": "ITA", "arg": "ITA.BA"},
-    "iShares Biotechnology (Biotech)": {"orig": "IBB", "arg": "IBB.BA"},
-    "Ark Innovation ETF (Cathie Wood)": {"orig": "ARKK", "arg": "ARKK.BA"},
-    "SPDR Gold Shares (Oro Físico)": {"orig": "GLD", "arg": "GLD.BA"},
-    "iShares Silver Trust (Plata Física)": {"orig": "SLV", "arg": "SLV.BA"},
-    "iShares Bitcoin Trust (Spot BTC)": {"orig": "IBIT", "arg": "IBIT.BA"},
-    "iShares Ethereum Trust (Spot ETH)": {"orig": "ETHA", "arg": "ETHA.BA"},
-    "United States Oil Fund (Petróleo)": {"orig": "USO", "arg": "USO.BA"},
-    "Global X Uranium (Uranio)": {"orig": "URA", "arg": "URA.BA"},
-    "Global X Copper Miners (Cobre)": {"orig": "COPX", "arg": "COPX.BA"},
-    "SPDR S&P Metals & Mining (Minería)": {"orig": "XME", "arg": "XME.BA"},
-    "iShares Global Clean Energy": {"orig": "ICLN", "arg": "ICLN.BA"},
-    "iShares S&P GSCI Commodity Trust": {"orig": "GSG", "arg": "GSG.BA"},
-    "Teucrium Corn Fund (Maíz)": {"orig": "CORN", "arg": "CORN.BA"},
-    "Teucrium Soybean Fund (Soja)": {"orig": "SOYB", "arg": "SOYB.BA"},
-    "Vanguard Dividend Appreciation": {"orig": "VIG", "arg": "VIG.BA"},
-    "Invesco S&P 500 Quality (Calidad)": {"orig": "SPHQ", "arg": "SPHQ.BA"},
-    "iShares S&P 500 Growth (Crecimiento)": {"orig": "IVW", "arg": "IVW.BA"},
-    "iShares S&P 500 Value (Valor)": {"orig": "IVE", "arg": "IVE.BA"},
-    "iShares MSCI USA ESG Aware": {"orig": "ESGU", "arg": "ESGU.BA"},
-    "Direxion Daily S&P 500 Bull 3X": {"orig": "SPXL", "arg": "SPXL.BA"},
-    "ProShares UltraPro QQQ 3X": {"orig": "TQQQ", "arg": "TQQQ.BA"},
-    "ProShares Short S&P 500 (Inverso)": {"orig": "SH", "arg": "SH.BA"},
-    "ProShares Short QQQ (Inverso QQQ)": {"orig": "PSQ", "arg": "PSQ.BA"},
-    "iShares Barclays Capital VIX": {"orig": "VXX", "arg": "VXX.BA"}
-}
-MAPEO_CEDEARS_COMAFI = {
+# LECTURA INTELIGENTE DEL ARCHIVO EXTERNO EN GITHUB
+try:
+    df_csv = pd.read_csv("activos.csv")
+    df_csv['Ticker'] = df_csv['Ticker'].astype(str).str.strip()
+    df_csv['Nombre'] = df_csv['Nombre'].astype(str).str.strip()
+    
+    MAPEO_ETFS_COMAFI = {}
+    for idx, row in df_csv.iterrows():
+        tk_limpio = row['Ticker']
+        nombre_limpio = row['Nombre']
+        # Mapea dinámicamente inyectando el .BA automático para el mercado argentino
+        MAPEO_ETFS_COMAFI[f"{nombre_limpio}"] = {"orig": tk_limpio, "arg": f"{tk_limpio}.BA"}
+except:
+    # Respaldo en caso de fallo físico de lectura
+    MAPEO_ETFS_COMAFI = {
+        "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
+        "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"}
+    }
+        MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
     "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
@@ -208,7 +167,7 @@ MAPEO_CEDEARS_COMAFI = {
     "Arcos Dorados Holdings (McDonalds)": {"orig": "ARCO", "arg": "ARCO.BA"},
     "Ferrari N.V. (Superdeportivos F1)": {"orig": "RACE", "arg": "RACE.BA"},
     "LVMH Moët Hennessy (Conglomerado Lujo)": {"orig": "LVMH", "arg": "LVMH.BA"}
-}
+        }
 MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
     "Pampa Energía (Líder Energético)": "PAMP.BA",
@@ -265,9 +224,16 @@ if 'reset_buscador' not in st.session_state:
     st.session_state.reset_buscador = 0
 
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
-for n, t in sorted(MAPEO_ACCIONES_RAVA.items()): sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
-for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()): sugerencias_buscador.append(f"🔵 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
-for n, d in sorted(MAPEO_ETFS_COMAFI.items()): sugerencias_buscador.append(f"📊 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
+for n, t in sorted(MAPEO_ACCIONES_RAVA.items()): 
+    sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
+for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()): 
+    sugerencias_buscador.append(f"🔵 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
+
+# INYECTA AUTOMÁTICAMENTE LA VERSIÓN LOCAL CON .BA A LOS TICKERS LEÍDOS DESDE EL CSV
+for n, d in sorted(MAPEO_ETFS_COMAFI.items()): 
+    ticker_us = d.get('orig', '')
+    ticker_ar = d.get('arg', f"{ticker_us}.BA")
+    sugerencias_buscador.append(f"📊 {n} [USA:{ticker_us} | BYMA:{ticker_ar}]")
 
 seleccion_activo = st.selectbox("Buscador:", sugerencias_buscador, key=f"buscador_celular_v28_{st.session_state.reset_buscador}", label_visibility="collapsed")
 
@@ -287,10 +253,13 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
     col_izq_usa, col_der_byma = st.columns(2)
     with col_izq_usa:
         if ticker_origen_dinamico != "No Aplica":
-            if st.button(f"➕ {ticker_origen_dinamico}", key="insertar_usa"): activo_a_cargar = ticker_origen_dinamico
-        else: st.button("-", key="btn_usa_deshabilitado", disabled=True)
+            if st.button(f"➕ {ticker_origen_dinamico}", key="insertar_usa"): 
+                activo_a_cargar = ticker_origen_dinamico
+        else: 
+            st.button("-", key="btn_usa_deshabilitado", disabled=True)
     with col_der_byma:
-        if st.button(f"➕ {ticker_byma_dinamico}", key="insertar_byma"): activo_a_cargar = ticker_byma_dinamico
+        if st.button(f"➕ {ticker_byma_dinamico}", key="insertar_byma"): 
+            activo_a_cargar = ticker_byma_dinamico
     if st.button("🧹 Limpiar Buscador [ + ]", key="btn_clear_buscador_top", use_container_width=True):
         st.session_state.reset_buscador += 1
         st.rerun()
@@ -311,7 +280,7 @@ st.info(f"⚡ Cotización de Ultra Precisión: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {
 st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
-    es_cedear_local = simbolo_ticket.endswith(".BA") and sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLK.BA", "XLF.BA", "XLE.BA", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA", "AUSO", "ARCO", "RACE", "LVMH"]
+    es_cedear_local = simbolo_ticket.endswith(".BA") or sigla_limpia in ["SPY", "TSLA", "AAPL", "KO", "QQQ", "DIA", "BABA", "AMZN", "AMD", "GOLD", "PBR", "MELI", "META", "MSFT", "NVDA", "WMT", "GLD", "XLK", "SMH", "IBIT", "IVV", "IWM", "RSP", "ACWI", "IWDA", "EFA", "VEA", "IEUR", "ILF", "IEMG", "EEM", "FXI", "EWZ", "EWJ", "EWY", "BBCA", "BBAX", "XLK.BA", "XLF.BA", "XLE.BA", "XLV", "XLY", "XLP", "XLI", "XLB", "XLRE", "XLU", "CIBR", "ITA", "IBB", "ARKK", "SLV", "ETHA", "USO", "URA", "COPX", "XME", "ICLN", "GSG", "CORN", "SOYB", "VIG", "SPHQ", "IVW", "IVE", "ESGU", "SPXL", "TQQQ", "SH", "PSQ", "VXX", "AVGO", "TSM", "ASML", "CRM", "DELL", "KLAC", "NFLX", "DIS", "NKE", "SBUX", "BKNG", "V", "MA", "JPM", "BAC", "MS", "NU", "IBKR", "BRK.B", "PYPL", "PEP", "PG", "PM", "ABEV", "PFE", "JNJ", "LLY", "ABBV", "MRK", "AMGN", "XOM", "CVX", "GEV", "VALE", "CAT", "BA", "AUSO", "ARCO", "RACE", "LVMH"]
     es_local_pure = (simbolo_ticket.endswith(".BA") and not es_cedear_local) or sigla_limpia in ["COME", "CEPU", "GGAL", "YPFD", "PAMP", "ALUA", "TXAR", "AUSO", "HAVA", "SEMI", "TRAN", "MOLI", "AGRO", "SUPV", "BYMA", "VALO", "LOMA", "MIRG", "CRES", "IRSA", "TECO2", "BHIP", "BOLT", "CADO", "CAPX", "CELU", "CGPA2", "CTIO", "CVH", "DGCU2", "FERR", "GCO", "HARG", "INVJ", "LEDE", "LONG", "MOLA", "MORI", "RIGO", "SAMU"]
     precio_memoria_compartida = st.session_state.precios_agente.get(simbolo_ticket, st.session_state.precios_agente.get(sigla_limpia, 150.0))
     ticker_yf = simbolo_ticket if (es_local_pure or es_cedear_local) else sigla_limpia
@@ -440,13 +409,21 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
+# CENTRAL DE NOTICIAS CON FILTRADO AUTOMÁTICO DE EXTENSIONES .BA
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
-    s_fijo = str(simbolo).strip().upper().replace(".BA", "")
-    url_segura_final = f"https://yahoo.com{s_fijo}"
+    s_fijo = str(simbolo).strip().upper()
+    
+    # Si el activo no es un ETF puro en USD de origen y no tiene .BA, se lo añadimos para la URL de Yahoo Finance
+    if not s_fijo.endswith(".BA") and s_fijo not in ["SPY", "QQQ", "DIA", "IWM", "ARKK", "CIBR", "EEM", "ETHA", "EWZ", "GLD", "IBIT", "MCHI", "SPXL", "URA", "XLE", "XLF", "XLK", "XLP", "XLV"]:
+        ticker_yahoo = f"{s_fijo}.BA"
+    else:
+        ticker_yahoo = s_fijo
+
+    url_segura_final = f"https://yahoo.com{ticker_yahoo}"
     st.markdown(f"""
     <div class="caja-noticia-link">
-        <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>📍 Monitoreo Algorítmico:</b> Analizando variables bursátiles en tiempo real. Soporte y RSI validados con Yahoo Finance.
+        <span style="color:#2196f3; font-weight:bold;">[{ticker_yahoo}]</span> <b>📍 Monitoreo Algorítmico:</b> Analizando variables bursátiles en tiempo real. Soporte y RSI validados con Yahoo Finance.
         <br>
         <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Abrir perfil analítico en Yahoo Finance</a>
     </div>
