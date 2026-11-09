@@ -1,0 +1,290 @@
+Ticker,Nombre
+ARKK,ARK Innovation ETF
+CIBR,First Trust Nasdaq Cybersecurity ETF
+DIA,SPDR Dow Jones Industrial Average ETF Trust
+EEM,iShares MSCI Emerging Markets ETF
+ETHA,iShares Ethereum Trust (Crypto ETF)
+EWZ,iShares MSCI Brazil ETF
+GLD,SPDR Gold Shares (Oro)
+IBIT,iShares Bitcoin Trust (Crypto ETF)
+IWM,iShares Russell 2000 ETF
+MCHI,iShares MSCI China ETF
+QQQ,Invesco QQQ Trust (Nasdaq 100)
+SH,ProShares Short S&P 500
+SMH,VanEck Semiconductor ETF
+SPY,SPDR S&P 500 ETF Trust
+SPXL,Direxion Daily S&P 500 Bull 3X
+URA,Global X Uranium ETF
+XLE,Energy Select Sector SPDR Fund
+XLF,Financial Select Sector SPDR Fund
+XLK,Technology Select Sector SPDR Fund
+XLP,Consumer Staples Select Sector SPDR Fund
+XLV,Health Care Select Sector SPDR Fund
+XLY,Consumer Discretionary Select Sector SPDR Fund
+AAPL,Apple Inc.
+ABNB,Airbnb Inc.
+ABT,Abbott Laboratories
+ADBE,Adobe Inc.
+ADI,Analog Devices Inc.
+ADM,Archer-Daniels-Midland Co.
+AEM,Agnico Eagle Mines Ltd.
+AIG,American International Group
+AI,C3.ai Inc.
+ALB,Albemarle Corporation (Litio)
+AMAT,Applied Materials Inc.
+AMD,Advanced Micro Devices Inc.
+AMGN,Amgen Inc.
+AMZN,Amazon.com Inc.
+ANF,Abercrombie & Fitch Co.
+ANSS,Ansys Inc.
+AON,Aon plc
+APA,APA Corporation
+APD,Air Products and Chemicals Inc.
+ARCO,Arcos Dorados Holdings Inc.
+ARM,ARM Holdings plc
+ASML,ASML Holding N.V.
+AVGO,Broadcom Inc.
+AXP,American Express Co.
+AZN,AstraZeneca plc
+BA,The Boeing Company
+BABA,Alibaba Group Holding Ltd.
+BAC,Bank of America Corp.
+BBD,Banco Bradesco S.A.
+BBV,Banco Bilbao Vizcaya Argentaria
+BCS,Barclays PLC
+BDX,Becton Dickinson and Co.
+BEMY,Bloom Energy Corp.
+BEN,Franklin Resources Inc.
+BHP,BHP Group Limited
+BIDU,Baidu Inc.
+BIIB,Biogen Inc.
+BIO,Bio-Rad Laboratories
+BK,The Bank of New York Mellon
+BKR,Baker Hughes Co.
+BMY,Bristol-Myers Squibb Co.
+BNG,Bunge Global SA
+BP,BP plc
+BRKB,Berkshire Hathaway Inc.
+BSBR,Banco Santander Brasil
+BSX,Boston Scientific Corp.
+BUD,Anheuser-Busch InBev
+BYD,BYD Company Limited
+C,Citigroup Inc.
+CAH,Cardinal Health Inc.
+CAT,Caterpillar Inc.
+CBD,Companhia Brasileira de Distribuição
+CHTR,Charter Communications Inc.
+CI,The Cigna Group
+CL,Colgate-Palmolive Co.
+COIN,Coinbase Global Inc.
+COST,Costco Wholesale Corp.
+CRM,Salesforce Inc.
+CSCO,Cisco Systems Inc.
+CSX,CSX Corporation
+CVS,CVS Health Corp.
+CVX,Chevron Corporation (Petróleo)
+D,Dominion Energy Inc.
+DAL,Delta Air Lines Inc.
+DE,Deere & Company
+DELL,Dell Technologies Inc.
+DESP,Despegar.com Corp.
+DFS,Discover Financial Services
+DG,Dollar General Corp.
+DIS,The Walt Disney Company
+DLR,Digital Realty Trust Inc.
+DLTR,Dollar Tree Inc.
+DOCU,DocuSign Inc.
+DOW,Dow Inc.
+DPZ,Domino's Pizza Inc.
+DRI,Darden Restaurants Inc.
+EBAY,eBay Inc.
+ECL,Ecolab Inc.
+ED,Consolidated Edison Inc.
+EFX,Equifax Inc.
+EA,Electronic Arts Inc.
+EL,Estée Lauder Companies Inc.
+EMR,Emerson Electric Co.
+ENPH,Enphase Energy Inc.
+EOG,EOG Resources Inc.
+EQIX,Equinix Inc.
+ETN,Eaton Corporation plc
+F,Ford Motor Company
+FAST,Fastenal Co.
+FCX,Freeport-McMoRan Inc.
+FDX,FedEx Corporation
+FE,FirstEnergy Corp.
+FSLR,First Solar Inc.
+GE,General Electric Company
+GFI,Gold Fields Limited
+GILD,Gilead Sciences Inc.
+GIS,General Mills Inc.
+GLW,Corning Inc.
+GM,General Motors Company
+GOLD,Barrick Gold Corporation (Oro)
+GOGL,Alphabet Inc. (Google Class A)
+GS,The Goldman Sachs Group Inc.
+HD,The Home Depot Inc.
+HIMS,Hims & Hers Health Inc.
+HMC,Honda Motor Co. Ltd.
+HMY,Harmony Gold Mining Co. (Oro)
+HON,Honeywell International Inc.
+HOOD,Robinhood Markets Inc.
+HPQ,HP Inc.
+HSBC,HSBC Holdings plc
+HUM,Humana Inc.
+IBM,International Business Machines
+INFY,Infosys Limited
+INTC,Intel Corporation
+INTU,Intuit Inc.
+IP,International Paper Co.
+JCI,Johnson Controls International
+JNJ,Johnson & Johnson
+JPM,JPMorgan Chase & Co.
+K,Kellanova (Kellogg)
+KDP,Keurig Dr Pepper Inc.
+KEY,KeyCorp
+KHC,The Kraft Heinz Company
+KMB,Kimberly-Clark Corp.
+KMI,Kinder Morgan Inc.
+KO,The Coca-Cola Company
+LAC,Lithium Americas Corp. (Litio)
+LIN,Linde plc
+LLY,Eli Lilly and Company
+LMT,Lockheed Martin Corporation
+LOGI,Logitech International S.A.
+LOW,Lowe's Companies Inc.
+LRCX,Lam Research Corp.
+LUV,Southwest Airlines Co.
+MA,Mastercard Incorporated
+MCD,McDonald's Corporation
+MDT,Medtronic plc
+MELI,MercadoLibre Inc.
+META,Meta Platforms Inc.
+MET,MetLife Inc.
+MGM,MGM Resorts International
+MMM,3M Company
+MO,Altria Group Inc.
+MOS,The Mosaic Company
+MRK,Merck & Co. Inc.
+MRVL,Marvell Technology Inc.
+MS,Morgan Stanley
+MSFT,Microsoft Corporation
+MSI,Motorola Solutions Inc.
+MU,Micron Technology Inc.
+NEM,Newmont Corporation (Oro)
+NFLX,Netflix Inc.
+NKE,NIKE Inc.
+NIO,NIO Inc.
+NOC,Northrop Grumman Corp.
+NTES,NetEase Inc.
+NUE,Nucor Corporation
+NU,Nu Holdings Ltd. (Nubank)
+NVDA,NVIDIA Corporation
+NXPI,NXP Semiconductors N.V.
+ORCL,Oracle Corporation
+OXY,Occidental Petroleum Corp.
+PANW,Palo Alto Networks Inc.
+PAAS,Pan American Silver Corp. (Plata)
+PBR,Petróleo Brasileiro S.A. (Petrobras)
+PDD,PDD Holdings (Temu / Pinduoduo)
+PEP,PepsiCo Inc.
+PFE,Pfizer Inc.
+PG,Procter & Gamble Co.
+PLTR,Palantir Technologies Inc.
+PM,Philip Morris International
+PNC,PNC Financial Services Group
+PYPL,PayPal Holdings Inc.
+QCOM,Qualcomm Inc.
+REGN,Regeneron Pharmaceuticals
+RBLX,Roblox Corporation
+RIO,Rio Tinto plc
+RL,Ralph Lauren Corporation
+RMD,ResMed Inc.
+ROK,Rockwell Automation Inc.
+RTX,RTX Corporation (Raytheon)
+SAN,Banco Santander S.A.
+SBUX,Starbucks Corporation
+SCCO,Southern Copper Corp.
+SE,Sea Limited (Shopee)
+SHEL,Shell plc
+SHOP,Shopify Inc.
+SIER,Sierra Metals Inc.
+SIRI,Sirius XM Holdings Inc.
+SKM,SK Telecom / SK Hynix (Chips)
+SLB,Schlumberger Limited
+SMCI,Super Micro Computer Inc. (IA)
+SNAP,Snap Inc.
+SNOW,Snowflake Inc.
+SONY,Sony Group Corporation
+SPOT,Spotify Technology S.A.
+SQ,Block Inc. (Square)
+STLA,Stellantis N.V.
+SU,Suncor Energy Inc.
+SYK,Stryker Corporation
+T,AT&T Inc.
+TD,Toronto-Dominion Bank
+TEAM,Atlassian Corporation
+TGT,Target Corporation
+TJX,The TJX Companies Inc.
+TM,Toyota Motor Corporation
+TMO,Thermo Fisher Scientific Inc.
+TRV,The Travelers Companies Inc.
+TSLA,Tesla Inc.
+TSM,Taiwan Semiconductor Manufacturing Co.
+TTE,TotalEnergies SE
+TWLO,Twilio Inc.
+TXN,Texas Instruments Inc.
+UBER,Uber Technologies Inc.
+UNH,UnitedHealth Group Inc.
+UNP,Union Pacific Corporation
+UPS,United Parcel Service Inc.
+URI,United Rentals Inc.
+USB,U.S. Bancorp
+V,Visa Inc.
+VALE,Vale S.A.
+VIST,Vista Energy S.A.B. de C.V.
+VLO,Valero Energy Corp.
+VMC,Vulcan Materials Co.
+VOD,Vodafone Group Plc
+VRTX,Vertex Pharmaceuticals Inc.
+VZ,Verizon Communications Inc.
+WBA,Walgreens Boots Alliance
+WFC,Wells Fargo & Company
+WMT,Walmart Inc.
+X,United States Steel Corp.
+XOM,Exxon Mobil Corporation (Petróleo)
+XP,XP Inc.
+YPF,YPF S.A. (CEDEAR ADR)
+Z,Zillow Group Inc.
+ZM,Zoom Video Communications
+ZS,Zscaler Inc.
+AGRO,Agrometal
+ALUA,Aluar
+AUSO,Autopistas del Sol
+BBAR,BBVA Argentina
+BMA,Banco Macro
+BYMA,Bolsas y Mercados Argentinos
+CECO2,Central Costanera
+CELU,Celulosa Argentina
+CEPU,Central Puerto
+COME,Sociedad Comercial del Plata
+CRES,Cresud
+EDN,Edenor
+GGAL,Grupo Financiero Galicia
+HARG,Holcim Argentina
+IRSA,IRSA Inversiones y Representaciones
+LEDE,Ledesma
+LOMA,Loma Negra
+METR,Metrogas
+MIRG,Mirgor
+MOLI,Molinos Río de la Plata
+MORI,Morixe Hermanos
+PAMP,Pampa Energía
+SUPV,Grupo Supervielle
+TECO2,Telecom Argentina
+TGNO4,Transportadora de Gas del Norte
+TGSU2,Transportadora de Gas del Sur
+TRAN,Transener
+TXAR,Ternium Argentina
+VALO,Grupo Financiero Valores
+YPFD,YPF SA
