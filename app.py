@@ -114,7 +114,7 @@ except:
         "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
         "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"}
     }
-    MAPEO_CEDEARS_COMAFI = {
+  MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
     "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
@@ -167,8 +167,8 @@ except:
     "Arcos Dorados Holdings (McDonalds)": {"orig": "ARCO", "arg": "ARCO.BA"},
     "Ferrari N.V. (Superdeportivos F1)": {"orig": "RACE", "arg": "RACE.BA"},
     "LVMH Moët Hennessy (Conglomerado Lujo)": {"orig": "LVMH", "arg": "LVMH.BA"}
-    }
-    MAPEO_ACCIONES_RAVA = {
+}
+MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
     "Pampa Energía (Líder Energético)": "PAMP.BA",
     "Central Puerto (Generación Eléctrica)": "CEPU.BA",
@@ -214,8 +214,8 @@ except:
     "Rigolleau S.A. (Envases Vidrio)": "RIGO.BA",
     "San Miguel S.A. (Citricola Export)": "SAMU.BA",
     "Molinos Juan Semino (Almidones)": "SEMI.BA"
-    }
-    if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
+}
+if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
@@ -226,8 +226,6 @@ if 'reset_buscador' not in st.session_state:
 sugerencias_buscador = ["- Escribe o selecciona un activo -"]
 for n, t in sorted(MAPEO_ACCIONES_RAVA.items()): 
     sugerencias_buscador.append(f"🟢 {n} [BYMA:{t}]")
-for n, d in sorted(MAPEO_CEDEARS_COMAFI.items()): 
-    sugerencias_buscador.append(f"🔵 {n} [USA:{d.get('orig','')} | BYMA:{d.get('arg','')}]")
 
 # INYECTA AUTOMÁTICAMENTE LA VERSIÓN LOCAL CON .BA A LOS TICKERS LEÍDOS DESDE EL CSV
 for n, d in sorted(MAPEO_ETFS_COMAFI.items()): 
@@ -319,7 +317,7 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-# =====================================================================
+   # =====================================================================
 # BLOQUE 7: RENDERIZADO DE PORTAFOLIO CON CONVERSIÓN DE DIVISAS CORREGIDA
 # =====================================================================
 
