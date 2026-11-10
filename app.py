@@ -110,11 +110,11 @@ try:
         MAPEO_ETFS_COMAFI[f"{nombre_limpio}"] = {"orig": tk_limpio, "arg": f"{tk_limpio}.BA"}
 except:
     # Respaldo en caso de fallo físico de lectura
-    MAPEO_ETFS_COMAFI = {
+ MAPEO_ETFS_COMAFI = {
         "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
         "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"}
     }
-  MAPEO_CEDEARS_COMAFI = {
+MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
     "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
