@@ -110,11 +110,11 @@ try:
         MAPEO_ETFS_COMAFI[f"{nombre_limpio}"] = {"orig": tk_limpio, "arg": f"{tk_limpio}.BA"}
 except:
     # Respaldo en caso de fallo físico de lectura
- MAPEO_ETFS_COMAFI = {
+    MAPEO_ETFS_COMAFI = {
         "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
         "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"}
     }
-MAPEO_CEDEARS_COMAFI = {
+ MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
     "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
@@ -167,7 +167,7 @@ MAPEO_CEDEARS_COMAFI = {
     "Arcos Dorados Holdings (McDonalds)": {"orig": "ARCO", "arg": "ARCO.BA"},
     "Ferrari N.V. (Superdeportivos F1)": {"orig": "RACE", "arg": "RACE.BA"},
     "LVMH Moët Hennessy (Conglomerado Lujo)": {"orig": "LVMH", "arg": "LVMH.BA"}
-}
+ }
 MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
     "Pampa Energía (Líder Energético)": "PAMP.BA",
@@ -317,25 +317,22 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
-   # =====================================================================
-# BLOQUE 7: RENDERIZADO DE PORTAFOLIO CON CONVERSIÓN DE DIVISAS CORREGIDA
 # =====================================================================
-
+# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO Y CONVERSIÓN DE DIVISAS
+# =====================================================================
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
     
-    p_base = datos_reales["precio"]          # Precio crudo que entrega Yahoo Finance
-    p_target = datos_reales["target_usd"]    # Target crudo que entrega la función
+    p_base = datos_reales["precio"]
+    p_target = datos_reales["target_usd"]
     es_local_pure = datos_reales["es_local"]
     es_cedear_local = datos_reales["es_cedear_local"]
     monto_actual = st.session_state.montos_dis[tk]
     
-    # 1. IDENTIFICACIÓN DE LA MONEDA NATIVA DEL TICKER EN YAHOO
-    # Si termina en .BA la moneda nativa es ARS. Si es internacional (SPY, AAPL, KO, TSLA), es USD.
+    # Identifica si el activo cotiza nativamente en Pesos (Merval) o Dólares (Wall Street)
     es_nativo_pesos = tk_limpio_upper.endswith(".BA") or es_local_pure
     
-    # 2. CÁLCULO DE VALORACIÓN PARA EL PATRIMONIO TOTAL (SIEMPRE EN USD BASE)
     if es_nativo_pesos:
         patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
     else:
@@ -344,13 +341,10 @@ for tk in activos_actuales:
     nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
     op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
     
-    # 3. HOMOGENEIZACIÓN DE PRECIOS SEGÚN EL BOTÓN SELECCIONADO POR EL USUARIO
     if es_pesos:
-        # Si el usuario quiere ver PESOS (ARS)
         precio_matriz_final = p_base if es_nativo_pesos else (p_base * VALOR_DOLAR_MEP)
         val_target_string = p_target if es_nativo_pesos else (p_target * VALOR_DOLAR_MEP)
     else:
-        # Si el usuario quiere ver DÓLARES (USD)
         precio_matriz_final = (p_base / VALOR_DOLAR_MEP) if es_nativo_pesos else p_base
         val_target_string = (p_target / VALOR_DOLAR_MEP) if es_nativo_pesos else p_target
 
@@ -364,7 +358,6 @@ for tk in activos_actuales:
         "Agente (Not.)": op_agente
     })
     
-    # Textos adaptados para las noticias internas
     if tk_limpio_upper in ["SPY", "SPY.BA"]: noticias = f"Resumen: Tendencia macro estable sobre {p_base:,.2f} USD."
     elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: noticias = f"Resumen: Oscilación {datos_reales['macd']} con volumen de {datos_reales['vol_rel']}."
     elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: noticias = f"Resumen: Apple opera firme con RSI en {datos_reales['rsi']}."
@@ -372,7 +365,6 @@ for tk in activos_actuales:
     elif tk_limpio_upper in ["NVDA", "NVDA.BA"]: noticias = f"Resumen: Fuerte aceleración tecnológica. Target situado sobre los {p_target:,.2f} USD."
     else: noticias = f"Resumen: Consolidando en rango. Soporte localizado en {datos_reales['piso_a']}."
 
-    # RENDERIZADO VISUAL DE LA TARJETA
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
@@ -393,21 +385,28 @@ for tk in activos_actuales:
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
     
-    # 4. ENTRADA DE TEXTO PARA EL CAPITAL (Sincronizado correctamente con la moneda elegida)
-    monto_mostrar_box = monto_actual * factor_cambio if not es_nativo_pesos or es_pesos else monto_actual
-    texto_con_comillas = f'"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"'
-    entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
+    # Entrada de datos numérica limpia y controlada anti-errores
+    monto_mostrar_box = float(monto_actual * factor_cambio if not es_nativo_pesos or es_pesos else monto_actual)
+    st.markdown(f"<span style='font-size:0.82rem; color:#888;'>Monto invertido en {texto_moneda_limpio.strip()}:</span>", unsafe_allow_html=True)
     
-    if entrada_texto_usuario != texto_con_comillas:
+    entrada_numerica = st.number_input(
+        label=f"Monto_{tk_limpio_upper}",
+        min_value=0.0,
+        value=monto_mostrar_box,
+        step=500.0,
+        format="%.2f",
+        key=f"num_box_{tk_limpio_upper}_{moneda}",
+        label_visibility="collapsed"
+    )
+    
+    if entrada_numerica != monto_mostrar_box:
         try:
-            limpio = entrada_texto_usuario.replace('"', '').replace('ARS $', '').replace('USD $', '').replace('$', '').replace(',', '').strip()
-            if limpio:
-                st.session_state.montos_dis[tk] = float(limpio) / factor_cambio if not es_nativo_pesos or es_pesos else float(limpio)
-                st.rerun()
+            st.session_state.montos_dis[tk] = float(entrada_numerica / factor_cambio if not es_nativo_pesos or es_pesos else entrada_numerica)
+            st.rerun()
         except: pass
+        
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 5. CÁLCULO FINAL DE PATRIMONIO TOTAL INVERTIDO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -427,7 +426,6 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
-# 6. CENTRAL DE NOTICIAS CON EXTENSIONES DE MERCADO OPTIMIZADAS
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     s_fijo = str(simbolo).strip().upper()
