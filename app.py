@@ -114,7 +114,7 @@ except:
         "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
         "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"}
     }
-MAPEO_CEDEARS_COMAFI = {
+    MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
     "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
@@ -167,8 +167,8 @@ MAPEO_CEDEARS_COMAFI = {
     "Arcos Dorados Holdings (McDonalds)": {"orig": "ARCO", "arg": "ARCO.BA"},
     "Ferrari N.V. (Superdeportivos F1)": {"orig": "RACE", "arg": "RACE.BA"},
     "LVMH Moët Hennessy (Conglomerado Lujo)": {"orig": "LVMH", "arg": "LVMH.BA"}
-        }
-MAPEO_ACCIONES_RAVA = {
+    }
+    MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
     "Pampa Energía (Líder Energético)": "PAMP.BA",
     "Central Puerto (Generación Eléctrica)": "CEPU.BA",
@@ -214,8 +214,8 @@ MAPEO_ACCIONES_RAVA = {
     "Rigolleau S.A. (Envases Vidrio)": "RIGO.BA",
     "San Miguel S.A. (Citricola Export)": "SAMU.BA",
     "Molinos Juan Semino (Almidones)": "SEMI.BA"
-}
-if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
+    }
+    if st.button("💾 Guardar Cambios en Dispositivo", use_container_width=True, type="primary"):
     st.success("¡Estructura guardada en la memoria local con éxito!")
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
@@ -319,30 +319,54 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
+# =====================================================================
+# BLOQUE 7: RENDERIZADO DE PORTAFOLIO CON CONVERSIÓN DE DIVISAS CORREGIDA
+# =====================================================================
+
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
-    p_base = datos_reales["precio"]
-    p_target = datos_reales["target_usd"]
+    
+    p_base = datos_reales["precio"]          # Precio crudo que entrega Yahoo Finance
+    p_target = datos_reales["target_usd"]    # Target crudo que entrega la función
     es_local_pure = datos_reales["es_local"]
     es_cedear_local = datos_reales["es_cedear_local"]
     monto_actual = st.session_state.montos_dis[tk]
     
-    if es_local_pure or es_cedear_local: patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
-    else: patrimonio_total_usd += monto_actual
+    # 1. IDENTIFICACIÓN DE LA MONEDA NATIVA DEL TICKER EN YAHOO
+    # Si termina en .BA la moneda nativa es ARS. Si es internacional (SPY, AAPL, KO, TSLA), es USD.
+    es_nativo_pesos = tk_limpio_upper.endswith(".BA") or es_local_pure
+    
+    # 2. CÁLCULO DE VALORACIÓN PARA EL PATRIMONIO TOTAL (SIEMPRE EN USD BASE)
+    if es_nativo_pesos:
+        patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
+    else:
+        patrimonio_total_usd += monto_actual
     
     nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
     op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
     
-    if es_local_pure or es_cedear_local:
-        precio_matriz_final = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
-        val_target_string = f"{p_target:,.2f}" if es_pesos else f"{p_target / VALOR_DOLAR_MEP:,.2f}"
+    # 3. HOMOGENEIZACIÓN DE PRECIOS SEGÚN EL BOTÓN SELECCIONADO POR EL USUARIO
+    if es_pesos:
+        # Si el usuario quiere ver PESOS (ARS)
+        precio_matriz_final = p_base if es_nativo_pesos else (p_base * VALOR_DOLAR_MEP)
+        val_target_string = p_target if es_nativo_pesos else (p_target * VALOR_DOLAR_MEP)
     else:
-        precio_matriz_final = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
-        val_target_string = f"{p_target * VALOR_DOLAR_MEP:,.2f}" if es_pesos else f"{p_target:,.2f}"
+        # Si el usuario quiere ver DÓLARES (USD)
+        precio_matriz_final = (p_base / VALOR_DOLAR_MEP) if es_nativo_pesos else p_base
+        val_target_string = (p_target / VALOR_DOLAR_MEP) if es_nativo_pesos else p_target
 
-    lista_para_matriz_resumen.append({"Activo": tk_limpio_upper, "Precio": f"{precio_matriz_final:,.2f}", "Target (JPM)": val_target_string, "Sem %": datos_reales["prob_sem"], "Anual %": datos_reales["prob_anu"], "Fund": datos_reales["prob_fun"], "Agente (Not.)": op_agente})
+    lista_para_matriz_resumen.append({
+        "Activo": tk_limpio_upper, 
+        "Precio": f"{precio_matriz_final:,.2f}", 
+        "Target (JPM)": f"{val_target_string:,.2f}", 
+        "Sem %": datos_reales["prob_sem"], 
+        "Anual %": datos_reales["prob_anu"], 
+        "Fund": datos_reales["prob_fun"], 
+        "Agente (Not.)": op_agente
+    })
     
+    # Textos adaptados para las noticias internas
     if tk_limpio_upper in ["SPY", "SPY.BA"]: noticias = f"Resumen: Tendencia macro estable sobre {p_base:,.2f} USD."
     elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: noticias = f"Resumen: Oscilación {datos_reales['macd']} con volumen de {datos_reales['vol_rel']}."
     elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: noticias = f"Resumen: Apple opera firme con RSI en {datos_reales['rsi']}."
@@ -350,19 +374,13 @@ for tk in activos_actuales:
     elif tk_limpio_upper in ["NVDA", "NVDA.BA"]: noticias = f"Resumen: Fuerte aceleración tecnológica. Target situado sobre los {p_target:,.2f} USD."
     else: noticias = f"Resumen: Consolidando en rango. Soporte localizado en {datos_reales['piso_a']}."
 
+    # RENDERIZADO VISUAL DE LA TARJETA
     st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
     texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
     
-    if es_local_pure or es_cedear_local:
-        p_mostrar_tarjeta = p_base if es_pesos else (p_base / VALOR_DOLAR_MEP)
-        t_mostrar_tarjeta = p_target if es_pesos else (p_target / VALOR_DOLAR_MEP)
-    else:
-        p_mostrar_tarjeta = (p_base * VALOR_DOLAR_MEP) if es_pesos else p_base
-        t_mostrar_tarjeta = (p_target * VALOR_DOLAR_MEP) if es_pesos else p_target
-
-    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{p_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{t_mostrar_tarjeta:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{precio_matriz_final:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{val_target_string:,.2f}</b></div>', unsafe_allow_html=True)
     
     with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
         st.markdown(f"• **RSI:** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']}")
@@ -377,7 +395,8 @@ for tk in activos_actuales:
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
     
-    monto_mostrar_box = monto_actual * factor_cambio if not (es_local_pure or es_cedear_local) or es_pesos else monto_actual
+    # 4. ENTRADA DE TEXTO PARA EL CAPITAL (Sincronizado correctamente con la moneda elegida)
+    monto_mostrar_box = monto_actual * factor_cambio if not es_nativo_pesos or es_pesos else monto_actual
     texto_con_comillas = f'"{texto_moneda_limpio.strip()} {monto_mostrar_box:,.2f}"'
     entrada_texto_usuario = st.text_input(f"box_txt_{tk_limpio_upper}", value=texto_con_comillas, key=f"input_box_{tk_limpio_upper}_{moneda}")
     
@@ -385,11 +404,12 @@ for tk in activos_actuales:
         try:
             limpio = entrada_texto_usuario.replace('"', '').replace('ARS $', '').replace('USD $', '').replace('$', '').replace(',', '').strip()
             if limpio:
-                st.session_state.montos_dis[tk] = float(limpio) / factor_cambio if not (es_local_pure or es_cedear_local) or es_pesos else float(limpio)
+                st.session_state.montos_dis[tk] = float(limpio) / factor_cambio if not es_nativo_pesos or es_pesos else float(limpio)
                 st.rerun()
         except: pass
     st.markdown('</div>', unsafe_allow_html=True)
 
+# 5. CÁLCULO FINAL DE PATRIMONIO TOTAL INVERTIDO
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
@@ -409,12 +429,11 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
-# CENTRAL DE NOTICIAS CON FILTRADO AUTOMÁTICO DE EXTENSIONES .BA
+# 6. CENTRAL DE NOTICIAS CON EXTENSIONES DE MERCADO OPTIMIZADAS
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias de mis Acciones</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     s_fijo = str(simbolo).strip().upper()
     
-    # Si el activo no es un ETF puro en USD de origen y no tiene .BA, se lo añadimos para la URL de Yahoo Finance
     if not s_fijo.endswith(".BA") and s_fijo not in ["SPY", "QQQ", "DIA", "IWM", "ARKK", "CIBR", "EEM", "ETHA", "EWZ", "GLD", "IBIT", "MCHI", "SPXL", "URA", "XLE", "XLF", "XLK", "XLP", "XLV"]:
         ticker_yahoo = f"{s_fijo}.BA"
     else:
