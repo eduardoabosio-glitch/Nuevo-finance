@@ -331,7 +331,7 @@ activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
 # =====================================================================
-# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO Y NOTICIAS EN TIEMPO REAL
+# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO, NOTICIAS EN ESPAÑOL Y ANÁLISIS
 # =====================================================================
 if 'version_input' not in st.session_state:
     st.session_state.version_input = 0
@@ -346,6 +346,32 @@ def actualizar_monto_callback(ticker_key, key_widget, factor):
             st.session_state.version_input += 1
     except:
         pass
+
+def traducir_y_analizar_noticia(texto_en):
+    txt_low = texto_en.lower()
+    positivas = ["surge", "soar", "gain", "buy", "upgrade", "beat", "growth", "high", "rally", "bull", "profit", "strong", "record"]
+    negativas = ["drop", "fall", "slump", "uncertainty", "plunge", "sell", "downgrade", "miss", "loss", "risk", "bear", "weak", "cut", "lawsuit"]
+    
+    puntos_pos = sum(1 for p in positivas if p in txt_low)
+    puntos_neg = sum(1 for n in negativas if n in txt_low)
+    
+    if puntos_pos > puntos_neg:
+        sentimiento = "🟢 Sentimiento: Alcista / Positivo"
+    elif puntos_neg > puntos_pos:
+        sentimiento = "🔴 Sentimiento: Bajista / Precaución"
+    else:
+        sentimiento = "🟡 Sentimiento: Neutral / Informativo"
+
+    texto_es = texto_en
+    try:
+        url_tr = f"https://googleapis.com{requests.utils.quote(texto_en)}"
+        r_tr = requests.get(url_tr, timeout=2)
+        if r_tr.status_code == 200:
+            texto_es = "".join([parte[0] for parte in r_tr.json()[0]])
+    except:
+        pass
+        
+    return texto_es, sentimiento
 
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
@@ -443,7 +469,12 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
-st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias en Tiempo Real</h3>", unsafe_allow_html=True)
+# CENTRAL DE NOTICIAS EN ESPAÑOL Y ANÁLISIS DE SENTIMIENTO
+st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
+
+total_alcistas = 0
+total_bajistas = 0
+
 for simbolo in activos_actuales:
     s_fijo = str(simbolo).strip().upper()
     s_usa = s_fijo.replace(".BA", "")
@@ -458,14 +489,18 @@ for simbolo in activos_actuales:
     if noticias_reales:
         for item in noticias_reales:
             contenido = item.get("content", item)
-            titulo_noticia = contenido.get("title", "Actualización de mercado")
+            titulo_original = contenido.get("title", "Actualización de mercado")
             link_obj = contenido.get("canonicalUrl", {})
             enlace_noticia = link_obj.get("url") if isinstance(link_obj, dict) else item.get("link", f"https://yahoo.com{s_usa}")
             
+            titulo_es, analisis_sent = traducir_y_analizar_noticia(titulo_original)
+            if "Positivo" in analisis_sent: total_alcistas += 1
+            elif "Precaución" in analisis_sent: total_bajistas += 1
+            
             st.markdown(f"""
             <div class="caja-noticia-link">
-                <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>{titulo_noticia}</b>
-                <br>
+                <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>{titulo_es}</b>
+                <div style="font-size:0.78rem; color:#ccc; margin-top:4px;">{analisis_sent}</div>
                 <a href="{enlace_noticia}" target="_blank" class="enlace-noticia-azul">🔗 Leer nota completa en Yahoo Finance</a>
             </div>
             """, unsafe_allow_html=True)
@@ -475,16 +510,4 @@ for simbolo in activos_actuales:
         <div class="caja-noticia-link">
             <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>Sin titulares recientes en el feed directo.</b>
             <br>
-            <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Ver panel completo en Yahoo Finance</a>
-        </div>
-        """, unsafe_allow_html=True)
-
-st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
-    <div style="color:#888;">🏠<br>Inicio</div>
-    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
-    <div style="color:#888;">📊<br>Análisis</div>
-    <div style="color:#888;">💬<br>Chat</div>
-    <div style="color:#888;">👤<br>Perfil</div>
-</div>
-''', unsafe_allow_html=True)
+    
