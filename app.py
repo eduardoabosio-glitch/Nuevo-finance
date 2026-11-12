@@ -468,4 +468,76 @@ if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
+# CENTRAL DE NOTICIAS EN ESPAÑOL Y ANÁLISIS DE SENTIMIENTO
+st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
 
+total_alcistas = 0
+total_bajistas = 0
+
+for simbolo in activos_actuales:
+    s_fijo = str(simbolo).strip().upper()
+    s_usa = s_fijo.replace(".BA", "")
+    
+    noticias_reales = []
+    try:
+        tk_news = yf.Ticker(s_usa)
+        noticias_reales = tk_news.news[:2]
+    except:
+        pass
+
+    if noticias_reales:
+        for item in noticias_reales:
+            contenido = item.get("content", item)
+            titulo_original = contenido.get("title", "Actualización de mercado")
+            link_obj = contenido.get("canonicalUrl", {})
+            enlace_noticia = link_obj.get("url") if isinstance(link_obj, dict) else item.get("link", f"https://yahoo.com{s_usa}")
+            
+            titulo_es, analisis_sent = traducir_y_analizar_noticia(titulo_original)
+            if "Positivo" in analisis_sent: total_alcistas += 1
+            elif "Precaución" in analisis_sent: total_bajistas += 1
+            
+            st.markdown(f"""
+            <div class="caja-noticia-link">
+                <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>{titulo_es}</b>
+                <div style="font-size:0.78rem; color:#ccc; margin-top:4px;">{analisis_sent}</div>
+                <a href="{enlace_noticia}" target="_blank" class="enlace-noticia-azul">🔗 Leer nota completa en Yahoo Finance</a>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        url_segura_final = f"https://yahoo.com{s_usa}"
+        st.markdown(f"""
+        <div class="caja-noticia-link">
+            <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>Sin titulares recientes en el feed directo.</b>
+            <br>
+            <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Ver panel completo en Yahoo Finance</a>
+        </div>
+        """, unsafe_allow_html=True)
+
+# DIAGNÓSTICO GENERAL DEL PORTAFOLIO
+st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>🧠 Análisis General del Portafolio</h3>", unsafe_allow_html=True)
+if total_alcistas > total_bajistas:
+    resumen_general = "El flujo de noticias actual muestra un <b>sesgo positivo</b> en tus activos, respaldando las proyecciones de crecimiento."
+elif total_bajistas > total_alcistas:
+    resumen_general = "Se detectan <b>titulares de cautela o volatilidad</b> en el corto plazo. Se recomienda vigilar los pisos técnicos."
+else:
+    resumen_general = "El mercado presenta un <b>equilibrio informativo</b> para tu cartera, operando dentro de los rangos esperados por los analistas."
+
+st.markdown(f"""
+<div class="tarjeta-activo" style="border-left: 4px solid #00e676; margin-bottom: 50px;">
+    <div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">
+        • <b>Balance Informativo:</b> {total_alcistas} noticias favorables vs. {total_bajistas} de precaución.<br>
+        • <b>Conclusión del Agente:</b> {resumen_general}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown('''
+<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
+    <div style="color:#888;">🏠<br>Inicio</div>
+    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
+    <div style="color:#888;">📊<br>Análisis</div>
+    <div style="color:#888;">💬<br>Chat</div>
+    <div style="color:#888;">👤<br>Perfil</div>
+</div>
+''', unsafe_allow_html=True)
+            
