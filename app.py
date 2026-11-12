@@ -439,7 +439,7 @@ for simbolo in activos_actuales:
     else:
         ticker_yahoo = s_fijo
 
-    url_segura_final = f"https://yahoo.com{ticker_yahoo}"
+    url_segura_final = f"https://yahoo.com/finance/quote/{ticker_yahoo}"
     st.markdown(f"""
     <div class="caja-noticia-link">
         <span style="color:#2196f3; font-weight:bold;">[{ticker_yahoo}]</span> <b>📍 Monitoreo Algorítmico:</b> Analizando variables bursátiles en tiempo real. Soporte y RSI validados con Yahoo Finance.
