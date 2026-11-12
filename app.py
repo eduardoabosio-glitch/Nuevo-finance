@@ -327,16 +327,13 @@ for tk in activos_actuales:
     p_base = datos_reales["precio"]
     p_target = datos_reales["target_usd"]
     es_local_pure = datos_reales["es_local"]
-    es_cedear_local = datos_reales["es_cedear_local"]
-    monto_actual = st.session_state.montos_dis[tk]
+    monto_actual = float(st.session_state.montos_dis[tk])
     
-    # Identifica si el activo cotiza nativamente en Pesos (Merval) o Dólares (Wall Street)
+    # Identifica si el ticker cotiza nativamente en Pesos (Merval) o Dólares (Wall Street)
     es_nativo_pesos = tk_limpio_upper.endswith(".BA") or es_local_pure
     
-    if es_nativo_pesos:
-        patrimonio_total_usd += (monto_actual / VALOR_DOLAR_MEP)
-    else:
-        patrimonio_total_usd += monto_actual
+    # Suma exacta en base USD
+    patrimonio_total_usd += monto_actual
     
     nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
     op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
@@ -385,34 +382,40 @@ for tk in activos_actuales:
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
     
-    # Entrada de datos numérica limpia y controlada anti-errores
-    monto_mostrar_box = float(monto_actual * factor_cambio if not es_nativo_pesos or es_pesos else monto_actual)
-    st.markdown(f"<span style='font-size:0.82rem; color:#888;'>Monto invertido en {texto_moneda_limpio.strip()}:</span>", unsafe_allow_html=True)
+    # Etiqueta fija con la moneda para evitar que el usuario la borre por error
+    monto_mostrar_box = float(monto_actual * factor_cambio)
+    st.markdown(f"<div style='font-size:0.85rem; color:#ccc; margin-top:4px;'>Monto invertido ({texto_moneda_limpio.strip()}):</div>", unsafe_allow_html=True)
     
-    entrada_numerica = st.number_input(
+    # Formatea automáticamente el número con comas de miles (ej: 1,000.00) dentro del cuadro
+    valor_formateado_comas = f"{monto_mostrar_box:,.2f}"
+    
+    entrada_texto = st.text_input(
         label=f"Monto_{tk_limpio_upper}",
-        min_value=0.0,
-        value=monto_mostrar_box,
-        step=500.0,
-        format="%.2f",
-        key=f"num_box_{tk_limpio_upper}_{moneda}",
+        value=valor_formateado_comas,
+        key=f"txt_box_{tk_limpio_upper}_{moneda}",
         label_visibility="collapsed"
     )
     
-    if entrada_numerica != monto_mostrar_box:
+    if entrada_texto != valor_formateado_comas:
         try:
-            st.session_state.montos_dis[tk] = float(entrada_numerica / factor_cambio if not es_nativo_pesos or es_pesos else entrada_numerica)
-            st.rerun()
-        except: pass
+            # Limpia letras, símbolos o comas viejas que haya escrito el usuario
+            solo_numeros = "".join(c for c in entrada_texto if c.isdigit() or c == '.')
+            if solo_numeros:
+                nuevo_valor = float(solo_numeros)
+                st.session_state.montos_dis[tk] = float(nuevo_valor / factor_cambio)
+                st.rerun()
+        except:
+            pass
         
     st.markdown('</div>', unsafe_allow_html=True)
 
+# SUMA GLOBAL SINCRONIZADA
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
-st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.0f}</span></p>", unsafe_allow_html=True)
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
 
 if activos_actuales:
-    df_pie = pd.DataFrame({"Activo": [str(k).upper() for k in st.session_state.montos_dis.keys()], "Capital": [float(v) for v in st.session_state.montos_dis.values()]})
+    df_pie = pd.DataFrame({"Activo": [str(k).upper() for k in st.session_state.montos_dis.keys()], "Capital": [float(v) * factor_cambio for v in st.session_state.montos_dis.values()]})
     fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
     fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
     st.plotly_chart(fig, use_container_width=True, key="pie_giant_v28", config={'displayModeBar': False})
@@ -453,4 +456,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
+            
