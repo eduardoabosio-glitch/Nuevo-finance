@@ -330,22 +330,133 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
+# =====================================================================
+# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO Y NOTICIAS EN TIEMPO REAL
+# =====================================================================
+if 'version_input' not in st.session_state:
+    st.session_state.version_input = 0
+
+def actualizar_monto_callback(ticker_key, key_widget, factor):
+    texto_ingresado = st.session_state[key_widget]
+    try:
+        solo_numeros = "".join(c for c in str(texto_ingresado) if c.isdigit() or c == '.')
+        if solo_numeros:
+            nuevo_val = float(solo_numeros)
+            st.session_state.montos_dis[ticker_key] = float(nuevo_val / factor)
+            st.session_state.version_input += 1
+    except:
+        pass
+
+for tk in activos_actuales:
+    tk_limpio_upper = str(tk).strip().upper()
+    datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
+    
+    p_base = datos_reales["precio"]
+    p_target = datos_reales["target_usd"]
+    es_local_pure = datos_reales["es_local"]
+    monto_actual = float(st.session_state.montos_dis[tk])
+    
+    es_nativo_pesos = tk_limpio_upper.endswith(".BA") or es_local_pure
+    patrimonio_total_usd += monto_actual
+    
+    nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
+    op_agente = "Exc" if tk_limpio_upper in ["SPY", "AAPL", "NVDA"] else ("Reg" if tk_limpio_upper == "TSLA" else "MB")
+    
+    if es_pesos:
+        precio_matriz_final = p_base if es_nativo_pesos else (p_base * VALOR_DOLAR_MEP)
+        val_target_string = p_target if es_nativo_pesos else (p_target * VALOR_DOLAR_MEP)
+    else:
+        precio_matriz_final = (p_base / VALOR_DOLAR_MEP) if es_nativo_pesos else p_base
+        val_target_string = (p_target / VALOR_DOLAR_MEP) if es_nativo_pesos else p_target
+
+    lista_para_matriz_resumen.append({
+        "Activo": tk_limpio_upper, 
+        "Precio": f"{precio_matriz_final:,.2f}", 
+        "Target (JPM)": f"{val_target_string:,.2f}", 
+        "Sem %": datos_reales["prob_sem"], 
+        "Anual %": datos_reales["prob_anu"], 
+        "Fund": datos_reales["prob_fun"], 
+        "Agente (Not.)": op_agente
+    })
+    
+    if tk_limpio_upper in ["SPY", "SPY.BA"]: noticias = f"Resumen: Tendencia macro estable sobre {p_base:,.2f} USD."
+    elif tk_limpio_upper in ["TSLA", "TSLA.BA"]: noticias = f"Resumen: Oscilación {datos_reales['macd']} con volumen de {datos_reales['vol_rel']}."
+    elif tk_limpio_upper in ["AAPL", "AAPL.BA"]: noticias = f"Resumen: Apple opera firme con RSI en {datos_reales['rsi']}."
+    elif tk_limpio_upper in ["KO", "KO.BA"]: noticias = f"Resumen: Consumo defensivo robusto con Beta de {datos_reales['beta']}."
+    elif tk_limpio_upper in ["NVDA", "NVDA.BA"]: noticias = f"Resumen: Fuerte aceleración tecnológica. Target situado sobre los {p_target:,.2f} USD."
+    else: noticias = f"Resumen: Consolidando en rango. Soporte localizado en {datos_reales['piso_a']}."
+
+    st.markdown('<div class="tarjeta-activo">', unsafe_allow_html=True)
+    st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.35rem; font-weight:bold; color:#2196f3;">{tk_limpio_upper}</span></div>', unsafe_allow_html=True)
+    texto_moneda_limpio = "ARS $" if es_pesos else "USD $"
+    
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {texto_moneda_limpio}{precio_matriz_final:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado" style="margin-bottom:8px;"><span style="color:#ffeb3b; font-weight:bold;">🎯 Target JPMorgan:</span> <b style="color:#00e676;">{texto_moneda_limpio}{val_target_string:,.2f}</b></div>', unsafe_allow_html=True)
+    
+    with st.expander(f"📈 Análisis Técnico Semanal: {datos_reales['prob_sem']}", expanded=False):
+        st.markdown(f"• **RSI:** {datos_reales['rsi']} | **MACD:** {datos_reales['macd']} | **Stoch:** {datos_reales['stoch']}")
+    with st.expander(f"📊 Análisis Técnico Anual Macro: {datos_reales['prob_anu']}", expanded=False):
+        st.markdown(f"• **Tendencia:** {datos_reales['dist_sma']} | **Piso:** {datos_reales['piso_a']} | **Techo:** {datos_reales['techo_a']}")
+    with st.expander(f"🔍 Análisis Fundamental: {nota_txt}", expanded=False):
+        st.markdown(f"• **P/E:** {datos_reales['pe']} | **Div:** {datos_reales['dividendos']} | **Margen:** {datos_reales['margen']}")
+        
+    st.markdown(f'<div style="margin-top:8px; margin-bottom:5px; font-size:0.88rem;"><span class="titulo-subrayado">Noticias:</span> <b>{noticias}</b></div>', unsafe_allow_html=True)
+    
+    if st.button("❌ Borrar", key=f"delete_btn_{tk_limpio_upper}"):
+        if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
+        st.rerun()
+    
+    monto_mostrar_box = float(monto_actual * factor_cambio)
+    st.markdown(f"<div style='font-size:0.85rem; color:#ccc; margin-top:4px;'>Monto invertido ({texto_moneda_limpio.strip()}):</div>", unsafe_allow_html=True)
+    
+    valor_formateado_comas = f"{monto_mostrar_box:,.2f}"
+    widget_key = f"txt_box_{tk_limpio_upper}_{moneda}_{st.session_state.version_input}"
+    
+    st.text_input(
+        label=f"Monto_{tk_limpio_upper}",
+        value=valor_formateado_comas,
+        key=widget_key,
+        on_change=actualizar_monto_callback,
+        args=(tk, widget_key, factor_cambio),
+        label_visibility="collapsed"
+    )
+        
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# SUMA GLOBAL SINCRONIZADA
+patrimonio_mostrar = patrimonio_total_usd * factor_cambio
+texto_moneda_total = "ARS $" if es_pesos else "USD $"
+st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
+
+if activos_actuales:
+    df_pie = pd.DataFrame({"Activo": [str(k).upper() for k in st.session_state.montos_dis.keys()], "Capital": [float(v) * factor_cambio for v in st.session_state.montos_dis.values()]})
+    fig = px.pie(df_pie, values='Capital', names='Activo', hole=0.4, height=240)
+    fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white", size=11))
+    st.plotly_chart(fig, use_container_width=True, key="pie_giant_v28", config={'displayModeBar': False})
+
+if "ver_cuadricula_resumen" not in st.session_state: st.session_state.ver_cuadricula_resumen = False
+if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_def", use_container_width=True):
+    st.session_state.ver_cuadricula_resumen = not st.session_state.ver_cuadricula_resumen
+    st.rerun()
+
+if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
+    df_matriz = pd.DataFrame(lista_para_matriz_resumen)
+    st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
+
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias en Tiempo Real</h3>", unsafe_allow_html=True)
 for simbolo in activos_actuales:
     s_fijo = str(simbolo).strip().upper()
     s_usa = s_fijo.replace(".BA", "")
     
-    # Descarga las noticias reales de Yahoo Finance para el activo
     noticias_reales = []
     try:
         tk_news = yf.Ticker(s_usa)
-        noticias_reales = tk_news.news[:2]  # Trae los 2 titulares más recientes
+        noticias_reales = tk_news.news[:2]
     except:
         pass
 
     if noticias_reales:
         for item in noticias_reales:
-            # Extrae título y enlace compatibles con versiones nuevas y viejas de yfinance
             contenido = item.get("content", item)
             titulo_noticia = contenido.get("title", "Actualización de mercado")
             link_obj = contenido.get("canonicalUrl", {})
@@ -377,4 +488,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-            
