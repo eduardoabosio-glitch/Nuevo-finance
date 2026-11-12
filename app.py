@@ -331,7 +331,7 @@ activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
 # =====================================================================
-# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO, NOTICIAS EN ESPAÑOL Y ANÁLISIS
+# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO, RESUMEN Y NOTICIAS EN ESPAÑOL
 # =====================================================================
 if 'version_input' not in st.session_state:
     st.session_state.version_input = 0
@@ -350,7 +350,7 @@ def actualizar_monto_callback(ticker_key, key_widget, factor):
 def traducir_y_analizar_noticia(texto_en):
     txt_low = texto_en.lower()
     positivas = ["surge", "soar", "gain", "buy", "upgrade", "beat", "growth", "high", "rally", "bull", "profit", "strong", "record"]
-    negativas = ["drop", "fall", "slump", "uncertainty", "plunge", "sell", "downgrade", "miss", "loss", "risk", "bear", "weak", "cut", "lawsuit"]
+    negativas = ["drop", "fall", "slump", "uncertainty", "plunge", "sell", "downgrade", "miss", "loss", "risk", "bear", "weak", "cut", "lawsuit", "resigns", "-10%"]
     
     puntos_pos = sum(1 for p in positivas if p in txt_low)
     puntos_neg = sum(1 for n in negativas if n in txt_low)
@@ -365,9 +365,10 @@ def traducir_y_analizar_noticia(texto_en):
     texto_es = texto_en
     try:
         url_tr = f"https://googleapis.com{requests.utils.quote(texto_en)}"
-        r_tr = requests.get(url_tr, timeout=2)
+        r_tr = requests.get(url_tr, timeout=3)
         if r_tr.status_code == 200:
-            texto_es = "".join([parte[0] for parte in r_tr.json()[0]])
+            datos_json = r_tr.json()
+            texto_es = "".join([oracion[0] for oracion in datos_json[0] if oracion[0]])
     except:
         pass
         
@@ -402,7 +403,8 @@ for tk in activos_actuales:
         "Sem %": datos_reales["prob_sem"], 
         "Anual %": datos_reales["prob_anu"], 
         "Fund": datos_reales["prob_fun"], 
-        "Agente (Not.)": op_agente
+        "Agente": op_agente,
+        "Resumen": "Alcista" if "▲" in datos_reales["macd"] else "En Rango"
     })
     
     if tk_limpio_upper in ["SPY", "SPY.BA"]: noticias = f"Resumen: Tendencia macro estable sobre {p_base:,.2f} USD."
@@ -468,6 +470,7 @@ if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_unico_abajo_v28_
 if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
+
 # CENTRAL DE NOTICIAS EN ESPAÑOL Y ANÁLISIS DE SENTIMIENTO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
 
@@ -507,37 +510,4 @@ for simbolo in activos_actuales:
         url_segura_final = f"https://yahoo.com{s_usa}"
         st.markdown(f"""
         <div class="caja-noticia-link">
-            <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>Sin titulares recientes en el feed directo.</b>
-            <br>
-            <a href="{url_segura_final}" target="_blank" class="enlace-noticia-azul">🔗 Ver panel completo en Yahoo Finance</a>
-        </div>
-        """, unsafe_allow_html=True)
-
-# DIAGNÓSTICO GENERAL DEL PORTAFOLIO
-st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>🧠 Análisis General del Portafolio</h3>", unsafe_allow_html=True)
-if total_alcistas > total_bajistas:
-    resumen_general = "El flujo de noticias actual muestra un <b>sesgo positivo</b> en tus activos, respaldando las proyecciones de crecimiento."
-elif total_bajistas > total_alcistas:
-    resumen_general = "Se detectan <b>titulares de cautela o volatilidad</b> en el corto plazo. Se recomienda vigilar los pisos técnicos."
-else:
-    resumen_general = "El mercado presenta un <b>equilibrio informativo</b> para tu cartera, operando dentro de los rangos esperados por los analistas."
-
-st.markdown(f"""
-<div class="tarjeta-activo" style="border-left: 4px solid #00e676; margin-bottom: 50px;">
-    <div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">
-        • <b>Balance Informativo:</b> {total_alcistas} noticias favorables vs. {total_bajistas} de precaución.<br>
-        • <b>Conclusión del Agente:</b> {resumen_general}
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
-    <div style="color:#888;">🏠<br>Inicio</div>
-    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
-    <div style="color:#888;">📊<br>Análisis</div>
-    <div style="color:#888;">💬<br>Chat</div>
-    <div style="color:#888;">👤<br>Perfil</div>
-</div>
-''', unsafe_allow_html=True)
-            
+    
