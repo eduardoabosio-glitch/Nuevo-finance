@@ -318,8 +318,22 @@ activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
 # =====================================================================
-# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO Y CONVERSIÓN DE DIVISAS
+# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO (ACTUALIZACIÓN INSTANTÁNEA Y COMAS)
 # =====================================================================
+if 'version_input' not in st.session_state:
+    st.session_state.version_input = 0
+
+def actualizar_monto_callback(ticker_key, key_widget, factor):
+    texto_ingresado = st.session_state[key_widget]
+    try:
+        solo_numeros = "".join(c for c in str(texto_ingresado) if c.isdigit() or c == '.')
+        if solo_numeros:
+            nuevo_val = float(solo_numeros)
+            st.session_state.montos_dis[ticker_key] = float(nuevo_val / factor)
+            st.session_state.version_input += 1
+    except:
+        pass
+
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
     datos_reales = calcular_probabilidades_y_todas_las_metricas_v24(tk_limpio_upper)
@@ -329,10 +343,7 @@ for tk in activos_actuales:
     es_local_pure = datos_reales["es_local"]
     monto_actual = float(st.session_state.montos_dis[tk])
     
-    # Identifica si el ticker cotiza nativamente en Pesos (Merval) o Dólares (Wall Street)
     es_nativo_pesos = tk_limpio_upper.endswith(".BA") or es_local_pure
-    
-    # Suma exacta en base USD
     patrimonio_total_usd += monto_actual
     
     nota_txt = f"Nota {datos_reales['prob_fun']} Calificada"
@@ -382,30 +393,20 @@ for tk in activos_actuales:
         if tk in st.session_state.montos_dis: del st.session_state.montos_dis[tk]
         st.rerun()
     
-    # Etiqueta fija con la moneda para evitar que el usuario la borre por error
     monto_mostrar_box = float(monto_actual * factor_cambio)
     st.markdown(f"<div style='font-size:0.85rem; color:#ccc; margin-top:4px;'>Monto invertido ({texto_moneda_limpio.strip()}):</div>", unsafe_allow_html=True)
     
-    # Formatea automáticamente el número con comas de miles (ej: 1,000.00) dentro del cuadro
     valor_formateado_comas = f"{monto_mostrar_box:,.2f}"
+    widget_key = f"txt_box_{tk_limpio_upper}_{moneda}_{st.session_state.version_input}"
     
-    entrada_texto = st.text_input(
+    st.text_input(
         label=f"Monto_{tk_limpio_upper}",
         value=valor_formateado_comas,
-        key=f"txt_box_{tk_limpio_upper}_{moneda}",
+        key=widget_key,
+        on_change=actualizar_monto_callback,
+        args=(tk, widget_key, factor_cambio),
         label_visibility="collapsed"
     )
-    
-    if entrada_texto != valor_formateado_comas:
-        try:
-            # Limpia letras, símbolos o comas viejas que haya escrito el usuario
-            solo_numeros = "".join(c for c in entrada_texto if c.isdigit() or c == '.')
-            if solo_numeros:
-                nuevo_valor = float(solo_numeros)
-                st.session_state.montos_dis[tk] = float(nuevo_valor / factor_cambio)
-                st.rerun()
-        except:
-            pass
         
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -456,4 +457,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-            
+    
