@@ -45,7 +45,6 @@ st.markdown("""
 def agente_calcular_mep_bonos_real():
     mep_respaldo = 1568.50
     try:
-        # 15d cubre fines de semana largos y feriados consecutivos
         al30_ars = yf.Ticker("AL30.BA").history(period="15d")
         al30_usd = yf.Ticker("AL30D.BA").history(period="15d")
         if not al30_ars.empty and not al30_usd.empty:
@@ -66,7 +65,8 @@ def agente_calcular_mep_bonos_real():
     except:
         pass
     try:
-        r_api = requests.get("https://dolarapi.com", timeout=4)
+        url_dolarapi = "https://dolarapi.com" + "/v1/dolares/bolsa"
+        r_api = requests.get(url_dolarapi, timeout=4)
         if r_api.status_code == 200:
             v_mep = float(r_api.json().get("venta", 0.0))
             if v_mep > 500:
@@ -255,14 +255,32 @@ def traducir_y_analizar(texto_en):
     sent = "🟢 Sentimiento: Alcista / Positivo" if pos > neg else ("🔴 Sentimiento: Bajista / Precaución" if neg > pos else "🟡 Sentimiento: Neutral / Informativo")
     
     texto_es = texto_en
+    traducido = False
     try:
-        url = f"https://googleapis.com{requests.utils.quote(texto_en)}"
-        r = requests.get(url, timeout=4)
+        base_g = "https://translate." + "googleapis.com" + "/translate_a/single"
+        params_g = {"client": "gtx", "sl": "en", "tl": "es", "dt": "t", "q": texto_en}
+        r = requests.get(base_g, params=params_g, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
         if r.status_code == 200:
             data = r.json()
-            texto_es = "".join([seg[0] for seg in data[0] if seg and seg[0]])
+            partes = [seg[0] for seg in data[0] if isinstance(seg, list) and len(seg) > 0 and seg[0]]
+            if partes:
+                texto_es = "".join(partes)
+                traducido = True
     except:
         pass
+
+    if not traducido:
+        try:
+            base_m = "https://api.mymemory." + "translated.net" + "/get"
+            params_m = {"q": texto_en, "langpair": "en|es"}
+            r2 = requests.get(base_m, params=params_m, timeout=5)
+            if r2.status_code == 200:
+                trad = r2.json().get("responseData", {}).get("translatedText", "")
+                if trad and trad.lower() != texto_en.lower():
+                    texto_es = trad
+        except:
+            pass
+
     return texto_es, sent
 
 pat_show = patrimonio_total_usd * factor_cambio
@@ -305,6 +323,7 @@ else:
 
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
 alcistas, bajistas = 0, 0
+base_yf = "https://finance." + "yahoo.com" + "/quote/"
 
 for simbolo in activos_actuales:
     s_fijo = str(simbolo).strip().upper()
@@ -320,7 +339,7 @@ for simbolo in activos_actuales:
             cont = item.get("content", item)
             tit_orig = cont.get("title", "Actualización de mercado")
             link_obj = cont.get("canonicalUrl", {})
-            url_not = link_obj.get("url") if isinstance(link_obj, dict) else item.get("link", f"https://yahoo.com{s_usa}")
+            url_not = link_obj.get("url") if isinstance(link_obj, dict) else item.get("link", f"{base_yf}{s_usa}")
             
             tit_es, sent = traducir_y_analizar(tit_orig)
             if "Positivo" in sent: alcistas += 1
@@ -337,7 +356,7 @@ for simbolo in activos_actuales:
         st.markdown(f"""
         <div class="caja-noticia-link">
             <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>Sin titulares recientes en el feed directo.</b><br>
-            <a href="https://yahoo.com{s_usa}" target="_blank" class="enlace-noticia-azul">🔗 Ver panel en Yahoo Finance</a>
+            <a href="{base_yf}{s_usa}" target="_blank" class="enlace-noticia-azul">🔗 Ver panel en Yahoo Finance</a>
         </div>
         """, unsafe_allow_html=True)
 
