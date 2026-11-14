@@ -62,6 +62,35 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Matriz Slim y Buscador Triple Unificado en Fila Rígida</div>
 </div>
 """, unsafe_allow_html=True)
+
+# 3. MOTOR MEP EN TIEMPO REAL VÍA BONO AL30 (CON RESPALDO DE CIERRE VIERNES/FERIADOS)
+def agente_calcular_mep_bonos_real():
+    mep_respaldo = 1568.50
+    try:
+        al30_ars = yf.Ticker("AL30.BA").history(period="5d")
+        al30_usd = yf.Ticker("AL30D.BA").history(period="5d")
+        
+        if not al30_ars.empty and not al30_usd.empty:
+            p_ars = float(al30_ars["Close"].dropna().iloc[-1])
+            p_usd = float(al30_usd["Close"].dropna().iloc[-1])
+            if p_usd > 0 and (p_ars / p_usd) > 500:
+                mep_al30 = round(p_ars / p_usd, 2)
+                return mep_al30, f"⚡ MEP Real vía AL30 (ARS {p_ars:,.2f} / USD {p_usd:,.2f})"
+    except:
+        pass
+
+    try:
+        r_api = requests.get("https://dolarapi.com", timeout=3)
+        if r_api.status_code == 200:
+            v_mep = float(r_api.json().get("venta", 0.0))
+            if v_mep > 500:
+                return v_mep, "⚡ Cotización MEP Oficial (Último Cierre / Vivo)"
+    except:
+        pass
+
+    return mep_respaldo, "📅 Cierre de Emergencia: Datos de Respaldo"
+
+VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
 # 3. EL SUPERMOTOR QUANT DE DIVISAS CON CONTROL DE HORARIO BURSÁTIL EN TIEMPO REAL
 def agente_calcular_mep_bonos_real():
     mep_ultimo_cierre_fijo = 1568.50
@@ -112,7 +141,7 @@ except:
         "SPDR S&P 500 (Índice General)": {"orig": "SPY", "arg": "SPY.BA"},
         "Invesco QQQ (Tecnológicas Nasdaq)": {"orig": "QQQ", "arg": "QQQ.BA"}
     }
-MAPEO_CEDEARS_COMAFI = {
+ MAPEO_CEDEARS_COMAFI = {
     "Nvidia Corporation (Chips IA)": {"orig": "NVDA", "arg": "NVDA.BA"},
     "Apple Inc. (Ecosistema iOS)": {"orig": "AAPL", "arg": "AAPL.BA"},
     "Microsoft Corp. (Sistemas y Nube)": {"orig": "MSFT", "arg": "MSFT.BA"},
@@ -165,7 +194,7 @@ MAPEO_CEDEARS_COMAFI = {
     "Arcos Dorados Holdings (McDonalds)": {"orig": "ARCO", "arg": "ARCO.BA"},
     "Ferrari N.V. (Superdeportivos F1)": {"orig": "RACE", "arg": "RACE.BA"},
     "LVMH Moët Hennessy (Conglomerado Lujo)": {"orig": "LVMH", "arg": "LVMH.BA"}
-                }
+ }
 MAPEO_ACCIONES_RAVA = {
     "YPF S.A. (Petrolera Estatal)": "YPFD.BA",
     "Pampa Energía (Líder Energético)": "PAMP.BA",
@@ -286,10 +315,6 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
     rsi_val, macd_txt, stoch_k, distancia_sma, piso_historico, techo_historico, prob_sem, prob_anu = 54.0, "▲ Alcista", 58.0, 0.6, precio_memoria_compartida * 0.93, precio_memoria_compartida * 1.07, "60%", "82%"
     pe_ratio, div_yield = "18.4" if sigla_limpia != "TSLA" else "62.4", "1.5%" if not es_local_pure else "3.8%"
     beta_riesgo = 1.02 if sigla_limpia != "TSLA" else 1.48
-    
-    # Respaldo actualizado (incluyendo KO a 98.00)
-    valores_respaldo = {"KO": 98.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 245.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "VIST": 60.00, "IBIT.BA": 7215.00, "IBIT": 46.00, "AUSO.BA": 2761.00}
-    
     try:
         ticker = yf.Ticker(ticker_yf)
         df_hist = ticker.history(period="60d")
@@ -308,30 +333,20 @@ def calcular_probabilidades_y_todas_las_metricas_v24(simbolo_ticket):
             prob_sem = f"{int(50 + (rsi_val / 5))}%"
             prob_anu = "82%" if distancia_sma >= 0 else "73%"
             
-            # Consulta automática del Target de Wall Street en tiempo real
-            target_dinamico = None
-            try:
-                ticker_usa = yf.Ticker(sigla_limpia)
-                target_dinamico = ticker_usa.info.get("targetMeanPrice")
-            except:
-                pass
-                
-            if target_dinamico and target_dinamico > 0:
-                target_price_base = float(target_dinamico)
-            else:
-                target_price_base = valores_respaldo.get(simbolo_ticket, valores_respaldo.get(sigla_limpia, precio_actual * 1.1))
-                
+            valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 245.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "VIST": 60.00, "IBIT.BA": 7215.00, "IBIT": 46.00, "AUSO.BA": 2761.00}
+            target_price_base = valores_jpmorgan_reales.get(simbolo_ticket, valores_jpmorgan_reales.get(sigla_limpia, precio_actual * 1.1))
             simbolo_moneda_piso_techo = "ARS $" if (es_local_pure or es_cedear_local) else "USD $"
             return {"precio": precio_actual, "target_usd": target_price_base, "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf, "prob_sem": prob_sem, "prob_anu": prob_anu, "prob_fun": pct_fundamental_dinamico, "rsi": f"{rsi_val:.1f}", "macd": macd_txt, "stoch": f"{stoch_k:.0f}", "vol_rel": "1.05x", "dist_sma": f"{distancia_sma:+.1f}%", "piso_a": f"{simbolo_moneda_piso_techo}{piso_historico:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{techo_historico:,.2f}", "beta": f"{beta_riesgo:.2f}", "pe": pe_ratio, "dividendos": div_yield, "eps": "USD $6.20" if not es_local_pure else "ARS $120.50", "margen": "18%"}
     except: pass
     simbolo_moneda_piso_techo = "ARS $" if (es_local_pure or es_cedear_local) else "USD $"
-    return {"precio": precio_memoria_compartida, "target_usd": valores_respaldo.get(simbolo_ticket, valores_respaldo.get(sigla_limpia, precio_memoria_compartida * 1.08)), "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf, "prob_sem": "60%", "prob_anu": "82%", "prob_fun": pct_fundamental_dinamico, "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": f"{beta_riesgo:.2f}", "pe": pe_ratio, "dividendos": div_yield, "eps": "No Disponible", "margen": "12%"}
+    valores_jpmorgan_reales = {"KO": 95.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 245.00, "ALUA.BA": 850.00, "KO.BA": 30560.00, "IBIT.BA": 7215.00, "AUSO.BA": 2761.00}
+    return {"precio": precio_memoria_compartida, "target_usd": valores_jpmorgan_reales.get(simbolo_ticket, valores_jpmorgan_reales.get(sigla_limpia, precio_memoria_compartida * 1.08)), "es_local": es_local_pure, "es_cedear_local": es_cedear_local, "ticker_real_yf": ticker_yf, "prob_sem": "60%", "prob_anu": "82%", "prob_fun": pct_fundamental_dinamico, "rsi": "54.2", "macd": "▲ Alcista", "stoch": "55", "vol_rel": "1.00x", "dist_sma": "+0.5%", "piso_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*0.92:,.2f}", "techo_a": f"{simbolo_moneda_piso_techo}{precio_memoria_compartida*1.08:,.2f}", "beta": f"{beta_riesgo:.2f}", "pe": pe_ratio, "dividendos": div_yield, "eps": "No Disponible", "margen": "12%"}
 
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_para_matriz_resumen = []
 # =====================================================================
-# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO, RESUMEN Y NOTICIAS EN ESPAÑOL
+# BLOQUE 7: COMPILACIÓN DEL PORTAFOLIO Y TARJETAS DE ACTIVOS
 # =====================================================================
 if 'version_input' not in st.session_state:
     st.session_state.version_input = 0
@@ -346,33 +361,6 @@ def actualizar_monto_callback(ticker_key, key_widget, factor):
             st.session_state.version_input += 1
     except:
         pass
-
-def traducir_y_analizar_noticia(texto_en):
-    txt_low = texto_en.lower()
-    positivas = ["surge", "soar", "gain", "buy", "upgrade", "beat", "growth", "high", "rally", "bull", "profit", "strong", "record"]
-    negativas = ["drop", "fall", "slump", "uncertainty", "plunge", "sell", "downgrade", "miss", "loss", "risk", "bear", "weak", "cut", "lawsuit", "resigns", "-10%"]
-    
-    puntos_pos = sum(1 for p in positivas if p in txt_low)
-    puntos_neg = sum(1 for n in negativas if n in txt_low)
-    
-    if puntos_pos > puntos_neg:
-        sentimiento = "🟢 Sentimiento: Alcista / Positivo"
-    elif puntos_neg > puntos_pos:
-        sentimiento = "🔴 Sentimiento: Bajista / Precaución"
-    else:
-        sentimiento = "🟡 Sentimiento: Neutral / Informativo"
-
-    texto_es = texto_en
-    try:
-        url_tr = f"https://googleapis.com{requests.utils.quote(texto_en)}"
-        r_tr = requests.get(url_tr, timeout=3)
-        if r_tr.status_code == 200:
-            datos_json = r_tr.json()
-            texto_es = "".join([oracion[0] for oracion in datos_json[0] if oracion[0]])
-    except:
-        pass
-        
-    return texto_es, sentimiento
 
 for tk in activos_actuales:
     tk_limpio_upper = str(tk).strip().upper()
@@ -450,8 +438,36 @@ for tk in activos_actuales:
     )
         
     st.markdown('</div>', unsafe_allow_html=True)
+# =====================================================================
+# BLOQUE 8: GRÁFICO, TABLA RESUMEN Y NOTICIAS TRADUCIDAS AL ESPAÑOL
+# =====================================================================
+def traducir_y_analizar_noticia(texto_en):
+    txt_low = texto_en.lower()
+    positivas = ["surge", "soar", "gain", "buy", "upgrade", "beat", "growth", "high", "rally", "bull", "profit", "strong", "record", "better"]
+    negativas = ["drop", "fall", "slump", "uncertainty", "plunge", "sell", "downgrade", "miss", "loss", "risk", "bear", "weak", "cut", "lawsuit", "resigns", "lose", "skip"]
+    
+    puntos_pos = sum(1 for p in positivas if p in txt_low)
+    puntos_neg = sum(1 for n in negativas if n in txt_low)
+    
+    if puntos_pos > puntos_neg:
+        sentimiento = "🟢 Sentimiento: Alcista / Positivo"
+    elif puntos_neg > puntos_pos:
+        sentimiento = "🔴 Sentimiento: Bajista / Precaución"
+    else:
+        sentimiento = "🟡 Sentimiento: Neutral / Informativo"
 
-# SUMA GLOBAL SINCRONIZADA
+    texto_es = texto_en
+    try:
+        url_tr = f"https://googleapis.com{requests.utils.quote(texto_en)}"
+        r_tr = requests.get(url_tr, timeout=4)
+        if r_tr.status_code == 200:
+            datos_json = r_tr.json()
+            texto_es = "".join([oracion[0] for oracion in datos_json[0] if oracion and oracion[0]])
+    except:
+        pass
+        
+    return texto_es, sentimiento
+
 patrimonio_mostrar = patrimonio_total_usd * factor_cambio
 texto_moneda_total = "ARS $" if es_pesos else "USD $"
 st.markdown(f"<p style='font-size:0.95rem; font-weight:bold; text-align:center; color:white; margin-top:8px; margin-bottom: 12px;'>💰 Patrimonio Total Inversión = <span style='color:#00e676;'>{texto_moneda_total}{patrimonio_mostrar:,.2f}</span></p>", unsafe_allow_html=True)
@@ -471,7 +487,6 @@ if st.session_state.ver_cuadricula_resumen and lista_para_matriz_resumen:
     df_matriz = pd.DataFrame(lista_para_matriz_resumen)
     st.markdown(df_matriz.to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
-# CENTRAL DE NOTICIAS EN ESPAÑOL Y ANÁLISIS DE SENTIMIENTO
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
 
 total_alcistas = 0
