@@ -132,10 +132,10 @@ def guardar_carteras_en_url():
     except:
         pass
 
-if "carteras" not in st.session_state:
+if "carteras" not in st.session_state or not isinstance(st.session_state.carteras, dict) or not st.session_state.carteras:
     st.session_state.carteras = cargar_carteras_desde_url()
-if "cartera_activa" not in st.session_state or st.session_state.cartera_activa not in st.session_state.carteras:
-    st.session_state.cartera_activa = list(st.session_state.carteras.keys())
+if "cartera_activa" not in st.session_state or not isinstance(st.session_state.cartera_activa, str) or st.session_state.cartera_activa not in st.session_state.carteras:
+    st.session_state.cartera_activa = next(iter(st.session_state.carteras))
 if "version_input" not in st.session_state:
     st.session_state.version_input = 0
 
@@ -173,7 +173,7 @@ with st.expander(f"💼 Mis Portafolios: {st.session_state.cartera_activa}", exp
         if len(nombres_disponibles) > 1:
             if st.button("🗑️ Borrar activo", key="btn_borrar_port", use_container_width=True):
                 del st.session_state.carteras[st.session_state.cartera_activa]
-                st.session_state.cartera_activa = list(st.session_state.carteras.keys())
+                st.session_state.cartera_activa = next(iter(st.session_state.carteras))
                 st.session_state.montos_dis = st.session_state.carteras[st.session_state.cartera_activa].copy()
                 guardar_carteras_en_url()
                 st.session_state.version_input += 1
@@ -448,3 +448,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
+    
