@@ -45,26 +45,51 @@ st.markdown("""
 def agente_calcular_mep_bonos_real():
     mep_respaldo = 1568.50
     try:
-        al30_ars = yf.Ticker("AL30.BA").history(period="5d")
-        al30_usd = yf.Ticker("AL30D.BA").history(period="5d")
+        # 15d cubre fines de semana largos y feriados consecutivos
+        al30_ars = yf.Ticker("AL30.BA").history(period="15d")
+        al30_usd = yf.Ticker("AL30D.BA").history(period="15d")
         if not al30_ars.empty and not al30_usd.empty:
-            p_ars = float(al30_ars["Close"].dropna().iloc[-1])
-            p_usd = float(al30_usd["Close"].dropna().iloc[-1])
+            serie_ars = al30_ars["Close"].dropna()
+            serie_usd = al30_usd["Close"].dropna()
+            p_ars = float(serie_ars.iloc[-1])
+            p_usd = float(serie_usd.iloc[-1])
+            fecha_cierre = serie_ars.index[-1].strftime("%d/%m/%Y")
             if p_usd > 0 and (p_ars / p_usd) > 500:
-                return round(p_ars / p_usd, 2), f"⚡ MEP Real vía AL30 (ARS {p_ars:,.2f} / USD {p_usd:,.2f})"
+                mep_calc = round(p_ars / p_usd, 2)
+                return {
+                    "valor": mep_calc,
+                    "texto": f"⚡ MEP Real vía AL30 (Cierre {fecha_cierre})",
+                    "al30_ars": p_ars,
+                    "al30_usd": p_usd,
+                    "fecha": fecha_cierre
+                }
     except:
         pass
     try:
-        r_api = requests.get("https://dolarapi.com", timeout=3)
+        r_api = requests.get("https://dolarapi.com", timeout=4)
         if r_api.status_code == 200:
             v_mep = float(r_api.json().get("venta", 0.0))
             if v_mep > 500:
-                return v_mep, "⚡ Cotización MEP Oficial (Último Cierre / Vivo)"
+                return {
+                    "valor": v_mep,
+                    "texto": "⚡ Cotización MEP Oficial (Último Cierre Hábil)",
+                    "al30_ars": None,
+                    "al30_usd": None,
+                    "fecha": "Último cierre"
+                }
     except:
         pass
-    return mep_respaldo, "📅 Cierre de Emergencia: Datos de Respaldo"
+    return {
+        "valor": mep_respaldo,
+        "texto": "📅 Cierre de Emergencia: Datos de Respaldo",
+        "al30_ars": None,
+        "al30_usd": None,
+        "fecha": "Respaldo"
+    }
 
-VALOR_DOLAR_MEP, origen_mep_txt = agente_calcular_mep_bonos_real()
+datos_mep = agente_calcular_mep_bonos_real()
+VALOR_DOLAR_MEP = datos_mep["valor"]
+origen_mep_txt = datos_mep["texto"]
 
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
@@ -234,7 +259,8 @@ def traducir_y_analizar(texto_en):
         url = f"https://googleapis.com{requests.utils.quote(texto_en)}"
         r = requests.get(url, timeout=4)
         if r.status_code == 200:
-            texto_es = "".join([seg[0] for seg in r.json()[0] if seg and seg[0]])
+            data = r.json()
+            texto_es = "".join([seg[0] for seg in data[0] if seg and seg[0]])
     except:
         pass
     return texto_es, sent
@@ -256,6 +282,26 @@ if st.button("📊 Mostrar / Ocultar Resumen General", key="btn_res_v30", use_co
 
 if st.session_state.ver_resumen and lista_matriz:
     st.markdown(pd.DataFrame(lista_matriz).to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
+
+st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>💵 Ticket de Referencia Dólar MEP (AL30)</h3>", unsafe_allow_html=True)
+if datos_mep["al30_ars"] and datos_mep["al30_usd"]:
+    st.markdown(f"""
+    <div class="tarjeta-activo" style="border-left: 4px solid #2196f3;">
+        <div style="font-size:0.86rem; color:#ffffff; line-height:1.5;">
+            • <b>Bono AL30.BA (Pesos):</b> ARS $ {datos_mep['al30_ars']:,.2f}<br>
+            • <b>Bono AL30D.BA (Dólares):</b> USD $ {datos_mep['al30_usd']:,.2f}<br>
+            • <b>Cálculo MEP ({datos_mep['fecha']}):</b> ARS $ {datos_mep['al30_ars']:,.2f} / USD $ {datos_mep['al30_usd']:,.2f} = <b style="color:#00e676;">ARS $ {VALOR_DOLAR_MEP:,.2f}</b>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown(f"""
+    <div class="tarjeta-activo" style="border-left: 4px solid #ffeb3b;">
+        <div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">
+            • <b>Cotización MEP Aplicada:</b> <b style="color:#00e676;">ARS $ {VALOR_DOLAR_MEP:,.2f}</b> ({origen_mep_txt})
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
 alcistas, bajistas = 0, 0
@@ -315,4 +361,3 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
