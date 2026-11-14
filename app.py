@@ -135,7 +135,7 @@ def guardar_carteras_en_url():
 if "carteras" not in st.session_state:
     st.session_state.carteras = cargar_carteras_desde_url()
 if "cartera_activa" not in st.session_state or st.session_state.cartera_activa not in st.session_state.carteras:
-    st.session_state.cartera_activa = list(st.session_state.carteras.keys())[0]
+    st.session_state.cartera_activa = list(st.session_state.carteras.keys())
 if "version_input" not in st.session_state:
     st.session_state.version_input = 0
 
@@ -147,8 +147,10 @@ with st.expander(f"💼 Mis Portafolios: {st.session_state.cartera_activa}", exp
     
     seleccion_cartera = st.selectbox("Elegir portafolio:", nombres_disponibles, index=idx_actual, key="sel_cartera_url")
     if seleccion_cartera != st.session_state.cartera_activa:
+        st.session_state.carteras[st.session_state.cartera_activa] = st.session_state.montos_dis.copy()
         st.session_state.cartera_activa = seleccion_cartera
-        st.session_state.montos_dis = st.session_state.carteras[seleccion_cartera]
+        st.session_state.montos_dis = st.session_state.carteras[seleccion_cartera].copy()
+        guardar_carteras_en_url()
         st.session_state.version_input += 1
         st.rerun()
 
@@ -158,6 +160,7 @@ with st.expander(f"💼 Mis Portafolios: {st.session_state.cartera_activa}", exp
         if st.button("➕ Crear / Guardar", key="btn_crear_port", use_container_width=True):
             nom_limpio = nuevo_nombre.strip()
             if nom_limpio:
+                st.session_state.carteras[st.session_state.cartera_activa] = st.session_state.montos_dis.copy()
                 st.session_state.carteras[nom_limpio] = st.session_state.montos_dis.copy()
                 st.session_state.cartera_activa = nom_limpio
                 guardar_carteras_en_url()
@@ -168,17 +171,17 @@ with st.expander(f"💼 Mis Portafolios: {st.session_state.cartera_activa}", exp
                 st.success("¡Guardado en el enlace!")
     with col_p2:
         if len(nombres_disponibles) > 1:
-            if st.button("🗑️ Borrar este", key="btn_borrar_port", use_container_width=True):
+            if st.button("🗑️ Borrar activo", key="btn_borrar_port", use_container_width=True):
                 del st.session_state.carteras[st.session_state.cartera_activa]
-                st.session_state.cartera_activa = list(st.session_state.carteras.keys())[0]
-                st.session_state.montos_dis = st.session_state.carteras[st.session_state.cartera_activa]
+                st.session_state.cartera_activa = list(st.session_state.carteras.keys())
+                st.session_state.montos_dis = st.session_state.carteras[st.session_state.cartera_activa].copy()
                 guardar_carteras_en_url()
                 st.session_state.version_input += 1
                 st.rerun()
         else:
-            st.button("🗑️ Borrar este", key="btn_borrar_dis", disabled=True, use_container_width=True)
+            st.button("🗑️ Borrar activo", key="btn_borrar_dis", disabled=True, use_container_width=True)
 
-    st.caption("💡 Tip: Guardá esta página en Favoritos de Chrome para conservar siempre tus portafolios.")
+    st.caption("💡 Elegí un portafolio arriba para abrirlo o borrarlo. Guardá la página en Favoritos para conservarlos.")
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
@@ -445,4 +448,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
+            
