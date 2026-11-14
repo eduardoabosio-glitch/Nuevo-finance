@@ -94,57 +94,76 @@ origen_mep_txt = datos_mep["texto"]
 
 if 'montos_dis' not in st.session_state:
     st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
-MAPEO_ACTIVOS_CSV = {}
-try:
-    df_csv = pd.read_csv("activos.csv")
-    df_csv['Ticker'] = df_csv['Ticker'].astype(str).str.strip().str.upper()
-    df_csv['Nombre'] = df_csv['Nombre'].astype(str).str.strip()
-    for _, row in df_csv.iterrows():
-        tk = row['Ticker']
-        nom = row['Nombre']
-        if tk.endswith(".BA"):
-            MAPEO_ACTIVOS_CSV[f"🟢 {nom} ({tk})"] = {"orig": "No Aplica", "arg": tk}
-        else:
-            MAPEO_ACTIVOS_CSV[f"🔵 {nom} ({tk})"] = {"orig": tk, "arg": f"{tk}.BA"}
-except:
-    MAPEO_ACTIVOS_CSV = {
-        "🔵 SPDR S&P 500 (SPY)": {"orig": "SPY", "arg": "SPY.BA"},
-        "🔵 Coca-Cola Co. (KO)": {"orig": "KO", "arg": "KO.BA"}
-    }
-if 'ultimo_archivo_id' not in st.session_state:
-    st.session_state.ultimo_archivo_id = None
-if 'version_input' not in st.session_state:
+import base64
+
+def cargar_carteras_desde_url():
+    try:
+        raw = st.query_params.get("p", "")
+        if raw:
+            decodificado = base64.urlsafe_b64decode(raw.encode()).decode()
+            data = json.loads(decodificado)
+            if isinstance(data, dict) and data:
+                return data
+    except:
+        pass
+    return {"Principal": {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}}
+
+def guardar_carteras_en_url():
+    try:
+        st.session_state.carteras[st.session_state.cartera_activa] = st.session_state.montos_dis.copy()
+        txt = json.dumps(st.session_state.carteras, separators=(",", ":"))
+        codificado = base64.urlsafe_b64encode(txt.encode()).decode()
+        st.query_params["p"] = codificado
+    except:
+        pass
+
+if "carteras" not in st.session_state:
+    st.session_state.carteras = cargar_carteras_desde_url()
+if "cartera_activa" not in st.session_state or st.session_state.cartera_activa not in st.session_state.carteras:
+    st.session_state.cartera_activa = list(st.session_state.carteras.keys())[0]
+if "version_input" not in st.session_state:
     st.session_state.version_input = 0
 
-with st.expander("💾 Mis Portafolios (Guardar / Abrir Varios)", expanded=False):
-    st.markdown("<div style='font-size:0.82rem; color:#ccc; margin-bottom:4px;'>Nombre para descargar este portafolio:</div>", unsafe_allow_html=True)
-    nombre_cartera = st.text_input("Nombre cartera", value="Mi_Portafolio", key="inp_nombre_cartera", label_visibility="collapsed")
-    nombre_limpio = "".join(c for c in nombre_cartera if c.isalnum() or c in ("_", "-", " ")).strip().replace(" ", "_")
-    if not nombre_limpio:
-        nombre_limpio = "Mi_Portafolio"
+st.session_state.montos_dis = st.session_state.carteras[st.session_state.cartera_activa]
 
-    json_portafolio = json.dumps(st.session_state.montos_dis, indent=2)
-    st.download_button(
-        label=f"📥 Descargar '{nombre_limpio}.json'",
-        data=json_portafolio,
-        file_name=f"{nombre_limpio}.json",
-        mime="application/json",
-        use_container_width=True
-    )
+with st.expander(f"💼 Mis Portafolios: {st.session_state.cartera_activa}", expanded=False):
+    nombres_disponibles = list(st.session_state.carteras.keys())
+    idx_actual = nombres_disponibles.index(st.session_state.cartera_activa)
+    
+    seleccion_cartera = st.selectbox("Elegir portafolio:", nombres_disponibles, index=idx_actual, key="sel_cartera_url")
+    if seleccion_cartera != st.session_state.cartera_activa:
+        st.session_state.cartera_activa = seleccion_cartera
+        st.session_state.montos_dis = st.session_state.carteras[seleccion_cartera]
+        st.session_state.version_input += 1
+        st.rerun()
 
-    st.markdown("<div style='font-size:0.82rem; color:#ccc; margin-top:8px; margin-bottom:4px;'>Abrir un portafolio guardado (.json):</div>", unsafe_allow_html=True)
-    archivo_subido = st.file_uploader("Cargar archivo JSON", type=["json"], key="uploader_portafolio", label_visibility="collapsed")
-    if archivo_subido is not None and archivo_subido.file_id != st.session_state.ultimo_archivo_id:
-        try:
-            datos_cargados = json.load(archivo_subido)
-            if isinstance(datos_cargados, dict) and datos_cargados:
-                st.session_state.montos_dis = {str(k).upper(): float(v) for k, v in datos_cargados.items()}
-                st.session_state.ultimo_archivo_id = archivo_subido.file_id
+    nuevo_nombre = st.text_input("Nuevo portafolio:", placeholder="Ej: CEDEARs o Argentina", key="inp_nuevo_port")
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        if st.button("➕ Crear / Guardar", key="btn_crear_port", use_container_width=True):
+            nom_limpio = nuevo_nombre.strip()
+            if nom_limpio:
+                st.session_state.carteras[nom_limpio] = st.session_state.montos_dis.copy()
+                st.session_state.cartera_activa = nom_limpio
+                guardar_carteras_en_url()
                 st.session_state.version_input += 1
-                st.success(f"¡Portafolio '{archivo_subido.name}' cargado!")
                 st.rerun()
-        except:
-            st.error("El archivo seleccionado no es válido.")
+            else:
+                guardar_carteras_en_url()
+                st.success("¡Guardado en el enlace!")
+    with col_p2:
+        if len(nombres_disponibles) > 1:
+            if st.button("🗑️ Borrar este", key="btn_borrar_port", use_container_width=True):
+                del st.session_state.carteras[st.session_state.cartera_activa]
+                st.session_state.cartera_activa = list(st.session_state.carteras.keys())[0]
+                st.session_state.montos_dis = st.session_state.carteras[st.session_state.cartera_activa]
+                guardar_carteras_en_url()
+                st.session_state.version_input += 1
+                st.rerun()
+        else:
+            st.button("🗑️ Borrar este", key="btn_borrar_dis", disabled=True, use_container_width=True)
+
+    st.caption("💡 Tip: Guardá esta página en Favoritos de Chrome para conservar siempre tus portafolios.")
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
@@ -176,8 +195,10 @@ if seleccion_activo != "- Escribe o selecciona un activo -":
 if activo_a_cargar:
     copia = st.session_state.montos_dis.copy()
     if activo_a_cargar in copia: del copia[activo_a_cargar]
-    st.session_state.montos_dis = {activo_a_cargar: 5000.0}
-    st.session_state.montos_dis.update(copia)
+    nuevo_dict = {activo_a_cargar: 5000.0}
+    nuevo_dict.update(copia)
+    st.session_state.montos_dis = nuevo_dict
+    guardar_carteras_en_url()
     st.session_state.reset_buscador += 1
     st.rerun()
 
@@ -186,7 +207,7 @@ es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 
 st.info(f"⚡ Cotización MEP: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
-st.markdown("<h3 style='color:#ffffff; margin-top:5px;'>📁 Mi Portafolio - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='color:#ffffff; margin-top:5px;'>📁 {st.session_state.cartera_activa} - Fichas del Cuaderno</h3>", unsafe_allow_html=True)
 def calcular_metricas_vivo(simbolo_ticket):
     sigla_limpia = simbolo_ticket.replace(".BA", "")
     es_nativo_pesos = simbolo_ticket.endswith(".BA")
@@ -236,6 +257,7 @@ def actualizar_monto_callback(ticker_key, key_widget, factor):
         solo_num = "".join(c for c in str(st.session_state[key_widget]) if c.isdigit() or c == '.')
         if solo_num:
             st.session_state.montos_dis[ticker_key] = float(solo_num) / factor
+            guardar_carteras_en_url()
             st.session_state.version_input += 1
     except:
         pass
@@ -267,6 +289,7 @@ for tk in activos_actuales:
         
     if st.button("❌ Borrar", key=f"delete_btn_{tk_up}"):
         del st.session_state.montos_dis[tk]
+        guardar_carteras_en_url()
         st.rerun()
     
     monto_box = float(monto_usd * factor_cambio)
