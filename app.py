@@ -6,6 +6,7 @@ import yfinance as yf
 import numpy as np
 import datetime
 import json
+import base64
 
 st.set_page_config(page_title="Nuevo Finance Pro", layout="wide")
 
@@ -30,7 +31,7 @@ div[data-testid="stTextInput"] label, div[data-testid="stTextInput"] p { display
 .enlace-noticia-azul { color: #2196f3 !important; text-decoration: underline !important; font-weight: bold; display: inline-block; margin-top: 4px; }
 div[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; gap: 8px !important; }
 div[data-testid="stHorizontalBlock"] > div { width: 50% !important; flex: 1 1 auto !important; min-width: 0 !important; }
-div.stButton > button, div.stDownloadButton > button { height: 38px !important; font-size: 0.82rem !important; font-weight: bold !important; border-radius: 6px !important; border: none !important; width: 100% !important; color: white !important; }
+div.stButton > button { height: 38px !important; font-size: 0.82rem !important; font-weight: bold !important; border-radius: 6px !important; border: none !important; width: 100% !important; color: white !important; }
 div[data-testid="stHorizontalBlock"] > div:nth-of-type(1) button { background-color: #2196f3 !important; }
 div[data-testid="stHorizontalBlock"] > div:nth-of-type(2) button { background-color: #00e676 !important; color: #161a22 !important; }
 div.stButton > button[key*="delete_btn"] { background-color: #f44336 !important; }
@@ -43,6 +44,7 @@ st.markdown("""
     <div style="font-size:0.7rem; color:#888;">Motor Cuantitativo en Tiempo Real</div>
 </div>
 """, unsafe_allow_html=True)
+
 def agente_calcular_mep_bonos_real():
     mep_respaldo = 1568.50
     try:
@@ -92,10 +94,23 @@ datos_mep = agente_calcular_mep_bonos_real()
 VALOR_DOLAR_MEP = datos_mep["valor"]
 origen_mep_txt = datos_mep["texto"]
 
-if 'montos_dis' not in st.session_state:
-    st.session_state.montos_dis = {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}
-import base64
-
+MAPEO_ACTIVOS_CSV = {}
+try:
+    df_csv = pd.read_csv("activos.csv")
+    df_csv['Ticker'] = df_csv['Ticker'].astype(str).str.strip().str.upper()
+    df_csv['Nombre'] = df_csv['Nombre'].astype(str).str.strip()
+    for _, row in df_csv.iterrows():
+        tk = row['Ticker']
+        nom = row['Nombre']
+        if tk.endswith(".BA"):
+            MAPEO_ACTIVOS_CSV[f"🟢 {nom} ({tk})"] = {"orig": "No Aplica", "arg": tk}
+        else:
+            MAPEO_ACTIVOS_CSV[f"🔵 {nom} ({tk})"] = {"orig": tk, "arg": f"{tk}.BA"}
+except:
+    MAPEO_ACTIVOS_CSV = {
+        "🔵 SPDR S&P 500 (SPY)": {"orig": "SPY", "arg": "SPY.BA"},
+        "🔵 Coca-Cola Co. (KO)": {"orig": "KO", "arg": "KO.BA"}
+    }
 def cargar_carteras_desde_url():
     try:
         raw = st.query_params.get("p", "")
@@ -252,6 +267,7 @@ def calcular_metricas_vivo(simbolo_ticket):
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 lista_matriz = []
+
 def actualizar_monto_callback(ticker_key, key_widget, factor):
     try:
         solo_num = "".join(c for c in str(st.session_state[key_widget]) if c.isdigit() or c == '.')
@@ -311,7 +327,7 @@ def traducir_y_analizar(texto_en):
         r = requests.get(base_g, params=params_g, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
         if r.status_code == 200:
             data = r.json()
-            partes = [seg for seg in data if isinstance(seg, list) and len(seg) > 0 and seg]
+            partes = [seg[0] for seg in data[0] if isinstance(seg, list) and len(seg) > 0 and seg[0]]
             if partes:
                 texto_es = "".join(partes)
                 traducido = True
@@ -429,3 +445,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
+    
