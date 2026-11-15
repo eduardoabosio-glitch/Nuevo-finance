@@ -111,29 +111,42 @@ except:
         "🔵 SPDR S&P 500 (SPY)": {"orig": "SPY", "arg": "SPY.BA"},
         "🔵 Coca-Cola Co. (KO)": {"orig": "KO", "arg": "KO.BA"}
     }
-def cargar_carteras_desde_url():
+from streamlit_js_eval import get_page_location, streamlit_js_eval
+
+def leer_local_storage():
     try:
-        raw = st.query_params.get("p", "")
-        if raw:
-            decodificado = base64.urlsafe_b64decode(raw.encode()).decode()
-            data = json.loads(decodificado)
+        raw = streamlit_js_eval(js_expressions="localStorage.getItem('nuevo_finance_carteras')", key="ls_read")
+        if raw and isinstance(raw, str):
+            data = json.loads(raw)
             if isinstance(data, dict) and data:
                 return data
     except:
         pass
-    return {"Principal": {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}}
+    return None
 
 def guardar_carteras_en_url():
     try:
         st.session_state.carteras[st.session_state.cartera_activa] = st.session_state.montos_dis.copy()
         txt = json.dumps(st.session_state.carteras, separators=(",", ":"))
+        txt_escapado = txt.replace("\\", "\\\\").replace("'", "\\'")
+        streamlit_js_eval(js_expressions=f"localStorage.setItem('nuevo_finance_carteras', '{txt_escapado}')", key=f"ls_save_{st.session_state.get('ls_tick', 0)}")
+        st.session_state.ls_tick = st.session_state.get("ls_tick", 0) + 1
         codificado = base64.urlsafe_b64encode(txt.encode()).decode()
         st.query_params["p"] = codificado
     except:
         pass
 
-if "carteras" not in st.session_state or not isinstance(st.session_state.carteras, dict) or not st.session_state.carteras:
-    st.session_state.carteras = cargar_carteras_desde_url()
+datos_ls = leer_local_storage()
+
+if "carteras" not in st.session_state:
+    if datos_ls:
+        st.session_state.carteras = datos_ls
+    else:
+        st.session_state.carteras = {"Principal": {"SPY": 10000.0, "TSLA": 10000.0, "AAPL": 10000.0, "KO": 5000.0}}
+elif datos_ls and not st.session_state.get("ls_sincronizado", False):
+    st.session_state.carteras = datos_ls
+    st.session_state.ls_sincronizado = True
+
 if "cartera_activa" not in st.session_state or not isinstance(st.session_state.cartera_activa, str) or st.session_state.cartera_activa not in st.session_state.carteras:
     st.session_state.cartera_activa = next(iter(st.session_state.carteras))
 if "version_input" not in st.session_state:
@@ -168,7 +181,7 @@ with st.expander(f"💼 Mis Portafolios: {st.session_state.cartera_activa}", exp
                 st.rerun()
             else:
                 guardar_carteras_en_url()
-                st.success("¡Guardado en el enlace!")
+                st.success("¡Guardado en memoria del navegador!")
     with col_p2:
         if len(nombres_disponibles) > 1:
             if st.button("🗑️ Borrar activo", key="btn_borrar_port", use_container_width=True):
@@ -181,7 +194,7 @@ with st.expander(f"💼 Mis Portafolios: {st.session_state.cartera_activa}", exp
         else:
             st.button("🗑️ Borrar activo", key="btn_borrar_dis", disabled=True, use_container_width=True)
 
-    st.caption("💡 Elegí un portafolio arriba para abrirlo o borrarlo. Guardá la página en Favoritos para conservarlos.")
+    st.caption("💾 Guardado automático en la memoria de este navegador.")
 
 st.markdown("<h3 style='color:#ffffff;'>🕵️‍♂️ Panel de Consulta Avanzada Unificada</h3>", unsafe_allow_html=True)
 
@@ -448,4 +461,4 @@ st.markdown('''
     <div style="color:#888;">👤<br>Perfil</div>
 </div>
 ''', unsafe_allow_html=True)
-    
+            
