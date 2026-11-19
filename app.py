@@ -218,10 +218,8 @@ factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 st.info(f"⚡ Cotización MEP: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown(f"<h3 style='color:#ffffff; margin-top:5px;'>📁 {st.session_state.cartera_activa} - Fichas Swing & Control</h3>", unsafe_allow_html=True)
 def agente_swing_trading_vivo(simbolo_ticket):
-    sigla_limpia = simbolo_ticket.replace(".BA", "")
     es_nativo_pesos = simbolo_ticket.endswith(".BA")
     moneda_simb = "ARS $" if es_nativo_pesos else "USD $"
-    valores_respaldo = {"KO": 98.00, "AAPL": 360.00, "TSLA": 392.42, "SPY": 810.00, "NVDA": 245.00}
     
     try:
         df_hist = yf.Ticker(simbolo_ticket).history(period="90d")
@@ -229,10 +227,12 @@ def agente_swing_trading_vivo(simbolo_ticket):
             close, high, low, vol = df_hist["Close"], df_hist["High"], df_hist["Low"], df_hist["Volume"]
             precio_actual = float(close.iloc[-1])
 
+            # 1. Tendencia y Medias Móviles
             ema9 = float(close.ewm(span=9).mean().iloc[-1])
             ema21 = float(close.ewm(span=21).mean().iloc[-1])
             sma50 = float(close.rolling(50).mean().iloc[-1]) if len(close) >= 50 else float(close.mean())
 
+            # 2. Momentum (RSI 14 y MACD)
             delta = close.diff()
             gan = delta.where(delta > 0, 0).rolling(14).mean()
             per = (-delta.where(delta < 0, 0)).rolling(14).mean() + 1e-10
@@ -243,9 +243,11 @@ def agente_swing_trading_vivo(simbolo_ticket):
             macd_hist = float((macd_line - sig_line).iloc[-1])
             macd_txt = "▲ Alcista" if macd_hist > 0 else "▼ Ajuste"
 
+            # 3. Volumen Relativo
             vol_prom = float(vol.tail(20).mean()) + 1e-10
             vol_rel = float(vol.iloc[-1]) / vol_prom
 
+            # 4. Volatilidad Real (ATR 14) y Soportes/Resistencias de 60 ruedas
             tr1 = high - low
             tr2 = (high - close.shift(1)).abs()
             tr3 = (low - close.shift(1)).abs()
@@ -253,48 +255,64 @@ def agente_swing_trading_vivo(simbolo_ticket):
             if np.isnan(atr) or atr <= 0:
                 atr = precio_actual * 0.025
 
-            stop_loss = max(precio_actual - (1.8 * atr), precio_actual * 0.85)
-            take_profit = precio_actual + (3.2 * atr)
+            piso_60 = float(low.tail(60).min())
+            techo_60 = float(high.tail(60).max())
+            piso_20 = float(low.tail(20).min())
+
+            # Stop Loss dinámico protegido debajo de soporte reciente o 1.6 ATR
+            stop_atr = precio_actual - (1.6 * atr)
+            stop_loss = max(min(stop_atr, piso_20 * 0.99), precio_actual * 0.88)
+
+            # Objetivo Técnico Real (Resistencia de 60d o Extensión de 3.2 ATR si está en ruptura)
+            proy_atr = precio_actual + (3.2 * atr)
+            if techo_60 > precio_actual * 1.03:
+                take_profit = min(techo_60, proy_atr)
+            else:
+                take_profit = proy_atr  # En máximos: busca extensión por ruptura
+
             riesgo = max(precio_actual - stop_loss, 1e-6)
             beneficio = max(take_profit - precio_actual, 0.0)
             ratio_rb = round(beneficio / riesgo, 1)
+            dist_techo_pct = ((techo_60 - precio_actual) / precio_actual) * 100
 
-            target_dinamico = None
-            try:
-                target_dinamico = yf.Ticker(sigla_limpia).info.get("targetMeanPrice")
-            except:
-                pass
-            target_base = float(target_dinamico) if (target_dinamico and target_dinamico > 0) else valores_respaldo.get(sigla_limpia, precio_actual * 1.1)
-            if es_nativo_pesos and target_dinamico:
-                target_base = target_base * VALOR_DOLAR_MEP
-
-            puntos = 50
+            # 5. Puntaje Multi-Factor Swing (0 a 100)
+            puntos = 45
             if precio_actual > ema21: puntos += 12
             if ema9 > ema21: puntos += 10
             if precio_actual > sma50: puntos += 8
-            if 35 <= rsi_val <= 62: puntos += 10
-            elif rsi_val < 35: puntos += 15
-            elif rsi_val > 72: puntos -= 18
+            if 38 <= rsi_val <= 63: puntos += 10
+            elif rsi_val < 38: puntos += 14   # Zona de rebote técnico
+            elif rsi_val > 70: puntos -= 20   # Sobrecompra
             if macd_hist > 0: puntos += 8
-            if vol_rel >= 1.1: puntos += 5
-            if target_base > precio_actual * 1.08: puntos += 7
+            if vol_rel >= 1.1: puntos += 6
+            if ratio_rb >= 2.0: puntos += 8
+            elif ratio_rb < 1.3: puntos -= 12 # Poco recorrido frente al riesgo
             puntos = max(0, min(100, int(puntos)))
 
-            if puntos >= 68 and rsi_val <= 70:
-                senal, color_borde, motivo = "🟢 COMPRA SWING", "#00e676", "Tendencia y momentum favorables con buen recorrido."
-            elif rsi_val > 72 or puntos <= 38:
-                senal, color_borde, motivo = "🔴 TOMA DE GANANCIAS", "#f44336", "Sobrecompra o debilidad de tendencia; proteger capital."
+            # 6. Veredicto Operativo con Filtro de Recorrido
+            if puntos >= 68 and rsi_val <= 68 and ratio_rb >= 1.6:
+                senal = "🟢 COMPRA SWING"
+                color_borde = "#00e676"
+                motivo = f"Tendencia y momentum sólidos; recorrido libre al techo ({dist_techo_pct:+.1f}%)."
+            elif rsi_val > 70 or puntos <= 38:
+                senal = "🔴 TOMA DE GANANCIAS"
+                color_borde = "#f44336"
+                motivo = "Sobrecompra o pérdida de tendencia; proteger ganancias."
             else:
-                senal, color_borde, motivo = "🟡 ESPERAR / MANTENER", "#ffeb3b", "En consolidación; aguardar ruptura o retroceso a soporte."
+                senal = "🟡 ESPERAR / MANTENER"
+                color_borde = "#ffeb3b"
+                if ratio_rb < 1.6 and puntos >= 60:
+                    motivo = f"Cerca de resistencia ({dist_techo_pct:+.1f}%); esperar retroceso o ruptura."
+                else:
+                    motivo = "En consolidación; aguardar confirmación de entrada."
 
             dist_sma = ((precio_actual - sma50) / sma50) * 100
-            piso, techo = float(low.tail(60).min()), float(high.tail(60).max())
 
             return {
-                "precio": precio_actual, "target": target_base, "nativo_pesos": es_nativo_pesos,
+                "precio": precio_actual, "target": techo_60, "nativo_pesos": es_nativo_pesos,
                 "prob_sem": f"{puntos}%", "prob_anu": "82%" if dist_sma >= 0 else "73%",
                 "rsi": f"{rsi_val:.1f}", "macd": macd_txt, "dist_sma": f"{dist_sma:+.1f}%",
-                "piso": f"{moneda_simb}{piso:,.2f}", "techo": f"{moneda_simb}{techo:,.2f}",
+                "piso": f"{moneda_simb}{piso_60:,.2f}", "techo": f"{moneda_simb}{techo_60:,.2f}",
                 "senal": senal, "color_borde": color_borde, "motivo": motivo,
                 "sl": stop_loss, "tp": take_profit, "ratio_rb": ratio_rb,
                 "vol_rel": f"{vol_rel:.2f}x", "score": puntos
@@ -434,6 +452,80 @@ def traducir_y_analizar(texto_en):
 
     return texto_es, sent
 
+def escanear_todo_csv_rapido(lista_tickers):
+    resultados = []
+    if not lista_tickers:
+        return resultados
+    try:
+        df_lote = yf.download(lista_tickers, period="90d", group_by="ticker", progress=False, threads=True)
+    except:
+        return resultados
+
+    for tk in lista_tickers:
+        try:
+            df_t = df_lote if len(lista_tickers) == 1 else df_lote[tk]
+            df_t = df_t.dropna(subset=["Close"])
+            if df_t.empty or len(df_t) <= 25:
+                continue
+
+            close, high, low, vol = df_t["Close"], df_t["High"], df_t["Low"], df_t["Volume"]
+            precio_actual = float(close.iloc[-1])
+            ema9 = float(close.ewm(span=9).mean().iloc[-1])
+            ema21 = float(close.ewm(span=21).mean().iloc[-1])
+            sma50 = float(close.rolling(50).mean().iloc[-1]) if len(close) >= 50 else float(close.mean())
+
+            delta = close.diff()
+            gan = delta.where(delta > 0, 0).rolling(14).mean()
+            per = (-delta.where(delta < 0, 0)).rolling(14).mean() + 1e-10
+            rsi_val = float((100 - (100 / (1 + (gan / per)))).iloc[-1])
+
+            macd_line = close.ewm(span=12).mean() - close.ewm(span=26).mean()
+            sig_line = macd_line.ewm(span=9).mean()
+            macd_hist = float((macd_line - sig_line).iloc[-1])
+
+            vol_prom = float(vol.tail(20).mean()) + 1e-10
+            vol_rel = float(vol.iloc[-1]) / vol_prom
+
+            tr1 = high - low
+            tr2 = (high - close.shift(1)).abs()
+            tr3 = (low - close.shift(1)).abs()
+            atr = float(pd.concat([tr1, tr2, tr3], axis=1).max(axis=1).rolling(14).mean().iloc[-1])
+            if np.isnan(atr) or atr <= 0:
+                atr = precio_actual * 0.025
+
+            stop_loss = max(precio_actual - (1.8 * atr), precio_actual * 0.85)
+            take_profit = precio_actual + (3.2 * atr)
+            ratio_rb = round(max(take_profit - precio_actual, 0.0) / max(precio_actual - stop_loss, 1e-6), 1)
+
+            puntos = 50
+            if precio_actual > ema21: puntos += 12
+            if ema9 > ema21: puntos += 10
+            if precio_actual > sma50: puntos += 8
+            if 35 <= rsi_val <= 62: puntos += 10
+            elif rsi_val < 35: puntos += 15
+            elif rsi_val > 72: puntos -= 18
+            if macd_hist > 0: puntos += 8
+            if vol_rel >= 1.1: puntos += 5
+            puntos = max(0, min(100, int(puntos)))
+
+            if puntos >= 68 and rsi_val <= 70:
+                senal, color_borde = "🟢 COMPRA SWING", "#00e676"
+            elif rsi_val > 72 or puntos <= 38:
+                senal, color_borde = "🔴 TOMA DE GANANCIAS", "#f44336"
+            else:
+                senal, color_borde = "🟡 ESPERAR / MANTENER", "#ffeb3b"
+
+            resultados.append((puntos, tk, {
+                "precio": precio_actual, "nativo_pesos": tk.endswith(".BA"),
+                "rsi": f"{rsi_val:.1f}", "senal": senal, "color_borde": color_borde,
+                "ratio_rb": ratio_rb, "score": puntos
+            }))
+        except:
+            continue
+
+    resultados.sort(key=lambda item: item.get("score", 0) if isinstance(item, dict) else item, reverse=True)
+    return resultados
+
 pat_show = patrimonio_total_usd * factor_cambio
 gan_tot_show = ganancia_total_usd * factor_cambio
 simb_tot = "ARS $" if es_pesos else "USD $"
@@ -458,21 +550,25 @@ if st.button("📊 Mostrar / Ocultar Planilla Swing General", key="btn_res_v30",
 if st.session_state.ver_resumen and lista_matriz:
     st.markdown(pd.DataFrame(lista_matriz).to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
 
-st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>🚀 Escáner Top 5 Oportunidades Swing (CSV)</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>🚀 Escáner Top 5 Oportunidades (Tu Archivo CSV)</h3>", unsafe_allow_html=True)
 if "top5_swing" not in st.session_state:
     st.session_state.top5_swing = []
 
-if st.button("🔍 Escanear Mejores Oportunidades Ahora", key="btn_scan_top5", use_container_width=True):
-    candidatos = []
-    universo = [v["orig"] if v["orig"] != "No Aplica" else v["arg"] for v in list(MAPEO_ACTIVOS_CSV.values())[:25]]
-    barra = st.progress(0)
-    for idx_u, tk_scan in enumerate(universo):
-        res_s = agente_swing_trading_vivo(tk_scan)
-        candidatos.append((res_s["score"], tk_scan, res_s))
-        barra.progress((idx_u + 1) / len(universo))
-    barra.empty()
-    candidatos.sort(key=lambda item: item.get("score", 0) if isinstance(item, dict) else item, reverse=True)
-    st.session_state.top5_swing = candidatos[:5]
+filtro_mercado = st.radio("Mercado:", ["🌎 Todos (CSV)", "🔵 CEDEARs / USA", "🟢 Argentina (.BA)"], horizontal=True, label_visibility="collapsed", key="filtro_scan_csv")
+
+if st.button("🔍 Escanear Todo Mi Archivo Ahora", key="btn_scan_top5", use_container_width=True):
+    universo = []
+    for v in MAPEO_ACTIVOS_CSV.values():
+        if filtro_mercado == "🌎 Todos (CSV)":
+            universo.append(v["orig"] if v["orig"] != "No Aplica" else v["arg"])
+        elif filtro_mercado == "🔵 CEDEARs / USA" and v["orig"] != "No Aplica":
+            universo.append(v["orig"])
+        elif filtro_mercado == "🟢 Argentina (.BA)" and v["orig"] == "No Aplica":
+            universo.append(v["arg"])
+    universo = list(dict.fromkeys(universo))
+    with st.spinner(f"Analizando los {len(universo)} activos de tu archivo en tiempo real..."):
+        encontrados = escanear_todo_csv_rapido(universo)
+        st.session_state.top5_swing = encontrados[:5]
 
 if st.session_state.top5_swing:
     for score_op, tk_op, info_op in st.session_state.top5_swing:
@@ -508,68 +604,4 @@ else:
     st.markdown(f"""
     <div class="tarjeta-activo" style="border-left: 4px solid #ffeb3b;">
         <div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">
-            • <b>Cotización MEP Aplicada:</b> <b style="color:#00e676;">ARS $ {VALOR_DOLAR_MEP:,.2f}</b> ({origen_mep_txt})
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
-alcistas, bajistas = 0, 0
-base_yf = "https://finance." + "yahoo.com" + "/quote/"
-
-for simbolo in activos_actuales:
-    s_fijo = str(simbolo).strip().upper()
-    s_usa = s_fijo.replace(".BA", "")
-    noticias = []
-    try:
-        noticias = yf.Ticker(s_usa).news[:2]
-    except:
-        pass
-
-    if noticias:
-        for item in noticias:
-            cont = item.get("content", item)
-            tit_orig = cont.get("title", "Actualización de mercado")
-            link_obj = cont.get("canonicalUrl", {})
-            url_not = link_obj.get("url") if isinstance(link_obj, dict) else item.get("link", f"{base_yf}{s_usa}")
-            
-            tit_es, sent = traducir_y_analizar(tit_orig)
-            if "Positivo" in sent: alcistas += 1
-            elif "Precaución" in sent: bajistas += 1
-            
-            st.markdown(f"""
-            <div class="caja-noticia-link">
-                <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>{tit_es}</b>
-                <div style="font-size:0.78rem; color:#ccc; margin-top:4px;">{sent}</div>
-                <a href="{url_not}" target="_blank" class="enlace-noticia-azul">🔗 Leer nota completa en Yahoo Finance</a>
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.markdown(f"""
-        <div class="caja-noticia-link">
-            <span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>Sin titulares recientes en el feed directo.</b><br>
-            <a href="{base_yf}{s_usa}" target="_blank" class="enlace-noticia-azul">🔗 Ver panel en Yahoo Finance</a>
-        </div>
-        """, unsafe_allow_html=True)
-
-st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>🧠 Análisis General del Portafolio</h3>", unsafe_allow_html=True)
-diag = "Sesgo <b>positivo</b> en tus activos." if alcistas > bajistas else ("Titulares de <b>cautela o volatilidad</b>." if bajistas > alcistas else "<b>Equilibrio informativo</b> en tu cartera.")
-st.markdown(f"""
-<div class="tarjeta-activo" style="border-left: 4px solid #00e676; margin-bottom: 50px;">
-    <div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">
-        • <b>Balance:</b> {alcistas} favorables vs. {bajistas} de precaución.<br>
-        • <b>Conclusión:</b> {diag}
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown('''
-<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;">
-    <div style="color:#888;">🏠<br>Inicio</div>
-    <div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div>
-    <div style="color:#888;">📊<br>Análisis</div>
-    <div style="color:#888;">💬<br>Chat</div>
-    <div style="color:#888;">👤<br>Perfil</div>
-</div>
-''', unsafe_allow_html=True)
-            
+                          
