@@ -399,7 +399,7 @@ for tk in activos_actuales:
     if pnl_html:
         st.markdown(pnl_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
- def traducir_y_analizar(texto_en):
+def traducir_y_analizar(texto_en):
     txt_low = texto_en.lower()
     pos = sum(1 for p in ["surge", "soar", "gain", "buy", "upgrade", "beat", "growth", "high", "rally", "bull", "profit", "strong", "record", "better"] if p in txt_low)
     neg = sum(1 for n in ["drop", "fall", "slump", "uncertainty", "plunge", "sell", "downgrade", "miss", "loss", "risk", "bear", "weak", "cut", "lawsuit", "resigns", "lose", "skip"] if n in txt_low)
