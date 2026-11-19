@@ -1,3 +1,4 @@
+# === INICIO BLOQUE 1 ===
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -85,6 +86,8 @@ try:
             MAPEO_ACTIVOS_CSV[f"🔵 {nom} ({tk})"] = {"orig": tk, "arg": f"{tk}.BA"}
 except:
     MAPEO_ACTIVOS_CSV = {"🔵 SPDR S&P 500 (SPY)": {"orig": "SPY", "arg": "SPY.BA"}, "🔵 Coca-Cola Co. (KO)": {"orig": "KO", "arg": "KO.BA"}}
+# === FIN BLOQUE 1 ===
+# === INICIO BLOQUE 2 ===
 def leer_local_storage(clave_ls, key_comp):
     try:
         raw = streamlit_js_eval(js_expressions=f"localStorage.getItem('{clave_ls}')", key=key_comp)
@@ -217,6 +220,8 @@ es_pesos = moneda == "Pesos (ARS)"
 factor_cambio = VALOR_DOLAR_MEP if es_pesos else 1.0
 st.info(f"⚡ Cotización MEP: ARS \$ {VALOR_DOLAR_MEP:,.2f} | {origen_mep_txt}")
 st.markdown(f"<h3 style='color:#ffffff; margin-top:5px;'>📁 {st.session_state.cartera_activa} - Fichas Swing & Control</h3>", unsafe_allow_html=True)
+# === FIN BLOQUE 2 ===
+# === INICIO BLOQUE 3 ===
 def agente_swing_trading_vivo(simbolo_ticket):
     es_nativo_pesos = simbolo_ticket.endswith(".BA")
     moneda_simb = "ARS $" if es_nativo_pesos else "USD $"
@@ -227,12 +232,10 @@ def agente_swing_trading_vivo(simbolo_ticket):
             close, high, low, vol = df_hist["Close"], df_hist["High"], df_hist["Low"], df_hist["Volume"]
             precio_actual = float(close.iloc[-1])
 
-            # 1. Tendencia y Medias Móviles
             ema9 = float(close.ewm(span=9).mean().iloc[-1])
             ema21 = float(close.ewm(span=21).mean().iloc[-1])
             sma50 = float(close.rolling(50).mean().iloc[-1]) if len(close) >= 50 else float(close.mean())
 
-            # 2. Momentum (RSI 14 y MACD)
             delta = close.diff()
             gan = delta.where(delta > 0, 0).rolling(14).mean()
             per = (-delta.where(delta < 0, 0)).rolling(14).mean() + 1e-10
@@ -243,11 +246,9 @@ def agente_swing_trading_vivo(simbolo_ticket):
             macd_hist = float((macd_line - sig_line).iloc[-1])
             macd_txt = "▲ Alcista" if macd_hist > 0 else "▼ Ajuste"
 
-            # 3. Volumen Relativo
             vol_prom = float(vol.tail(20).mean()) + 1e-10
             vol_rel = float(vol.iloc[-1]) / vol_prom
 
-            # 4. Volatilidad Real (ATR 14) y Soportes/Resistencias de 60 ruedas
             tr1 = high - low
             tr2 = (high - close.shift(1)).abs()
             tr3 = (low - close.shift(1)).abs()
@@ -259,48 +260,41 @@ def agente_swing_trading_vivo(simbolo_ticket):
             techo_60 = float(high.tail(60).max())
             piso_20 = float(low.tail(20).min())
 
-            # Stop Loss dinámico protegido debajo de soporte reciente o 1.6 ATR
             stop_atr = precio_actual - (1.6 * atr)
             stop_loss = max(min(stop_atr, piso_20 * 0.99), precio_actual * 0.88)
 
-            # Objetivo Técnico Real (Resistencia de 60d o Extensión de 3.2 ATR si está en ruptura)
             proy_atr = precio_actual + (3.2 * atr)
             if techo_60 > precio_actual * 1.03:
                 take_profit = min(techo_60, proy_atr)
             else:
-                take_profit = proy_atr  # En máximos: busca extensión por ruptura
+                take_profit = proy_atr
 
             riesgo = max(precio_actual - stop_loss, 1e-6)
             beneficio = max(take_profit - precio_actual, 0.0)
             ratio_rb = round(beneficio / riesgo, 1)
             dist_techo_pct = ((techo_60 - precio_actual) / precio_actual) * 100
 
-            # 5. Puntaje Multi-Factor Swing (0 a 100)
             puntos = 45
             if precio_actual > ema21: puntos += 12
             if ema9 > ema21: puntos += 10
             if precio_actual > sma50: puntos += 8
             if 38 <= rsi_val <= 63: puntos += 10
-            elif rsi_val < 38: puntos += 14   # Zona de rebote técnico
-            elif rsi_val > 70: puntos -= 20   # Sobrecompra
+            elif rsi_val < 38: puntos += 14
+            elif rsi_val > 70: puntos -= 20
             if macd_hist > 0: puntos += 8
             if vol_rel >= 1.1: puntos += 6
             if ratio_rb >= 2.0: puntos += 8
-            elif ratio_rb < 1.3: puntos -= 12 # Poco recorrido frente al riesgo
+            elif ratio_rb < 1.3: puntos -= 12
             puntos = max(0, min(100, int(puntos)))
 
-            # 6. Veredicto Operativo con Filtro de Recorrido
             if puntos >= 68 and rsi_val <= 68 and ratio_rb >= 1.6:
-                senal = "🟢 COMPRA SWING"
-                color_borde = "#00e676"
+                senal, color_borde = "🟢 COMPRA SWING", "#00e676"
                 motivo = f"Tendencia y momentum sólidos; recorrido libre al techo ({dist_techo_pct:+.1f}%)."
             elif rsi_val > 70 or puntos <= 38:
-                senal = "🔴 TOMA DE GANANCIAS"
-                color_borde = "#f44336"
+                senal, color_borde = "🔴 TOMA DE GANANCIAS", "#f44336"
                 motivo = "Sobrecompra o pérdida de tendencia; proteger ganancias."
             else:
-                senal = "🟡 ESPERAR / MANTENER"
-                color_borde = "#ffeb3b"
+                senal, color_borde = "🟡 ESPERAR / MANTENER", "#ffeb3b"
                 if ratio_rb < 1.6 and puntos >= 60:
                     motivo = f"Cerca de resistencia ({dist_techo_pct:+.1f}%); esperar retroceso o ruptura."
                 else:
@@ -326,6 +320,8 @@ def agente_swing_trading_vivo(simbolo_ticket):
         "senal": "🟡 ESPERAR / MANTENER", "color_borde": "#ffeb3b", "motivo": "Sin datos suficientes.",
         "sl": 95.0, "tp": 110.0, "ratio_rb": 2.0, "vol_rel": "1.00x", "score": 55
     }
+# === FIN BLOQUE 3 ===
+# === INICIO BLOQUE 4 ===
 activos_actuales = list(st.session_state.montos_dis.keys())
 patrimonio_total_usd = 0.0
 ganancia_total_usd = 0.0
@@ -384,14 +380,9 @@ for tk in activos_actuales:
 
     st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid {datos["color_borde"]};">', unsafe_allow_html=True)
     st.markdown(f'<div class="cabecera-cuaderno"><span style="font-size:1.3rem; font-weight:bold; color:#2196f3;">{tk_up}</span><span style="font-size:0.82rem; font-weight:bold; color:{datos["color_borde"]};">{datos["senal"]} ({datos["score"]}/100)</span></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {simb}{p_show:,.2f}</b> | <span style="color:#ffeb3b;">🎯 Target:</span> <b style="color:#00e676;">{simb}{t_show:,.2f}</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="renglon-precio-unificado"><b>Precio Actual: {simb}{p_show:,.2f}</b> | <span style="color:#ffeb3b;">🎯 Techo 60d:</span> <b style="color:#00e676;">{simb}{t_show:,.2f}</b></div>', unsafe_allow_html=True)
     
-    st.markdown(f"""
-    <div class="caja-swing">
-        • <b>Plan Swing:</b> Stop Loss <span style="color:#f44336; font-weight:bold;">{simb}{sl_show:,.2f}</span> | Take Profit <span style="color:#00e676; font-weight:bold;">{simb}{tp_show:,.2f}</span> (R/B <b>1:{datos['ratio_rb']}</b>)<br>
-        • <b>Agente AI:</b> {datos['motivo']}
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="caja-swing">• <b>Plan Swing:</b> Stop Loss <span style="color:#f44336; font-weight:bold;">{simb}{sl_show:,.2f}</span> | Take Profit <span style="color:#00e676; font-weight:bold;">{simb}{tp_show:,.2f}</span> (R/B <b>1:{datos["ratio_rb"]}</b>)<br>• <b>Agente AI:</b> {datos["motivo"]}</div>', unsafe_allow_html=True)
 
     with st.expander(f"📊 Indicadores Técnicos (RSI {datos['rsi']} | Vol {datos['vol_rel']})", expanded=False):
         st.markdown(f"• **RSI (14):** {datos['rsi']} | **MACD:** {datos['macd']} | **Dist. SMA50:** {datos['dist_sma']}\n• **Rango 60d:** Piso {datos['piso']} — Techo {datos['techo']}")
@@ -417,6 +408,8 @@ for tk in activos_actuales:
     if pnl_html:
         st.markdown(pnl_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+# === FIN BLOQUE 4 ===
+# === INICIO BLOQUE 5 ===
 def traducir_y_analizar(texto_en):
     txt_low = texto_en.lower()
     pos = sum(1 for p in ["surge", "soar", "gain", "buy", "upgrade", "beat", "growth", "high", "rally", "bull", "profit", "strong", "record", "better"] if p in txt_low)
@@ -493,24 +486,29 @@ def escanear_todo_csv_rapido(lista_tickers):
             if np.isnan(atr) or atr <= 0:
                 atr = precio_actual * 0.025
 
-            stop_loss = max(precio_actual - (1.8 * atr), precio_actual * 0.85)
-            take_profit = precio_actual + (3.2 * atr)
+            piso_20 = float(low.tail(20).min())
+            techo_60 = float(high.tail(60).max())
+            stop_loss = max(min(precio_actual - (1.6 * atr), piso_20 * 0.99), precio_actual * 0.88)
+            proy_atr = precio_actual + (3.2 * atr)
+            take_profit = min(techo_60, proy_atr) if techo_60 > precio_actual * 1.03 else proy_atr
             ratio_rb = round(max(take_profit - precio_actual, 0.0) / max(precio_actual - stop_loss, 1e-6), 1)
 
-            puntos = 50
+            puntos = 45
             if precio_actual > ema21: puntos += 12
             if ema9 > ema21: puntos += 10
             if precio_actual > sma50: puntos += 8
-            if 35 <= rsi_val <= 62: puntos += 10
-            elif rsi_val < 35: puntos += 15
-            elif rsi_val > 72: puntos -= 18
+            if 38 <= rsi_val <= 63: puntos += 10
+            elif rsi_val < 38: puntos += 14
+            elif rsi_val > 70: puntos -= 20
             if macd_hist > 0: puntos += 8
-            if vol_rel >= 1.1: puntos += 5
+            if vol_rel >= 1.1: puntos += 6
+            if ratio_rb >= 2.0: puntos += 8
+            elif ratio_rb < 1.3: puntos -= 12
             puntos = max(0, min(100, int(puntos)))
 
-            if puntos >= 68 and rsi_val <= 70:
+            if puntos >= 68 and rsi_val <= 68 and ratio_rb >= 1.6:
                 senal, color_borde = "🟢 COMPRA SWING", "#00e676"
-            elif rsi_val > 72 or puntos <= 38:
+            elif rsi_val > 70 or puntos <= 38:
                 senal, color_borde = "🔴 TOMA DE GANANCIAS", "#f44336"
             else:
                 senal, color_borde = "🟡 ESPERAR / MANTENER", "#ffeb3b"
@@ -573,17 +571,7 @@ if st.button("🔍 Escanear Todo Mi Archivo Ahora", key="btn_scan_top5", use_con
 if st.session_state.top5_swing:
     for score_op, tk_op, info_op in st.session_state.top5_swing:
         p_op_show = (info_op["precio"] if info_op["nativo_pesos"] else info_op["precio"] * VALOR_DOLAR_MEP) if es_pesos else ((info_op["precio"] / VALOR_DOLAR_MEP) if info_op["nativo_pesos"] else info_op["precio"])
-        st.markdown(f"""
-        <div class="tarjeta-activo" style="border-left: 4px solid {info_op['color_borde']}; padding:8px 12px;">
-            <div style="display:flex; justify-content:space-between; font-size:0.86rem;">
-                <b>🔥 {tk_op} ({info_op['senal']})</b>
-                <span style="color:#00e676; font-weight:bold;">Puntaje: {score_op}/100</span>
-            </div>
-            <div style="font-size:0.8rem; color:#ccc; margin-top:3px;">
-                Precio: {simb_tot}{p_op_show:,.2f} | RSI: {info_op['rsi']} | Ratio R/B: <b>1:{info_op['ratio_rb']}</b>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid {info_op["color_borde"]}; padding:8px 12px;"><div style="display:flex; justify-content:space-between; font-size:0.86rem;"><b>🔥 {tk_op} ({info_op["senal"]})</b><span style="color:#00e676; font-weight:bold;">Puntaje: {score_op}/100</span></div><div style="font-size:0.8rem; color:#ccc; margin-top:3px;">Precio: {simb_tot}{p_op_show:,.2f} | RSI: {info_op["rsi"]} | Ratio R/B: <b>1:{info_op["ratio_rb"]}</b></div></div>', unsafe_allow_html=True)
         if st.button(f"➕ Agregar {tk_op} a {st.session_state.cartera_activa}", key=f"add_top5_{tk_op}"):
             st.session_state.montos_dis[tk_op] = 5000.0
             guardar_todo_en_navegador()
@@ -591,17 +579,5 @@ if st.session_state.top5_swing:
 
 st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>💵 Ticket de Referencia Dólar MEP (AL30)</h3>", unsafe_allow_html=True)
 if datos_mep["al30_ars"] and datos_mep["al30_usd"]:
-    st.markdown(f"""
-    <div class="tarjeta-activo" style="border-left: 4px solid #2196f3;">
-        <div style="font-size:0.86rem; color:#ffffff; line-height:1.5;">
-            • <b>Bono AL30.BA (Pesos):</b> ARS $ {datos_mep['al30_ars']:,.2f}<br>
-            • <b>Bono AL30D.BA (Dólares):</b> USD $ {datos_mep['al30_usd']:,.2f}<br>
-            • <b>Cálculo MEP ({datos_mep['fecha']}):</b> ARS $ {datos_mep['al30_ars']:,.2f} / USD $ {datos_mep['al30_usd']:,.2f} = <b style="color:#00e676;">ARS $ {VALOR_DOLAR_MEP:,.2f}</b>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid #2196f3;"><div style="font-size:0.86rem; color:#ffffff; line-height:1.5;">• <b>Bono AL30.BA (Pesos):</b> ARS $ {datos_mep["al30_ars"]:,.2f}<br>• <b>Bono AL30D.BA (Dólares):</b> USD $ {datos_mep["al30_usd"]:,.2f}<br>• <b>Cálculo MEP ({datos_mep["fecha"]}):</b> ARS $ {datos_mep["al30_ars"]:,.2f} / USD $ {datos_mep["al30_usd"]:,.2f} = <b style="color:#00e676;">ARS $ {VALOR_DOLAR_MEP:,.2f}</b></div></div>', unsafe_allow_html=True)
 else:
-    st.markdown(f"""
-    <div class="tarjeta-activo" style="border-left: 4px solid #ffeb3b;">
-        <div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">
-                          
