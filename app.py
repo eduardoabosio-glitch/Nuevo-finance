@@ -581,3 +581,40 @@ st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>💵 Ticket de Referenc
 if datos_mep["al30_ars"] and datos_mep["al30_usd"]:
     st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid #2196f3;"><div style="font-size:0.86rem; color:#ffffff; line-height:1.5;">• <b>Bono AL30.BA (Pesos):</b> ARS $ {datos_mep["al30_ars"]:,.2f}<br>• <b>Bono AL30D.BA (Dólares):</b> USD $ {datos_mep["al30_usd"]:,.2f}<br>• <b>Cálculo MEP ({datos_mep["fecha"]}):</b> ARS $ {datos_mep["al30_ars"]:,.2f} / USD $ {datos_mep["al30_usd"]:,.2f} = <b style="color:#00e676;">ARS $ {VALOR_DOLAR_MEP:,.2f}</b></div></div>', unsafe_allow_html=True)
 else:
+    st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid #ffeb3b;"><div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">• <b>Cotización MEP Aplicada:</b> <b style="color:#00e676;">ARS $ {VALOR_DOLAR_MEP:,.2f}</b> ({origen_mep_txt})</div></div>', unsafe_allow_html=True)
+
+st.markdown("<h3 style='color:#ffffff;'>📰 Central de Noticias y Análisis en Español</h3>", unsafe_allow_html=True)
+alcistas, bajistas = 0, 0
+base_yf = "https://finance." + "yahoo.com" + "/quote/"
+
+for simbolo in activos_actuales:
+    s_fijo = str(simbolo).strip().upper()
+    s_usa = s_fijo.replace(".BA", "")
+    noticias = []
+    try:
+        noticias = yf.Ticker(s_usa).news[:2]
+    except:
+        pass
+
+    if noticias:
+        for item in noticias:
+            cont = item.get("content", item)
+            tit_orig = cont.get("title", "Actualización de mercado")
+            link_obj = cont.get("canonicalUrl", {})
+            url_not = link_obj.get("url") if isinstance(link_obj, dict) else item.get("link", f"{base_yf}{s_usa}")
+            
+            tit_es, sent = traducir_y_analizar(tit_orig)
+            if "Positivo" in sent: alcistas += 1
+            elif "Precaución" in sent: bajistas += 1
+            
+            st.markdown(f'<div class="caja-noticia-link"><span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>{tit_es}</b><div style="font-size:0.78rem; color:#ccc; margin-top:4px;">{sent}</div><a href="{url_not}" target="_blank" class="enlace-noticia-azul">🔗 Leer nota completa en Yahoo Finance</a></div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="caja-noticia-link"><span style="color:#2196f3; font-weight:bold;">[{s_fijo}]</span> <b>Sin titulares recientes en el feed directo.</b><br><a href="{base_yf}{s_usa}" target="_blank" class="enlace-noticia-azul">🔗 Ver panel en Yahoo Finance</a></div>', unsafe_allow_html=True)
+
+st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>🧠 Análisis General del Portafolio</h3>", unsafe_allow_html=True)
+diag = "Sesgo <b>positivo</b> en tus activos." if alcistas > bajistas else ("Titulares de <b>cautela o volatilidad</b>." if bajistas > alcistas else "<b>Equilibrio informativo</b> en tu cartera.")
+st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid #00e676; margin-bottom: 50px;"><div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">• <b>Balance:</b> {alcistas} favorables vs. {bajistas} de precaución.<br>• <b>Conclusión:</b> {diag}</div></div>', unsafe_allow_html=True)
+
+st.markdown('<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;"><div style="color:#888;">🏠<br>Inicio</div><div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div><div style="color:#888;">📊<br>Análisis</div><div style="color:#888;">💬<br>Chat</div><div style="color:#888;">👤<br>Perfil</div></div>', unsafe_allow_html=True)
+# === FIN BLOQUE 5 ===
+
