@@ -85,7 +85,7 @@ try:
             MAPEO_ACTIVOS_CSV[f"🔵 {nom} ({tk})"] = {"orig": tk, "arg": f"{tk}.BA"}
 except:
     MAPEO_ACTIVOS_CSV = {"🔵 SPDR S&P 500 (SPY)": {"orig": "SPY", "arg": "SPY.BA"}, "🔵 Coca-Cola Co. (KO)": {"orig": "KO", "arg": "KO.BA"}}
- def leer_local_storage(clave_ls, key_comp):
+def leer_local_storage(clave_ls, key_comp):
     try:
         raw = streamlit_js_eval(js_expressions=f"localStorage.getItem('{clave_ls}')", key=key_comp)
         if raw and isinstance(raw, str):
