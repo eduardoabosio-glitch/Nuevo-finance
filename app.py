@@ -410,6 +410,8 @@ for tk in activos_actuales:
     st.markdown('</div>', unsafe_allow_html=True)
 # === FIN BLOQUE 4 ===
 # === INICIO BLOQUE 5 ===
+from operator import itemgetter
+
 def traducir_y_analizar(texto_en):
     txt_low = texto_en.lower()
     pos = sum(1 for p in ["surge", "soar", "gain", "buy", "upgrade", "beat", "growth", "high", "rally", "bull", "profit", "strong", "record", "better"] if p in txt_low)
@@ -424,7 +426,8 @@ def traducir_y_analizar(texto_en):
         r = requests.get(base_g, params=params_g, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
         if r.status_code == 200:
             data = r.json()
-            partes = [seg for seg in data if isinstance(seg, list) and len(seg) > 0 and seg]
+            bloque_txt = next(iter(data)) if isinstance(data, list) and data else []
+            partes = [next(iter(seg)) for seg in bloque_txt if isinstance(seg, list) and seg and next(iter(seg))]
             if partes:
                 texto_es = "".join(partes)
                 traducido = True
@@ -445,8 +448,9 @@ def traducir_y_analizar(texto_en):
 
     return texto_es, sent
 
-def escanear_todo_csv_rapido(lista_tickers):
+def escanear_todo_csv_rapido(mapa_tickers_nombres):
     resultados = []
+    lista_tickers = list(mapa_tickers_nombres.keys())
     if not lista_tickers:
         return resultados
     try:
@@ -506,14 +510,15 @@ def escanear_todo_csv_rapido(lista_tickers):
             elif ratio_rb < 1.3: puntos -= 12
             puntos = max(0, min(100, int(puntos)))
 
-            if puntos >= 68 and rsi_val <= 68 and ratio_rb >= 1.6:
-                senal, color_borde = "🟢 COMPRA SWING", "#00e676"
+            if puntos >= 68 and rsi_val <= 68 and ratio_rb >= 1.7:
+                senal, color_borde, prioridad = "🟢 COMPRA SWING", "#00e676", 2
             elif rsi_val > 70 or puntos <= 38:
-                senal, color_borde = "🔴 TOMA DE GANANCIAS", "#f44336"
+                senal, color_borde, prioridad = "🔴 TOMA DE GANANCIAS", "#f44336", 0
             else:
-                senal, color_borde = "🟡 ESPERAR / MANTENER", "#ffeb3b"
+                senal, color_borde, prioridad = "🟡 ESPERAR / MANTENER", "#ffeb3b", 1
 
-            resultados.append((puntos, tk, {
+            resultados.append((prioridad, puntos, tk, {
+                "nombre": mapa_tickers_nombres.get(tk, tk),
                 "precio": precio_actual, "nativo_pesos": tk.endswith(".BA"),
                 "rsi": f"{rsi_val:.1f}", "senal": senal, "color_borde": color_borde,
                 "ratio_rb": ratio_rb, "score": puntos
@@ -521,7 +526,7 @@ def escanear_todo_csv_rapido(lista_tickers):
         except:
             continue
 
-    resultados.sort(key=lambda item: item.get("score", 0) if isinstance(item, dict) else item, reverse=True)
+    resultados.sort(key=itemgetter(0, 1), reverse=True)
     return resultados
 
 pat_show = patrimonio_total_usd * factor_cambio
@@ -547,7 +552,8 @@ if st.button("📊 Mostrar / Ocultar Planilla Swing General", key="btn_res_v30",
 
 if st.session_state.ver_resumen and lista_matriz:
     st.markdown(pd.DataFrame(lista_matriz).to_html(index=False, classes='dataframe'), unsafe_allow_html=True)
-
+# === FIN BLOQUE 5 ===
+# === INICIO BLOQUE 6 ===
 st.markdown("<h3 style='color:#ffffff; margin-top:12px;'>🚀 Escáner Top 5 Oportunidades (Tu Archivo CSV)</h3>", unsafe_allow_html=True)
 if "top5_swing" not in st.session_state:
     st.session_state.top5_swing = []
@@ -555,23 +561,27 @@ if "top5_swing" not in st.session_state:
 filtro_mercado = st.radio("Mercado:", ["🌎 Todos (CSV)", "🔵 CEDEARs / USA", "🟢 Argentina (.BA)"], horizontal=True, label_visibility="collapsed", key="filtro_scan_csv")
 
 if st.button("🔍 Escanear Todo Mi Archivo Ahora", key="btn_scan_top5", use_container_width=True):
-    universo = []
-    for v in MAPEO_ACTIVOS_CSV.values():
+    mapa_universo = {}
+    for etiqueta, v in MAPEO_ACTIVOS_CSV.items():
+        nombre_limpio = etiqueta.replace("🔵 ", "").replace("🟢 ", "").partition(" (").__getitem__(0)
         if filtro_mercado == "🌎 Todos (CSV)":
-            universo.append(v["orig"] if v["orig"] != "No Aplica" else v["arg"])
+            tk_elegido = v["orig"] if v["orig"] != "No Aplica" else v["arg"]
+            mapa_universo[tk_elegido] = nombre_limpio
         elif filtro_mercado == "🔵 CEDEARs / USA" and v["orig"] != "No Aplica":
-            universo.append(v["orig"])
+            mapa_universo[v["orig"]] = nombre_limpio
         elif filtro_mercado == "🟢 Argentina (.BA)" and v["orig"] == "No Aplica":
-            universo.append(v["arg"])
-    universo = list(dict.fromkeys(universo))
-    with st.spinner(f"Analizando los {len(universo)} activos de tu archivo en tiempo real..."):
-        encontrados = escanear_todo_csv_rapido(universo)
+            mapa_universo[v["arg"]] = nombre_limpio
+    with st.spinner(f"Analizando los {len(mapa_universo)} activos de tu archivo en tiempo real..."):
+        encontrados = escanear_todo_csv_rapido(mapa_universo)
         st.session_state.top5_swing = encontrados[:5]
 
 if st.session_state.top5_swing:
-    for score_op, tk_op, info_op in st.session_state.top5_swing:
+    for item_op in st.session_state.top5_swing:
+        tk_op, info_op = item_op[-2], item_op[-1]
+        score_op = info_op["score"]
+        nom_op = info_op.get("nombre", tk_op)
         p_op_show = (info_op["precio"] if info_op["nativo_pesos"] else info_op["precio"] * VALOR_DOLAR_MEP) if es_pesos else ((info_op["precio"] / VALOR_DOLAR_MEP) if info_op["nativo_pesos"] else info_op["precio"])
-        st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid {info_op["color_borde"]}; padding:8px 12px;"><div style="display:flex; justify-content:space-between; font-size:0.86rem;"><b>🔥 {tk_op} ({info_op["senal"]})</b><span style="color:#00e676; font-weight:bold;">Puntaje: {score_op}/100</span></div><div style="font-size:0.8rem; color:#ccc; margin-top:3px;">Precio: {simb_tot}{p_op_show:,.2f} | RSI: {info_op["rsi"]} | Ratio R/B: <b>1:{info_op["ratio_rb"]}</b></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid {info_op["color_borde"]}; padding:8px 12px;"><div style="display:flex; justify-content:space-between; font-size:0.86rem;"><b>🔥 {tk_op} - {nom_op}</b><span style="color:#00e676; font-weight:bold;">{score_op}/100</span></div><div style="font-size:0.8rem; color:#ccc; margin-top:3px;">{info_op["senal"]} | Precio: {simb_tot}{p_op_show:,.2f} | RSI: {info_op["rsi"]} | R/B: <b>1:{info_op["ratio_rb"]}</b></div></div>', unsafe_allow_html=True)
         if st.button(f"➕ Agregar {tk_op} a {st.session_state.cartera_activa}", key=f"add_top5_{tk_op}"):
             st.session_state.montos_dis[tk_op] = 5000.0
             guardar_todo_en_navegador()
@@ -616,5 +626,4 @@ diag = "Sesgo <b>positivo</b> en tus activos." if alcistas > bajistas else ("Tit
 st.markdown(f'<div class="tarjeta-activo" style="border-left: 4px solid #00e676; margin-bottom: 50px;"><div style="font-size:0.86rem; color:#ffffff; line-height:1.4;">• <b>Balance:</b> {alcistas} favorables vs. {bajistas} de precaución.<br>• <b>Conclusión:</b> {diag}</div></div>', unsafe_allow_html=True)
 
 st.markdown('<div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161a22; border-top: 1px solid #232a38; display: flex; justify-content: space-around; padding: 4px 0; z-index: 1000; font-size:0.68rem; text-align:center;"><div style="color:#888;">🏠<br>Inicio</div><div style="color:#2196f3; font-weight:bold;">💼<br>Portafolio</div><div style="color:#888;">📊<br>Análisis</div><div style="color:#888;">💬<br>Chat</div><div style="color:#888;">👤<br>Perfil</div></div>', unsafe_allow_html=True)
-# === FIN BLOQUE 5 ===
-
+# === FIN BLOQUE 6 ===
